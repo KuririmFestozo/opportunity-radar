@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opportunity Radar</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color-scheme:light dark}
+body{max-width:1240px;margin:auto;padding:22px}
+header{margin-bottom:18px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0}
+input,select,button{padding:10px;border-radius:10px;border:1px solid #8886;background:inherit}
+button{cursor:pointer;font-weight:650}
+.summary,.intent-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.pill,.tag,.intent-chip{border:1px solid #8885;border-radius:999px;padding:5px 9px;font-size:.8rem}
+.intent-chip{cursor:pointer;background:transparent}
+.intent-chip:hover{border-color:#888}
+.job{display:grid;grid-template-columns:76px 1fr;gap:14px;border:1px solid #8885;border-radius:16px;padding:15px;margin:11px 0}
+.score{font-size:1.38rem;font-weight:800;text-align:center}
+.score:after{content:"%";font-size:.7rem;opacity:.65}
+h2{font-size:1.08rem;margin:3px 0}h3{font-size:.92rem;margin:4px 0;opacity:.8}
+p{margin:5px 0}.meta{display:flex;gap:6px;flex-wrap:wrap}
+.reason{font-size:.84rem;opacity:.78}.distance{font-weight:700}
+.links{display:grid;gap:8px}.links a{padding:9px;border:1px solid #8885;border-radius:10px;text-decoration:none}
+.notice{font-size:.85rem;opacity:.75}.muted{opacity:.65}.section-title{margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+<h1>🎯 Opportunity Radar</h1>
+<p>Primeiro coleta; depois você filtra. Perfis são apenas presets.</p>
+<div class="summary" id="summary"></div>
+<div class="intent-summary" id="intentSummary"></div>
+</header>
+
+<section class="filters">
+<select id="profile"></select>
+<select id="course"><option value="">Qualquer curso/área</option></select>
+<select id="intent"><option value="">Qualquer tipo de oportunidade</option></select>
+<select id="country">
+  <option value="">Qualquer país</option>
+  <option value="BR">Brasil</option>
+  <option value="US">Estados Unidos</option>
+</select>
+<select id="source"><option value="">Todas as fontes</option></select>
+<select id="workplace">
+  <option value="">Toda modalidade</option>
+  <option value="remote">Remoto</option>
+  <option value="hybrid">Híbrido</option>
+  <option value="onsite">Presencial</option>
+</select>
+<select id="score">
+  <option value="0" selected>Qualquer relevância</option>
+  <option value="35">Afinidade ≥ 35</option>
+  <option value="50">Afinidade ≥ 50</option>
+  <option value="70">Afinidade ≥ 70</option>
+  <option value="85">Afinidade ≥ 85</option>
+</select>
+<select id="sort">
+  <option value="relevance">Ordenar: relevância</option>
+  <option value="distance">Ordenar: mais perto</option>
+  <option value="recent">Ordenar: mais recente</option>
+  <option value="title">Ordenar: título</option>
+</select>
+<input id="distance" type="number" min="1" step="1" placeholder="Raio máximo (km)">
+<button id="locationBtn">📍 Usar minha localização</button>
+<input id="include" placeholder="Deve conter: ex. automotivo">
+<input id="exclude" placeholder="Excluir: ex. vendas, sênior">
+<input id="search" placeholder="Cargo, empresa, cidade...">
+</section>
+
+<p class="notice" id="geoStatus">
+Para usar sua posição atual, abra via localhost/HTTPS e clique em “Usar minha localização”.
+</p>
+
+<main id="jobs"></main>
+
+<section>
+<h2 class="section-title">Buscas externas complementares</h2>
+<div class="links" id="links"></div>
+</section>
+
+<script>
+const DATA=__DASHBOARD_DATA__;
+const $=id=>document.getElementById(id);
+let currentLocation=null;
+
+const profileEl=$("profile"),courseEl=$("course"),intentEl=$("intent");
+
+function addOption(el,value,text){
+  const o=document.createElement("option");
+  o.value=value;o.textContent=text;el.appendChild(o);
+}
+
+addOption(profileEl,"__explore__","🌐 Explorar tudo");
+for(const p of DATA.profiles)addOption(profileEl,p.id,p.name);
+
+for(const [id,cfg] of Object.entries(DATA.courses))addOption(courseEl,id,cfg.label);
+for(const [id,cfg] of Object.entries(DATA.intents))addOption(intentEl,id,cfg.label);
+for(const s of [...new Set(DATA.jobs.map(j=>j.source))].sort())addOption($("source"),s,s);
+
+function jobKey(j){return `${j.source}:${j.source_job_id}`}
+function profileById(id){return DATA.profiles.find(p=>p.id===id)}
+function matchMap(profileId){
+  const out={};
+  DATA.matches.filter(m=>m.profile_id===profileId).forEach(m=>out[m.job_key]=m);
+  return out;
+}
+
+function workplace(j){
+  const t=`${j.workplace_type||""} ${j.location||""} ${(j.description||"").slice(0,700)}`.toLowerCase();
+  if(/remote|remoto|remota|home office/.test(t))return"remote";
+  if(/hybrid|híbrido|hibrido|híbrida|hibrida/.test(t))return"hybrid";
+  if(/onsite|on-site|presencial/.test(t))return"onsite";
+  return"unknown";
+}
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371.0088,rad=x=>x*Math.PI/180;
+  const p1=rad(lat1),p2=rad(lat2),dp=rad(lat2-lat1),dl=rad(lon2-lon1);
+  const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function terms(value){
+  return value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
+}
+
+function applyProfile(){
+  const p=profileById(profileEl.value);
+  if(!p)return;
+
+  courseEl.value=p.course_ids?.[0]||"";
+  intentEl.value=p.intent_ids?.length===1?p.intent_ids[0]:"";
+  $("country").value=p.preferred_countries?.length===1?p.preferred_countries[0]:"";
+  $("workplace").value=p.preferred_workplace_types?.length===1?p.preferred_workplace_types[0]:"";
+  $("distance").value=p.max_distance_km??"";
+  $("include").value=(p.include_keywords||[]).join(", ");
+  $("exclude").value=(p.exclude_keywords||[]).join(", ");
+  $("score").value=String(Math.max(0,p.minimum_score??0));
+}
+
+function exploreRelevance(j){
+  const course=courseEl.value;
+  if(course)return Number(j.course_scores?.[course]||0);
+  return Math.max(0,...Object.values(j.course_scores||{}).map(Number));
+}
+
+function baseDistance(j,m){
+  if(currentLocation&&j.latitude!=null&&j.longitude!=null){
+    return haversine(currentLocation.lat,currentLocation.lon,j.latitude,j.longitude);
+  }
+  return m?.distance_km??null;
+}
+
+function renderIntentSummary(){
+  const counts={};
+  for(const id of Object.keys(DATA.intents))counts[id]=0;
+  for(const j of DATA.jobs){
+    for(const id of (j.detected_intents||[]))counts[id]=(counts[id]||0)+1;
+  }
+
+  $("intentSummary").innerHTML=Object.entries(DATA.intents)
+    .map(([id,cfg])=>`<button class="intent-chip" data-intent="${attr(id)}">${esc(cfg.label)}: ${counts[id]||0}</button>`)
+    .join("");
+
+  document.querySelectorAll(".intent-chip").forEach(btn=>{
+    btn.onclick=()=>{
+      intentEl.value=btn.dataset.intent;
+      profileEl.value="__explore__";
+      render();
+    };
+  });
+}
+
+function render(){
+  const exploring=profileEl.value==="__explore__";
+  const profile=profileById(profileEl.value);
+  const matches=exploring?{}:matchMap(profileEl.value);
+
+  const q=$("search").value.toLowerCase();
+  const minScore=Number($("score").value);
+  const source=$("source").value;
+  const intent=intentEl.value;
+  const wp=$("workplace").value;
+  const course=courseEl.value;
+  const country=$("country").value;
+  const radius=Number($("distance").value)||null;
+  const includeTerms=terms($("include").value);
+  const excludeTerms=terms($("exclude").value);
+
+  const rows=[];
+
+  for(const j of DATA.jobs){
+    const m=matches[jobKey(j)]||null;
+    const relevance=exploring?exploreRelevance(j):(m?.score??exploreRelevance(j));
+
+    if(relevance<minScore)continue;
+    if(source&&j.source!==source)continue;
+    if(intent&&!(j.detected_intents||[]).includes(intent))continue;
+    if(wp&&workplace(j)!==wp)continue;
+    if(course&&Number(j.course_scores?.[course]||0)<35)continue;
+
+    const resolvedCountry=j.metadata?.resolved_country||"";
+    if(country&&resolvedCountry&&resolvedCountry!==country)continue;
+    if(country&&!resolvedCountry)continue;
+
+    const hay=`${j.title} ${j.company} ${j.location} ${j.description}`.toLowerCase();
+
+    if(q&&!hay.includes(q))continue;
+    if(includeTerms.length&&!includeTerms.some(x=>hay.includes(x)))continue;
+    if(excludeTerms.some(x=>hay.includes(x)))continue;
+
+    const dist=baseDistance(j,m);
+    if(radius!=null&&workplace(j)!=="remote"&&(dist==null||dist>radius))continue;
+
+    rows.push({j,m,dist,relevance});
+  }
+
+  const sort=$("sort").value;
+
+  rows.sort((a,b)=>{
+    if(sort==="distance")return (a.dist??1e9)-(b.dist??1e9);
+    if(sort==="recent")return dateValue(b.j.published_at)-dateValue(a.j.published_at);
+    if(sort==="title")return String(a.j.title).localeCompare(String(b.j.title));
+    return b.relevance-a.relevance||((a.dist??1e9)-(b.dist??1e9));
+  });
+
+  const mode=exploring?"Explorar tudo":(profile?.name||"");
+
+  $("summary").innerHTML=
+    `<span class="pill">${rows.length} resultados</span>`+
+    `<span class="pill">${DATA.jobs.length} vagas coletadas</span>`+
+    `<span class="pill">${esc(mode)}</span>`;
+
+  $("jobs").innerHTML=rows.map(({j,m,dist,relevance})=>{
+    const intents=(j.detected_intents||[]).map(id=>DATA.intents[id]?.label||id);
+    const courseTags=Object.entries(j.course_scores||{})
+      .filter(([id,s])=>s>=35)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,3)
+      .map(([id,s])=>`<span class="tag">${esc(DATA.courses[id]?.label||id)}: ${s}%</span>`)
+      .join("");
+
+    const d=dist==null
+      ?'<span class="muted">distância indisponível</span>'
+      :`<span class="distance">${dist.toFixed(0)} km</span>`;
+
+    const reasons=exploring
+      ?[]
+      :(m?.reasons||[]);
+
+    return `
+    <article class="job">
+      <div class="score">${Math.round(relevance)}</div>
+      <div>
+        <div class="meta">
+          <span class="tag">${esc(j.source)}</span>
+          ${intents.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}
+          ${courseTags}
+        </div>
+        <h2>${esc(j.title||"Título não identificado")}</h2>
+        <h3>${esc(j.company||"Empresa não identificada")}</h3>
+        <p>${esc(j.location||"Localização não informada")} · ${d}</p>
+        ${reasons.length?`<p class="reason">${esc(reasons.join(" • "))}</p>`:""}
+        <a target="_blank" rel="noopener noreferrer" href="${attr(j.url)}">Abrir oportunidade ↗</a>
+      </div>
+    </article>`;
+  }).join("")||"<p>Nenhuma oportunidade com esses filtros.</p>";
+
+  if(exploring){
+    $("links").innerHTML=
+      '<p class="muted">Escolha um preset para buscas externas personalizadas. A coleta principal acima continua independente dos presets.</p>';
+  }else{
+    $("links").innerHTML=DATA.search_links
+      .filter(x=>x.profile_id===profileEl.value)
+      .map(x=>`<a target="_blank" rel="noopener noreferrer" href="${attr(x.url)}">${esc(x.provider)} — ${esc(x.query)}</a>`)
+      .join("");
+  }
+}
+
+function dateValue(v){
+  const n=Date.parse(v||"");
+  return Number.isFinite(n)?n:0;
+}
+
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function attr(s){return esc(s)}
+
+profileEl.addEventListener("change",()=>{
+  if(profileEl.value!=="__explore__")applyProfile();
+  else{
+    courseEl.value="";
+    intentEl.value="";
+    $("country").value="";
+    $("workplace").value="";
+    $("distance").value="";
+    $("include").value="";
+    $("exclude").value="";
+    $("score").value="0";
+  }
+  render();
+});
+
+["course","intent","country","workplace","distance","include","exclude"].forEach(id=>{
+  $(id).addEventListener(
+    id==="distance"||id==="include"||id==="exclude"?"input":"change",
+    ()=>{
+      if(profileEl.value!=="__explore__")profileEl.value="__explore__";
+      render();
+    }
+  );
+});
+
+["source","score","sort"].forEach(id=>$(id).addEventListener("change",render));
+$("search").addEventListener("input",render);
+
+$("locationBtn").onclick=()=>{
+  if(!navigator.geolocation){
+    $("geoStatus").textContent="Geolocalização indisponível neste navegador.";
+    return;
+  }
+
+  $("geoStatus").textContent="Solicitando sua localização…";
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      currentLocation={
+        lat:pos.coords.latitude,
+        lon:pos.coords.longitude,
+      };
+      $("geoStatus").textContent=
+        `Localização atual carregada (precisão aproximada: ${Math.round(pos.coords.accuracy)} m).`;
+      render();
+    },
+    err=>{
+      $("geoStatus").textContent=`Não foi possível obter localização: ${err.message}`;
+    },
+    {
+      enableHighAccuracy:false,
+      timeout:10000,
+      maximumAge:300000,
+    }
+  );
+};
+
+profileEl.value="__explore__";
+renderIntentSummary();
+render();
+</script>
+</body>
+</html>

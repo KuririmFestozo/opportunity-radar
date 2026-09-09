@@ -1,0 +1,4 @@
+requests==2.32.5
+beautifulsoup4==4.13.4
+python-dotenv==1.1.1
+geonamescache==3.0.2
