@@ -19,6 +19,18 @@ def classify_job(job: Job) -> Job:
 
     detected = []
 
+    # Gupy exposes structured vacancy types. Prefer them over text inference
+    # whenever available so generic titles such as "Programa 2027" are not
+    # lost.
+    gupy_type = str(job.metadata.get("gupy_job_type") or "").strip().lower()
+    gupy_intents = {
+        "vacancy_type_internship": ["internship"],
+        "vacancy_type_summer": ["summer_internship", "internship"],
+        "vacancy_type_trainee": ["trainee"],
+        "vacancy_type_apprentice": ["apprentice"],
+    }
+    detected.extend(gupy_intents.get(gupy_type, []))
+
     # Strong signal: title / explicit employment type.
     for intent_id, cfg in INTENTS.items():
         if contains_any(title_employment, cfg["terms"]):

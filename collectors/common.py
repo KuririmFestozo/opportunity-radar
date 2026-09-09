@@ -10,7 +10,7 @@ load_dotenv()
 
 DEFAULT_HEADERS = {
     "User-Agent": (
-        "OpportunityRadar/0.3.1 "
+        "OpportunityRadar/0.3.4 "
         "(personal job aggregator; low-frequency requests)"
     ),
     "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",

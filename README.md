@@ -1,4 +1,4 @@
-# 🎯 Opportunity Radar v3.3
+# 🎯 Opportunity Radar v3.4
 
 O projeto agora é um **motor genérico de oportunidades**, não um radar fixo de Engenharia Elétrica.
 
@@ -53,14 +53,12 @@ No dashboard, você também pode clicar em:
 📍 Usar minha localização
 ```
 
-Sua posição atual é usada apenas no navegador para recalcular as distâncias exibidas.
-A v3 não envia essa posição para nenhum servidor.
+Na v3.5, sua posição pode ser enviada para o **servidor local** do radar em `localhost` quando você usa a busca regional ao vivo. As fontes externas recebem consultas por cidade; o radar não precisa enviar suas coordenadas exatas para a Gupy/Vagas.com.
 
-Para o navegador permitir geolocalização, rode a página em localhost:
+Para habilitar geolocalização e a busca sob demanda, rode o app local:
 
 ```powershell
-cd output
-python -m http.server 8000
+python server.py
 ```
 
 Depois abra:
@@ -146,7 +144,10 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python main.py
+python server.py
 ```
+
+Depois abra `http://localhost:8000`. O `main.py` atualiza a base ampla; o `server.py` serve o dashboard e expõe a busca regional sob demanda.
 
 ## Arquivos gerados
 
@@ -280,3 +281,70 @@ Perfis continuam existindo somente como presets de filtro/matching.
 Nenhum agregador consegue garantir literalmente "todas as vagas da internet".
 A arquitetura da v3.3, porém, evita perder uma vaga apenas porque o perfil ativo
 não tinha o curso, país ou intenção correspondente.
+
+
+## v3.4 — Gupy Global + dashboard renovado
+
+A coleta da Gupy agora usa o endpoint JSON consumido pelo portal público de candidatos, em vez de depender normalmente de páginas de empresas específicas.
+
+A estratégia da Gupy Global é:
+
+- coletar tipos nativos de início de carreira (`internship`, `summer`, `trainee`, `apprentice`) sem filtrar por curso ou cidade;
+- fazer buscas adicionais para `junior`, `entry level`, `new grad`, `co-op`, pesquisa e summer jobs;
+- paginar em lotes de até 100 vagas, com limites configuráveis em `config/sources.py`;
+- classificar por curso, intenção, país e distância somente depois da coleta;
+- manter `gupy_public.py` como fallback, desativado por padrão.
+
+O tipo estruturado da Gupy passa a ser usado pela classificação. Isso evita perder vagas com títulos genéricos como `Programa 2027` quando a própria Gupy informa que a vaga é `vacancy_type_summer` ou `vacancy_type_internship`.
+
+> Observação: o endpoint global é o usado pelo portal público e pode mudar. A API oficial autenticada (`gupy_api.py`) continua separada e opcional.
+
+### Dashboard
+
+O dashboard foi redesenhado com:
+
+- busca principal em destaque;
+- cards de métricas;
+- chips de tipos de oportunidade;
+- painel lateral de filtros;
+- cards de vaga com relevância, modalidade, cursos, distância e data;
+- layout responsivo para notebook e celular;
+- botão para limpar todos os filtros.
+
+Os arquivos de `output/` continuam locais e ignorados pelo Git. No GitHub Actions, o dashboard gerado é publicado como artifact temporário em vez de ser commitado no repositório.
+
+
+## v3.5 — radar regional sob demanda
+
+O dashboard agora pode pedir uma nova busca depois que a coleta principal terminou.
+
+Fluxo:
+
+```text
+Dashboard
+  ↓ POST /api/search
+FastAPI local
+  ├─ filtra a base já coletada pelo raio
+  ├─ descobre cidades dentro do raio com GeoNames
+  ├─ consulta a Gupy por cidade
+  ├─ faz buscas regionais complementares no Vagas.com
+  ├─ normaliza, classifica e geocodifica os resultados novos
+  ├─ deduplica com a base existente
+  └─ aplica o raio real em km
+       ↓
+Dashboard recebe e incorpora os resultados
+```
+
+A busca regional usa cache em memória por 30 minutos por padrão (`NEARBY_SEARCH_CACHE_SECONDS=1800`) para evitar repetir as mesmas requisições. O botão **ignorar cache na próxima busca** força uma atualização.
+
+O raio aceito pela API vai de 5 a 250 km. A quantidade de cidades consultadas e o número de páginas por cidade ficam limitados em `config/sources.py` para manter a busca regional útil sem transformar cada clique em uma varredura nacional.
+
+Endpoints locais:
+
+- `GET /api/health`
+- `GET /api/jobs`
+- `GET /api/jobs/nearby` — somente base existente
+- `POST /api/search` — base existente + coleta externa regional
+- `GET /api/stats`
+
+> O endpoint público do portal da Gupy é tratado como uma integração defensiva e pode mudar. A busca regional mantém a mesma separação da v3.4 entre o portal público e a API oficial autenticada.

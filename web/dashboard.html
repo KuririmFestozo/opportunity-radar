@@ -3,87 +3,247 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Opportunity Radar</title>
 <style>
-:root{font-family:Inter,system-ui,sans-serif;color-scheme:light dark}
-body{max-width:1240px;margin:auto;padding:22px}
-header{margin-bottom:18px}
-.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0}
-input,select,button{padding:10px;border-radius:10px;border:1px solid #8886;background:inherit}
-button{cursor:pointer;font-weight:650}
-.summary,.intent-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.pill,.tag,.intent-chip{border:1px solid #8885;border-radius:999px;padding:5px 9px;font-size:.8rem}
-.intent-chip{cursor:pointer;background:transparent}
-.intent-chip:hover{border-color:#888}
-.job{display:grid;grid-template-columns:76px 1fr;gap:14px;border:1px solid #8885;border-radius:16px;padding:15px;margin:11px 0}
-.score{font-size:1.38rem;font-weight:800;text-align:center}
-.score:after{content:"%";font-size:.7rem;opacity:.65}
-h2{font-size:1.08rem;margin:3px 0}h3{font-size:.92rem;margin:4px 0;opacity:.8}
-p{margin:5px 0}.meta{display:flex;gap:6px;flex-wrap:wrap}
-.reason{font-size:.84rem;opacity:.78}.distance{font-weight:700}
-.links{display:grid;gap:8px}.links a{padding:9px;border:1px solid #8885;border-radius:10px;text-decoration:none}
-.notice{font-size:.85rem;opacity:.75}.muted{opacity:.65}.section-title{margin-top:28px}
+:root{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --bg:#f4f7fb;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --text:#142033;
+  --muted:#667085;
+  --line:#e4e9f0;
+  --primary:#4f46e5;
+  --primary-2:#7c3aed;
+  --primary-soft:#eef2ff;
+  --success:#0f9f6e;
+  --shadow:0 14px 36px rgba(36,49,77,.08);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text)}
+a{color:inherit}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1500px;margin:0 auto;padding:24px}
+.hero{
+  position:relative;overflow:hidden;
+  border-radius:28px;padding:34px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 85% 15%,rgba(255,255,255,.20),transparent 28%),
+    linear-gradient(135deg,#312e81 0%,#4f46e5 48%,#7c3aed 100%);
+  box-shadow:0 22px 60px rgba(79,70,229,.22);
+}
+.hero:after{content:"";position:absolute;width:300px;height:300px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-120px;bottom:-180px}
+.eyebrow{display:flex;gap:8px;align-items:center;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.hero h1{font-size:clamp(2rem,4vw,3.45rem);line-height:1.02;margin:12px 0 10px;letter-spacing:-.045em;max-width:760px}
+.hero p{max-width:760px;margin:0;color:rgba(255,255,255,.82);font-size:1.02rem;line-height:1.6}
+.hero-search{display:flex;gap:10px;margin-top:24px;max-width:760px}
+.hero-search input{flex:1;border:0;border-radius:15px;padding:15px 16px;background:#fff;color:var(--text);box-shadow:0 6px 18px rgba(15,23,42,.12);outline:none}
+.hero-search input:focus{box-shadow:0 0 0 4px rgba(255,255,255,.22),0 6px 18px rgba(15,23,42,.12)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px;max-width:940px}
+.hero-stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);border-radius:16px;padding:14px 16px}
+.hero-stat strong{display:block;font-size:1.35rem;line-height:1.1}.hero-stat span{font-size:.78rem;color:rgba(255,255,255,.72)}
+.intent-strip{display:flex;gap:9px;overflow:auto;padding:18px 2px 4px;scrollbar-width:thin}
+.intent-chip{white-space:nowrap;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 12px;font-size:.82rem;color:#475467;font-weight:700;box-shadow:0 4px 12px rgba(15,23,42,.03)}
+.intent-chip:hover,.intent-chip.active{border-color:#c7d2fe;background:var(--primary-soft);color:#3730a3}
+.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:20px;margin-top:18px;align-items:start}
+.sidebar{position:sticky;top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.sidebar-head h2{font-size:1rem;margin:0}.link-button{border:0;background:transparent;color:var(--primary);font-size:.8rem;font-weight:800;padding:6px}
+.field{display:grid;gap:6px;margin:11px 0}.field label{font-size:.76rem;font-weight:800;color:#475467}.field input,.field select{width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:10px 11px;outline:none}.field input:focus,.field select:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px #eef2ff}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.location-button{width:100%;border:1px solid #c7d2fe;background:var(--primary-soft);color:#3730a3;border-radius:12px;padding:11px;font-weight:800;margin-top:5px}
+.geo-status{font-size:.72rem;line-height:1.45;color:var(--muted);margin:8px 2px 0}
+
+.live-search{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.live-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.live-head h2{margin:0;font-size:1.05rem;letter-spacing:-.02em}.live-head p{margin:5px 0 0;color:var(--muted);font-size:.79rem;line-height:1.5;max-width:760px}.live-badge{white-space:nowrap;background:#ecfdf3;border:1px solid #abefc6;color:#067647;border-radius:999px;padding:6px 9px;font-size:.69rem;font-weight:850}
+.live-grid{display:grid;grid-template-columns:minmax(220px,1.5fr) 130px auto auto;gap:9px;align-items:end}.live-field{display:grid;gap:6px}.live-field label{font-size:.72rem;font-weight:800;color:#475467}.live-field input,.live-field select{width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:11px 12px;outline:none}.live-field input:focus,.live-field select:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px #eef2ff}.live-primary,.live-secondary{border-radius:12px;padding:11px 14px;font-weight:850;border:1px solid transparent;white-space:nowrap}.live-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 7px 18px rgba(79,70,229,.18)}.live-primary:disabled{opacity:.55;cursor:wait}.live-secondary{background:var(--primary-soft);border-color:#c7d2fe;color:#3730a3}.live-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}.check{display:inline-flex;gap:7px;align-items:center;font-size:.75rem;color:#475467;font-weight:700}.check input{accent-color:var(--primary)}.live-status{font-size:.75rem;color:var(--muted);line-height:1.55;margin:10px 0 0}.live-status strong{color:var(--text)}.live-status.error{color:#b42318}.live-cities{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.city-chip{border-radius:999px;background:#f8fafc;border:1px solid var(--line);padding:4px 8px;font-size:.66rem;color:#667085}.dynamic-note{display:inline-flex;align-items:center;gap:5px;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;border-radius:999px;padding:4px 8px;font-size:.68rem;font-weight:800}
+.content{min-width:0}
+.result-bar{display:flex;gap:12px;justify-content:space-between;align-items:end;margin:2px 0 12px;padding:0 2px}.result-bar h2{margin:0;font-size:1.25rem;letter-spacing:-.02em}.result-bar p{margin:4px 0 0;color:var(--muted);font-size:.83rem}.mode-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--surface);border:1px solid var(--line);padding:8px 11px;font-size:.78rem;font-weight:800;color:#475467}
+.jobs{display:grid;gap:12px}
+.job{display:grid;grid-template-columns:88px minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 7px 22px rgba(15,23,42,.045);transition:.18s ease}.job:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(15,23,42,.08);border-color:#d8def0}
+.score-ring{--score:0;display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:conic-gradient(var(--primary) calc(var(--score)*1%),#edf0f5 0);position:relative}.score-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface)}.score-ring strong{position:relative;font-size:1.06rem;letter-spacing:-.03em}.score-ring small{position:relative;font-size:.62rem;color:var(--muted);font-weight:700;margin-left:1px}
+.job-main{min-width:0}.badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);padding:4px 8px;font-size:.68rem;font-weight:800;color:#667085}.badge.intent{background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9}.badge.course{background:#eff6ff;border-color:#dbeafe;color:#1d4ed8}.badge.remote{background:#ecfdf3;border-color:#d1fadf;color:#067647}
+.job h3{font-size:1.06rem;line-height:1.3;margin:0 0 5px;letter-spacing:-.015em}.company{font-size:.86rem;font-weight:750;color:#344054;margin:0}.job-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:.78rem;color:var(--muted)}.job-meta span{display:inline-flex;gap:5px;align-items:center}.reason{font-size:.75rem;color:#667085;margin:9px 0 0;line-height:1.45}
+.job-action{display:grid;gap:8px;justify-items:end;min-width:135px}.open-job{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#111827;color:#fff;border-radius:12px;padding:10px 13px;font-size:.78rem;font-weight:850}.published{font-size:.7rem;color:var(--muted);text-align:right}
+.empty{background:var(--surface);border:1px dashed #cbd5e1;border-radius:var(--radius);padding:48px 24px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:1rem;margin-bottom:6px}
+.external{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}.external-head h2{font-size:1rem;margin:0}.external-head p{font-size:.78rem;color:var(--muted);margin:5px 0 12px}.external-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}.external-links a{text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:.78rem;color:#344054;background:var(--surface-2)}.external-links a:hover{border-color:#c7d2fe;background:var(--primary-soft)}
+.source-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.source-pill{font-size:.69rem;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);border-radius:999px;padding:5px 8px;color:rgba(255,255,255,.85)}
+footer{text-align:center;color:#98a2b3;font-size:.72rem;padding:28px 0 8px}
+@media(max-width:1100px){.live-grid{grid-template-columns:1fr 130px}.live-primary,.live-secondary{width:100%}}
+@media(max-width:980px){.hero-stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto}.field-grid{grid-template-columns:repeat(2,1fr)}.job{grid-template-columns:75px minmax(0,1fr)}.job-action{grid-column:2;display:flex;align-items:center;justify-content:space-between;width:100%}.published{text-align:left}}
+@media(max-width:620px){.live-search{padding:15px}.live-head{flex-direction:column}.live-grid{grid-template-columns:1fr}.live-options{align-items:flex-start;flex-direction:column}.app{padding:12px}.hero{padding:24px 18px;border-radius:22px}.hero-search{display:block}.hero-stats{grid-template-columns:1fr 1fr}.field-grid{grid-template-columns:1fr}.job{grid-template-columns:1fr;padding:15px}.score-ring{width:58px;height:58px}.job-action{grid-column:1}.result-bar{align-items:flex-start;flex-direction:column}.mode-pill{align-self:flex-start}.sidebar{padding:15px}.intent-strip{margin-right:-12px}.job-main{min-width:0}}
 </style>
 </head>
 <body>
-<header>
-<h1>🎯 Opportunity Radar</h1>
-<p>Primeiro coleta; depois você filtra. Perfis são apenas presets.</p>
-<div class="summary" id="summary"></div>
-<div class="intent-summary" id="intentSummary"></div>
-</header>
+<div class="app">
+  <header class="hero">
+    <div class="eyebrow">✦ Opportunity Radar · v3.5</div>
+    <h1>Encontre oportunidades sem depender de uma busca só.</h1>
+    <p>O radar coleta de várias fontes, classifica por curso e tipo de oportunidade e deixa você filtrar tudo depois — sem um perfil limitar o que entra na base.</p>
+    <div class="hero-search">
+      <input id="search" autocomplete="off" placeholder="Buscar cargo, empresa, cidade, tecnologia...">
+    </div>
+    <div class="hero-stats" id="heroStats"></div>
+    <div class="source-row" id="sourceSummary"></div>
+  </header>
 
-<section class="filters">
-<select id="profile"></select>
-<select id="course"><option value="">Qualquer curso/área</option></select>
-<select id="intent"><option value="">Qualquer tipo de oportunidade</option></select>
-<select id="country">
-  <option value="">Qualquer país</option>
-  <option value="BR">Brasil</option>
-  <option value="US">Estados Unidos</option>
-</select>
-<select id="source"><option value="">Todas as fontes</option></select>
-<select id="workplace">
-  <option value="">Toda modalidade</option>
-  <option value="remote">Remoto</option>
-  <option value="hybrid">Híbrido</option>
-  <option value="onsite">Presencial</option>
-</select>
-<select id="score">
-  <option value="0" selected>Qualquer relevância</option>
-  <option value="35">Afinidade ≥ 35</option>
-  <option value="50">Afinidade ≥ 50</option>
-  <option value="70">Afinidade ≥ 70</option>
-  <option value="85">Afinidade ≥ 85</option>
-</select>
-<select id="sort">
-  <option value="relevance">Ordenar: relevância</option>
-  <option value="distance">Ordenar: mais perto</option>
-  <option value="recent">Ordenar: mais recente</option>
-  <option value="title">Ordenar: título</option>
-</select>
-<input id="distance" type="number" min="1" step="1" placeholder="Raio máximo (km)">
-<button id="locationBtn">📍 Usar minha localização</button>
-<input id="include" placeholder="Deve conter: ex. automotivo">
-<input id="exclude" placeholder="Excluir: ex. vendas, sênior">
-<input id="search" placeholder="Cargo, empresa, cidade...">
-</section>
+  <div class="intent-strip" id="intentSummary"></div>
 
-<p class="notice" id="geoStatus">
-Para usar sua posição atual, abra via localhost/HTTPS e clique em “Usar minha localização”.
-</p>
 
-<main id="jobs"></main>
+  <section class="live-search">
+    <div class="live-head">
+      <div>
+        <h2>📡 Radar regional ao vivo</h2>
+        <p>Além de filtrar a base existente, peça uma nova varredura na região. O servidor consulta as fontes por cidade, remove duplicatas e aplica o raio real depois.</p>
+      </div>
+      <span class="live-badge">busca sob demanda</span>
+    </div>
+    <div class="live-grid">
+      <div class="live-field">
+        <label for="liveLocation">Cidade de referência</label>
+        <input id="liveLocation" placeholder="Ex.: São Carlos, SP" autocomplete="off">
+      </div>
+      <div class="live-field">
+        <label for="liveRadius">Raio</label>
+        <select id="liveRadius">
+          <option value="25">25 km</option>
+          <option value="50" selected>50 km</option>
+          <option value="75">75 km</option>
+          <option value="100">100 km</option>
+          <option value="150">150 km</option>
+          <option value="200">200 km</option>
+        </select>
+      </div>
+      <button class="live-secondary" id="liveLocationBtn">◎ Minha localização</button>
+      <button class="live-primary" id="liveSearchBtn">🔎 Buscar novas vagas</button>
+    </div>
+    <div class="live-options">
+      <label class="check"><input type="checkbox" id="liveRemote"> incluir vagas remotas</label>
+      <button class="link-button" id="liveRefreshBtn">↻ ignorar cache na próxima busca</button>
+    </div>
+    <p class="live-status" id="liveStatus">A busca normal abaixo usa apenas a base já coletada. Este botão faz novas requisições às fontes.</p>
+    <div class="live-cities" id="liveCities"></div>
+  </section>
 
-<section>
-<h2 class="section-title">Buscas externas complementares</h2>
-<div class="links" id="links"></div>
-</section>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <h2>Filtros</h2>
+        <button class="link-button" id="clearBtn">Limpar tudo</button>
+      </div>
+
+      <div class="field">
+        <label for="profile">Preset</label>
+        <select id="profile"></select>
+      </div>
+      <div class="field">
+        <label for="course">Curso / área</label>
+        <select id="course"><option value="">Qualquer curso/área</option></select>
+      </div>
+      <div class="field">
+        <label for="intent">Tipo de oportunidade</label>
+        <select id="intent"><option value="">Qualquer tipo</option></select>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="country">País</label>
+          <select id="country">
+            <option value="">Qualquer país</option>
+            <option value="BR">Brasil</option>
+            <option value="US">Estados Unidos</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="workplace">Modalidade</label>
+          <select id="workplace">
+            <option value="">Todas</option>
+            <option value="remote">Remoto</option>
+            <option value="hybrid">Híbrido</option>
+            <option value="onsite">Presencial</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="score">Relevância</label>
+          <select id="score">
+            <option value="0" selected>Qualquer</option>
+            <option value="35">≥ 35%</option>
+            <option value="50">≥ 50%</option>
+            <option value="70">≥ 70%</option>
+            <option value="85">≥ 85%</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sort">Ordenação</label>
+          <select id="sort">
+            <option value="relevance">Relevância</option>
+            <option value="distance">Mais perto</option>
+            <option value="recent">Mais recente</option>
+            <option value="title">Título A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="source">Fonte</label>
+        <select id="source"><option value="">Todas as fontes</option></select>
+      </div>
+      <div class="field">
+        <label for="distance">Raio máximo (km)</label>
+        <input id="distance" type="number" min="1" step="1" placeholder="Ex.: 100">
+      </div>
+      <button class="location-button" id="locationBtn">📍 Usar minha localização</button>
+      <p class="geo-status" id="geoStatus">Abra via localhost/HTTPS para usar sua posição atual.</p>
+
+      <div class="field">
+        <label for="include">Deve conter</label>
+        <input id="include" placeholder="Ex.: automação, hardware">
+      </div>
+      <div class="field">
+        <label for="exclude">Excluir</label>
+        <input id="exclude" placeholder="Ex.: vendas, sênior">
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="result-bar">
+        <div>
+          <h2 id="resultTitle">Oportunidades</h2>
+          <p id="resultSub"></p>
+        </div>
+        <span class="mode-pill" id="modePill">🌐 Explorar tudo</span>
+      </div>
+
+      <section class="jobs" id="jobs"></section>
+
+      <section class="external">
+        <div class="external-head">
+          <h2>Buscas externas complementares</h2>
+          <p>Atalhos para ampliar a busca quando você estiver usando um preset.</p>
+        </div>
+        <div class="external-links" id="links"></div>
+      </section>
+    </main>
+  </div>
+
+  <footer id="footerInfo">Opportunity Radar</footer>
+</div>
 
 <script>
 const DATA=__DASHBOARD_DATA__;
 const $=id=>document.getElementById(id);
 let currentLocation=null;
+let liveCoordinates=null;
+let forceLiveRefresh=false;
+let dynamicAdded=0;
 
 const profileEl=$("profile"),courseEl=$("course"),intentEl=$("intent");
 
@@ -94,11 +254,13 @@ function addOption(el,value,text){
 
 addOption(profileEl,"__explore__","🌐 Explorar tudo");
 for(const p of DATA.profiles)addOption(profileEl,p.id,p.name);
-
 for(const [id,cfg] of Object.entries(DATA.courses))addOption(courseEl,id,cfg.label);
 for(const [id,cfg] of Object.entries(DATA.intents))addOption(intentEl,id,cfg.label);
-for(const s of [...new Set(DATA.jobs.map(j=>j.source))].sort())addOption($("source"),s,s);
+for(const s of [...new Set(DATA.jobs.map(j=>j.source))].sort())addOption($("source"),s,sourceLabel(s));
 
+function sourceLabel(s){
+  return ({gupy_global:"Gupy Global",gupy_api:"Gupy API",gupy_public:"Gupy",vagas_com:"Vagas.com",jobs99:"99jobs",ciee:"CIEE",lever:"Lever",ashby:"Ashby",greenhouse:"Greenhouse"})[s]||s;
+}
 function jobKey(j){return `${j.source}:${j.source_job_id}`}
 function profileById(id){return DATA.profiles.find(p=>p.id===id)}
 function matchMap(profileId){
@@ -106,7 +268,6 @@ function matchMap(profileId){
   DATA.matches.filter(m=>m.profile_id===profileId).forEach(m=>out[m.job_key]=m);
   return out;
 }
-
 function workplace(j){
   const t=`${j.workplace_type||""} ${j.location||""} ${(j.description||"").slice(0,700)}`.toLowerCase();
   if(/remote|remoto|remota|home office/.test(t))return"remote";
@@ -114,22 +275,19 @@ function workplace(j){
   if(/onsite|on-site|presencial/.test(t))return"onsite";
   return"unknown";
 }
-
+function workplaceLabel(j){
+  const w=workplace(j);
+  return w==="remote"?"Remoto":w==="hybrid"?"Híbrido":w==="onsite"?"Presencial":"Modalidade não informada";
+}
 function haversine(lat1,lon1,lat2,lon2){
   const R=6371.0088,rad=x=>x*Math.PI/180;
   const p1=rad(lat1),p2=rad(lat2),dp=rad(lat2-lat1),dl=rad(lon2-lon1);
   const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-
-function terms(value){
-  return value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
-}
-
+function terms(value){return value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean)}
 function applyProfile(){
-  const p=profileById(profileEl.value);
-  if(!p)return;
-
+  const p=profileById(profileEl.value);if(!p)return;
   courseEl.value=p.course_ids?.[0]||"";
   intentEl.value=p.intent_ids?.length===1?p.intent_ids[0]:"";
   $("country").value=p.preferred_countries?.length===1?p.preferred_countries[0]:"";
@@ -139,218 +297,271 @@ function applyProfile(){
   $("exclude").value=(p.exclude_keywords||[]).join(", ");
   $("score").value=String(Math.max(0,p.minimum_score??0));
 }
-
+function resetFilters(){
+  profileEl.value="__explore__";courseEl.value="";intentEl.value="";
+  $("country").value="";$("workplace").value="";$("distance").value="";
+  $("include").value="";$("exclude").value="";$("score").value="0";
+  $("source").value="";$("sort").value="relevance";$("search").value="";
+  render();
+}
 function exploreRelevance(j){
-  const course=courseEl.value;
-  if(course)return Number(j.course_scores?.[course]||0);
+  const course=courseEl.value;if(course)return Number(j.course_scores?.[course]||0);
   return Math.max(0,...Object.values(j.course_scores||{}).map(Number));
 }
-
 function baseDistance(j,m){
-  if(currentLocation&&j.latitude!=null&&j.longitude!=null){
-    return haversine(currentLocation.lat,currentLocation.lon,j.latitude,j.longitude);
-  }
+  if(currentLocation&&j.latitude!=null&&j.longitude!=null)return haversine(currentLocation.lat,currentLocation.lon,j.latitude,j.longitude);
+  if(j.metadata?.search_distance_km!=null)return Number(j.metadata.search_distance_km);
   return m?.distance_km??null;
 }
-
+function renderHero(){
+  const s=DATA.stats||{};
+  const geocoded=s.geocoded_jobs||0,unique=DATA.jobs.length;
+  const coverage=unique?Math.round(100*geocoded/unique):0;
+  $("heroStats").innerHTML=[
+    [unique.toLocaleString("pt-BR"),dynamicAdded?`vagas disponíveis (+${dynamicAdded} ao vivo)`:"vagas únicas"],
+    [(s.raw_jobs||unique).toLocaleString("pt-BR"),"coletas brutas"],
+    [Object.keys(s.sources||{}).length,"fontes ativas"],
+    [`${coverage}%`,"com localização resolvida"]
+  ].map(([v,l])=>`<div class="hero-stat"><strong>${esc(v)}</strong><span>${esc(l)}</span></div>`).join("");
+  $("sourceSummary").innerHTML=Object.entries(s.sources||{}).sort((a,b)=>b[1]-a[1]).slice(0,8)
+    .map(([name,count])=>`<span class="source-pill">${esc(sourceLabel(name))} · ${Number(count).toLocaleString("pt-BR")}</span>`).join("");
+  const generated=s.generated_at?new Date(s.generated_at):null;
+  $("footerInfo").textContent=generated&&Number.isFinite(generated.getTime())
+    ?`Opportunity Radar · atualizado em ${generated.toLocaleString("pt-BR")}`
+    :"Opportunity Radar";
+}
 function renderIntentSummary(){
-  const counts={};
-  for(const id of Object.keys(DATA.intents))counts[id]=0;
-  for(const j of DATA.jobs){
-    for(const id of (j.detected_intents||[]))counts[id]=(counts[id]||0)+1;
-  }
-
+  const counts={};for(const id of Object.keys(DATA.intents))counts[id]=0;
+  for(const j of DATA.jobs)for(const id of (j.detected_intents||[]))counts[id]=(counts[id]||0)+1;
   $("intentSummary").innerHTML=Object.entries(DATA.intents)
-    .map(([id,cfg])=>`<button class="intent-chip" data-intent="${attr(id)}">${esc(cfg.label)}: ${counts[id]||0}</button>`)
-    .join("");
-
-  document.querySelectorAll(".intent-chip").forEach(btn=>{
-    btn.onclick=()=>{
-      intentEl.value=btn.dataset.intent;
-      profileEl.value="__explore__";
-      render();
-    };
+    .map(([id,cfg])=>`<button class="intent-chip" data-intent="${attr(id)}">${esc(cfg.label)} · ${counts[id]||0}</button>`).join("");
+  document.querySelectorAll(".intent-chip").forEach(btn=>btn.onclick=()=>{
+    intentEl.value=btn.dataset.intent;profileEl.value="__explore__";render();
   });
 }
-
 function render(){
   const exploring=profileEl.value==="__explore__";
   const profile=profileById(profileEl.value);
   const matches=exploring?{}:matchMap(profileEl.value);
-
-  const q=$("search").value.toLowerCase();
-  const minScore=Number($("score").value);
-  const source=$("source").value;
-  const intent=intentEl.value;
-  const wp=$("workplace").value;
-  const course=courseEl.value;
-  const country=$("country").value;
+  const q=$("search").value.toLowerCase().trim();
+  const minScore=Number($("score").value),source=$("source").value,intent=intentEl.value;
+  const wp=$("workplace").value,course=courseEl.value,country=$("country").value;
   const radius=Number($("distance").value)||null;
-  const includeTerms=terms($("include").value);
-  const excludeTerms=terms($("exclude").value);
-
+  const includeTerms=terms($("include").value),excludeTerms=terms($("exclude").value);
   const rows=[];
 
   for(const j of DATA.jobs){
     const m=matches[jobKey(j)]||null;
     const relevance=exploring?exploreRelevance(j):(m?.score??exploreRelevance(j));
-
     if(relevance<minScore)continue;
     if(source&&j.source!==source)continue;
     if(intent&&!(j.detected_intents||[]).includes(intent))continue;
     if(wp&&workplace(j)!==wp)continue;
     if(course&&Number(j.course_scores?.[course]||0)<35)continue;
-
     const resolvedCountry=j.metadata?.resolved_country||"";
-    if(country&&resolvedCountry&&resolvedCountry!==country)continue;
-    if(country&&!resolvedCountry)continue;
-
+    if(country&&resolvedCountry!==country)continue;
     const hay=`${j.title} ${j.company} ${j.location} ${j.description}`.toLowerCase();
-
     if(q&&!hay.includes(q))continue;
     if(includeTerms.length&&!includeTerms.some(x=>hay.includes(x)))continue;
     if(excludeTerms.some(x=>hay.includes(x)))continue;
-
     const dist=baseDistance(j,m);
     if(radius!=null&&workplace(j)!=="remote"&&(dist==null||dist>radius))continue;
-
     rows.push({j,m,dist,relevance});
   }
 
   const sort=$("sort").value;
-
   rows.sort((a,b)=>{
-    if(sort==="distance")return (a.dist??1e9)-(b.dist??1e9);
+    if(sort==="distance")return(a.dist??1e9)-(b.dist??1e9);
     if(sort==="recent")return dateValue(b.j.published_at)-dateValue(a.j.published_at);
     if(sort==="title")return String(a.j.title).localeCompare(String(b.j.title));
     return b.relevance-a.relevance||((a.dist??1e9)-(b.dist??1e9));
   });
 
   const mode=exploring?"Explorar tudo":(profile?.name||"");
+  $("modePill").textContent=exploring?"🌐 Explorar tudo":`✦ ${mode}`;
+  $("resultTitle").textContent=`${rows.length.toLocaleString("pt-BR")} oportunidades`;
+  $("resultSub").textContent=`de ${DATA.jobs.length.toLocaleString("pt-BR")} vagas coletadas · ordenadas por ${sortLabel(sort)}`;
 
-  $("summary").innerHTML=
-    `<span class="pill">${rows.length} resultados</span>`+
-    `<span class="pill">${DATA.jobs.length} vagas coletadas</span>`+
-    `<span class="pill">${esc(mode)}</span>`;
+  document.querySelectorAll(".intent-chip").forEach(btn=>btn.classList.toggle("active",btn.dataset.intent===intent));
 
-  $("jobs").innerHTML=rows.map(({j,m,dist,relevance})=>{
-    const intents=(j.detected_intents||[]).map(id=>DATA.intents[id]?.label||id);
-    const courseTags=Object.entries(j.course_scores||{})
-      .filter(([id,s])=>s>=35)
-      .sort((a,b)=>b[1]-a[1])
-      .slice(0,3)
-      .map(([id,s])=>`<span class="tag">${esc(DATA.courses[id]?.label||id)}: ${s}%</span>`)
-      .join("");
-
-    const d=dist==null
-      ?'<span class="muted">distância indisponível</span>'
-      :`<span class="distance">${dist.toFixed(0)} km</span>`;
-
-    const reasons=exploring
-      ?[]
-      :(m?.reasons||[]);
-
-    return `
-    <article class="job">
-      <div class="score">${Math.round(relevance)}</div>
-      <div>
-        <div class="meta">
-          <span class="tag">${esc(j.source)}</span>
-          ${intents.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}
-          ${courseTags}
-        </div>
-        <h2>${esc(j.title||"Título não identificado")}</h2>
-        <h3>${esc(j.company||"Empresa não identificada")}</h3>
-        <p>${esc(j.location||"Localização não informada")} · ${d}</p>
-        ${reasons.length?`<p class="reason">${esc(reasons.join(" • "))}</p>`:""}
-        <a target="_blank" rel="noopener noreferrer" href="${attr(j.url)}">Abrir oportunidade ↗</a>
-      </div>
-    </article>`;
-  }).join("")||"<p>Nenhuma oportunidade com esses filtros.</p>";
+  $("jobs").innerHTML=rows.map(({j,m,dist,relevance})=>jobCard(j,m,dist,relevance,exploring)).join("")||
+    `<div class="empty"><strong>Nada apareceu com esses filtros.</strong>Tente aumentar o raio, reduzir a relevância mínima ou limpar algum termo.</div>`;
 
   if(exploring){
-    $("links").innerHTML=
-      '<p class="muted">Escolha um preset para buscas externas personalizadas. A coleta principal acima continua independente dos presets.</p>';
+    $("links").innerHTML='<div class="empty" style="padding:22px">Escolha um preset para gerar atalhos de busca externa personalizados.</div>';
   }else{
-    $("links").innerHTML=DATA.search_links
-      .filter(x=>x.profile_id===profileEl.value)
-      .map(x=>`<a target="_blank" rel="noopener noreferrer" href="${attr(x.url)}">${esc(x.provider)} — ${esc(x.query)}</a>`)
-      .join("");
+    $("links").innerHTML=DATA.search_links.filter(x=>x.profile_id===profileEl.value)
+      .map(x=>`<a target="_blank" rel="noopener noreferrer" href="${attr(x.url)}"><strong>${esc(x.provider)}</strong><br>${esc(x.query)} ↗</a>`).join("");
   }
 }
-
-function dateValue(v){
-  const n=Date.parse(v||"");
-  return Number.isFinite(n)?n:0;
+function jobCard(j,m,dist,relevance,exploring){
+  const intents=(j.detected_intents||[]).map(id=>DATA.intents[id]?.label||id);
+  const courseTags=Object.entries(j.course_scores||{}).filter(([,s])=>s>=35).sort((a,b)=>b[1]-a[1]).slice(0,3)
+    .map(([id,s])=>`<span class="badge course">${esc(DATA.courses[id]?.label||id)} · ${s}%</span>`).join("");
+  const reasons=exploring?[]:(m?.reasons||[]);
+  const distance=dist==null?"distância indisponível":`${dist.toFixed(0)} km`;
+  const modality=workplace(j),modalityBadge=modality!=="unknown"?`<span class="badge ${modality==="remote"?"remote":""}">${esc(workplaceLabel(j))}</span>`:"";
+  const dynamicBadge=j.metadata?.dynamic_search?'<span class="dynamic-note">⚡ busca ao vivo</span>':"";
+  return `<article class="job">
+    <div class="score-ring" style="--score:${Math.max(0,Math.min(100,Math.round(relevance)))}"><div><strong>${Math.round(relevance)}</strong><small>%</small></div></div>
+    <div class="job-main">
+      <div class="badges"><span class="badge">${esc(sourceLabel(j.source))}</span>${dynamicBadge}${modalityBadge}${intents.map(x=>`<span class="badge intent">${esc(x)}</span>`).join("")}${courseTags}</div>
+      <h3>${esc(j.title||"Título não identificado")}</h3>
+      <p class="company">${esc(j.company||"Empresa não identificada")}</p>
+      <div class="job-meta"><span>📍 ${esc(j.location||"Localização não informada")}</span><span>↔ ${esc(distance)}</span></div>
+      ${reasons.length?`<p class="reason">${esc(reasons.join(" • "))}</p>`:""}
+    </div>
+    <div class="job-action">
+      <span class="published">${esc(dateLabel(j.published_at))}</span>
+      <a class="open-job" target="_blank" rel="noopener noreferrer" href="${attr(j.url)}">Ver vaga ↗</a>
+    </div>
+  </article>`;
 }
-
-function esc(s){
-  return String(s??"").replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-}
+function sortLabel(v){return({relevance:"relevância",distance:"distância",recent:"data",title:"título"})[v]||v}
+function dateValue(v){const n=Date.parse(v||"");return Number.isFinite(n)?n:0}
+function dateLabel(v){const n=Date.parse(v||"");return Number.isFinite(n)?new Date(n).toLocaleDateString("pt-BR"):"data não informada"}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function attr(s){return esc(s)}
 
 profileEl.addEventListener("change",()=>{
-  if(profileEl.value!=="__explore__")applyProfile();
-  else{
-    courseEl.value="";
-    intentEl.value="";
-    $("country").value="";
-    $("workplace").value="";
-    $("distance").value="";
-    $("include").value="";
-    $("exclude").value="";
-    $("score").value="0";
-  }
-  render();
+  if(profileEl.value!=="__explore__")applyProfile();else resetFilterValuesOnly();render();
 });
-
-["course","intent","country","workplace","distance","include","exclude"].forEach(id=>{
-  $(id).addEventListener(
-    id==="distance"||id==="include"||id==="exclude"?"input":"change",
-    ()=>{
-      if(profileEl.value!=="__explore__")profileEl.value="__explore__";
-      render();
-    }
-  );
-});
-
+function resetFilterValuesOnly(){courseEl.value="";intentEl.value="";$("country").value="";$("workplace").value="";$("distance").value="";$("include").value="";$("exclude").value="";$("score").value="0"}
+["course","intent","country","workplace","distance","include","exclude"].forEach(id=>$(id).addEventListener(id==="distance"||id==="include"||id==="exclude"?"input":"change",()=>{if(profileEl.value!=="__explore__")profileEl.value="__explore__";render()}));
 ["source","score","sort"].forEach(id=>$(id).addEventListener("change",render));
-$("search").addEventListener("input",render);
-
+$("search").addEventListener("input",render);$("clearBtn").onclick=resetFilters;
 $("locationBtn").onclick=()=>{
-  if(!navigator.geolocation){
-    $("geoStatus").textContent="Geolocalização indisponível neste navegador.";
+  if(!navigator.geolocation){$("geoStatus").textContent="Geolocalização indisponível neste navegador.";return}
+  $("geoStatus").textContent="Solicitando sua localização…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    currentLocation={lat:pos.coords.latitude,lon:pos.coords.longitude};
+    $("geoStatus").textContent=`Localização ativa · precisão aproximada de ${Math.round(pos.coords.accuracy)} m.`;render();
+  },err=>{$("geoStatus").textContent=`Não foi possível obter sua localização: ${err.message}`},{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+};
+
+
+function mergeLiveJobs(jobs){
+  const index=new Map(DATA.jobs.map((job,i)=>[jobKey(job),i]));
+  let added=0;
+  for(const incoming of (jobs||[])){
+    const key=jobKey(incoming);
+    if(index.has(key)){
+      const i=index.get(key);
+      const previous=DATA.jobs[i];
+      DATA.jobs[i]={...previous,...incoming,metadata:{...(previous.metadata||{}),...(incoming.metadata||{})}};
+    }else{
+      index.set(key,DATA.jobs.length);
+      DATA.jobs.push(incoming);
+      added++;
+    }
+  }
+  dynamicAdded+=added;
+  refreshSourceOptions();
+  return added;
+}
+
+function refreshSourceOptions(){
+  const sourceEl=$("source"),current=sourceEl.value;
+  const known=new Set([...sourceEl.options].map(o=>o.value));
+  for(const source of [...new Set(DATA.jobs.map(j=>j.source))].sort()){
+    if(!known.has(source))addOption(sourceEl,source,sourceLabel(source));
+  }
+  sourceEl.value=current;
+}
+
+function renderLiveCities(cities){
+  $("liveCities").innerHTML=(cities||[]).slice(0,14).map(city=>
+    `<span class="city-chip">${esc(city.name)} · ${Number(city.distance_km).toFixed(0)} km</span>`
+  ).join("");
+}
+
+async function runLiveSearch(){
+  const btn=$("liveSearchBtn");
+  const location=$("liveLocation").value.trim();
+  const radius=Number($("liveRadius").value)||50;
+  if(!liveCoordinates&&!location){
+    $("liveStatus").className="live-status error";
+    $("liveStatus").textContent="Informe uma cidade ou use sua localização atual.";
     return;
   }
 
-  $("geoStatus").textContent="Solicitando sua localização…";
+  const payload={
+    location:liveCoordinates?null:location,
+    latitude:liveCoordinates?.lat??null,
+    longitude:liveCoordinates?.lon??null,
+    radius_km:radius,
+    include_remote:$("liveRemote").checked,
+    force_refresh:forceLiveRefresh,
+  };
 
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      currentLocation={
-        lat:pos.coords.latitude,
-        lon:pos.coords.longitude,
-      };
-      $("geoStatus").textContent=
-        `Localização atual carregada (precisão aproximada: ${Math.round(pos.coords.accuracy)} m).`;
-      render();
-    },
-    err=>{
-      $("geoStatus").textContent=`Não foi possível obter localização: ${err.message}`;
-    },
-    {
-      enableHighAccuracy:false,
-      timeout:10000,
-      maximumAge:300000,
-    }
-  );
+  btn.disabled=true;btn.textContent="Procurando…";
+  $("liveStatus").className="live-status";
+  $("liveStatus").textContent="Consultando a base local e fazendo uma varredura direcionada nas fontes. Isso pode levar alguns segundos.";
+  $("liveCities").innerHTML="";
+
+  try{
+    const response=await fetch("/api/search",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+    });
+    let data={};
+    try{data=await response.json()}catch{}
+    if(!response.ok)throw new Error(data.detail||`HTTP ${response.status}`);
+
+    const added=mergeLiveJobs(data.jobs||[]);
+    currentLocation={lat:data.center.latitude,lon:data.center.longitude};
+    liveCoordinates=currentLocation;
+    $("distance").value=String(Math.round(data.radius_km));
+    $("sort").value="distance";
+    profileEl.value="__explore__";
+    forceLiveRefresh=false;
+    $("liveRefreshBtn").textContent="↻ ignorar cache na próxima busca";
+
+    renderLiveCities(data.cities_searched);
+    renderIntentSummary();renderHero();render();
+
+    const cache=data.cache_hit?"resultado reaproveitado do cache":"consulta externa realizada agora";
+    const errors=(data.errors||[]).length?` · ${(data.errors||[]).length} fonte(s)/consulta(s) com erro parcial`:"";
+    $("liveStatus").className="live-status";
+    $("liveStatus").innerHTML=`<strong>${data.total} vagas dentro de ${Math.round(data.radius_km)} km</strong> · ${data.cached_jobs} já estavam na base · ${data.newly_collected} são novas para a base · ${added} adicionadas nesta tela · ${esc(cache)}${esc(errors)}`;
+  }catch(error){
+    $("liveStatus").className="live-status error";
+    const hint=String(error).includes("404")||String(error).includes("Failed to fetch")
+      ?" Rode o painel com `python server.py`, não com `python -m http.server`."
+      :"";
+    $("liveStatus").textContent=`Não consegui fazer a busca ao vivo: ${error.message||error}.${hint}`;
+  }finally{
+    btn.disabled=false;btn.textContent="🔎 Buscar novas vagas";
+  }
+}
+
+$("liveLocation").addEventListener("input",()=>{liveCoordinates=null});
+$("liveSearchBtn").onclick=runLiveSearch;
+$("liveRefreshBtn").onclick=()=>{
+  forceLiveRefresh=!forceLiveRefresh;
+  $("liveRefreshBtn").textContent=forceLiveRefresh?"✓ cache será ignorado":"↻ ignorar cache na próxima busca";
+};
+$("liveLocationBtn").onclick=()=>{
+  if(!navigator.geolocation){
+    $("liveStatus").className="live-status error";
+    $("liveStatus").textContent="Geolocalização indisponível neste navegador.";return;
+  }
+  $("liveStatus").className="live-status";
+  $("liveStatus").textContent="Obtendo sua localização…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    liveCoordinates={lat:pos.coords.latitude,lon:pos.coords.longitude};
+    currentLocation=liveCoordinates;
+    $("liveLocation").value="Minha localização atual";
+    $("liveStatus").textContent=`Localização pronta · precisão aproximada de ${Math.round(pos.coords.accuracy)} m.`;
+    render();
+  },err=>{
+    $("liveStatus").className="live-status error";
+    $("liveStatus").textContent=`Não foi possível obter sua localização: ${err.message}`;
+  },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
 };
 
-profileEl.value="__explore__";
-renderIntentSummary();
-render();
+renderHero();renderIntentSummary();profileEl.value="__explore__";render();
 </script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 import os
 from collections import Counter
+from datetime import datetime, timezone
 
 from collectors.ashby import collect_ashby
 from collectors.ciee import collect_ciee
 from collectors.greenhouse import collect_greenhouse
 from collectors.gupy_api import collect_gupy_api
+from collectors.gupy_global import collect_gupy_global
 from collectors.gupy_public import collect_gupy_public
 from collectors.jobs99 import collect_99jobs
 from collectors.lever import collect_lever
@@ -55,7 +57,7 @@ def main():
     source_stats = Counter()
 
     print("=" * 86)
-    print(" OPPORTUNITY RADAR v3.3 — COLLECT FIRST, FILTER LATER")
+    print(" OPPORTUNITY RADAR v3.5 — GUPY GLOBAL + LIVE REGIONAL SEARCH")
     print("=" * 86)
     print("Perfis ativos são apenas presets de filtro; NÃO limitam a coleta.")
     print()
@@ -71,25 +73,40 @@ def main():
                 source_stats,
             )
 
-    # 2) Optional official Gupy API.
-    if os.getenv("GUPY_TOKEN", "").strip():
-        _run("Gupy API [token]", collect_gupy_api, all_jobs, source_stats)
-
-    # 3) Configured public Gupy company pages: collect all page jobs.
-    for page in [p for p in GUPY_PUBLIC_PAGES if p.get("enabled", True)]:
+    # 2) Public global Gupy candidate portal.
+    #    This replaces company-by-company page scraping in normal operation.
+    gupy_global_cfg = PUBLIC_SOURCES.get("gupy_global", {})
+    if gupy_global_cfg.get("enabled", True):
         _run(
-            f'{page["name"]} [gupy_public]',
-            lambda p=page: collect_gupy_public(
-                p["name"],
-                p["base_url"],
-                p.get("max_details", 30),
-            ),
+            "Gupy Global [public portal API]",
+            lambda: collect_gupy_global(gupy_global_cfg),
             all_jobs,
             source_stats,
         )
 
-    # 4) Public job search source:
-    #    IMPORTANT: query plan is global, never generated from active profiles.
+    # 3) Optional authenticated Gupy API. It is account/token scoped, so it is
+    #    complementary to the public global candidate portal collector.
+    if os.getenv("GUPY_TOKEN", "").strip():
+        _run("Gupy API [token]", collect_gupy_api, all_jobs, source_stats)
+
+    # 4) Emergency fallback: old public company pages. Disabled by default to
+    #    avoid duplicate work while Gupy Global is healthy.
+    fallback_cfg = PUBLIC_SOURCES.get("gupy_public_fallback", {})
+    if fallback_cfg.get("enabled"):
+        for page in [p for p in GUPY_PUBLIC_PAGES if p.get("enabled", True)]:
+            _run(
+                f'{page["name"]} [gupy_public fallback]',
+                lambda p=page: collect_gupy_public(
+                    p["name"],
+                    p["base_url"],
+                    p.get("max_details", 30),
+                ),
+                all_jobs,
+                source_stats,
+            )
+
+    # 5) Public Brazilian sources. Query plan is global and independent from
+    #    active profiles.
     cfg = PUBLIC_SOURCES["vagas_com"]
     if cfg.get("enabled"):
         queries = build_collection_queries(
@@ -150,7 +167,7 @@ def main():
     for intent_id, cfg in INTENTS.items():
         print(f"  {cfg['label']:<34} {intent_counts[intent_id]:>5}")
 
-    # Profiles now only create precomputed match scores for convenient presets.
+    # Profiles create precomputed match scores for convenient presets only.
     matches = []
     job_map = {f"{j.source}:{j.source_job_id}": j for j in unique}
 
@@ -181,6 +198,7 @@ def main():
     links = build_search_links(profiles)
 
     stats = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "raw_jobs": len(all_jobs),
         "unique_jobs": len(unique),
         "geocoded_jobs": geocoded,
@@ -195,9 +213,8 @@ def main():
     print("Dashboard gerado em output/index.html")
     print("O dashboard abre em 'Explorar tudo'.")
     print()
-    print("Para usar localização atual:")
-    print("  cd output")
-    print("  python -m http.server 8000")
+    print("Para abrir o dashboard com busca regional sob demanda:")
+    print("  python server.py")
     print("  abra http://localhost:8000")
 
 

@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup
 
@@ -9,51 +9,89 @@ from models.job import Job
 
 URL = "https://www.99jobs.com/opportunities/search"
 
+# A 99jobs mistura oportunidades no domínio principal (/jobs/<id>) com
+# páginas white-label de clientes (/vagas/<id>) em subdomínios. A busca
+# principal sozinha também favorece vagas recentes/genéricas, então usamos
+# algumas coleções públicas como pontos de entrada complementares.
+ENTRYPOINTS = (
+    URL,
+    "https://www.99jobs.com/collections/seu-proximo-estagio-ta-on",
+    "https://www.99jobs.com/collections/trainee-para-ser-um-futuro-lider",
+    "https://www.99jobs.com/collections/tech-mais-que-amigos-friends",
+    "https://www.99jobs.com/collections/gigantes-do-mercado",
+)
+
+_JOB_PATH = re.compile(r"/(?:jobs|vagas)/(\d+)(?:[-/?#]|$)", re.IGNORECASE)
+
 
 def collect_99jobs(max_jobs: int = 80) -> list[Job]:
-    """
-    Coleta oportunidades visíveis na página pública de busca da 99jobs.
-    O filtro de Engenharia Elétrica é aplicado pelo score local.
-    """
-    html = get_text(URL)
-    soup = BeautifulSoup(html, "html.parser")
+    """Collect public 99jobs opportunities from multiple discovery pages.
 
+    This intentionally stays low-frequency and only reads pages available to
+    an unauthenticated candidate. No login, CAPTCHA or anti-bot mechanism is
+    bypassed. Course/intent/location filtering remains local to Opportunity
+    Radar (collect first, filter later).
+    """
+    found: dict[str, Job] = {}
+
+    for entrypoint in ENTRYPOINTS:
+        if len(found) >= max_jobs:
+            break
+
+        html = get_text(entrypoint)
+        for job in parse_99jobs_html(html, entrypoint, max_jobs=max_jobs):
+            existing = found.get(job.source_job_id)
+            if existing is None or _quality(job) > _quality(existing):
+                found[job.source_job_id] = job
+            if len(found) >= max_jobs:
+                break
+
+    return list(found.values())[:max_jobs]
+
+
+def parse_99jobs_html(
+    html: str,
+    page_url: str = URL,
+    *,
+    max_jobs: int = 200,
+) -> list[Job]:
+    """Parse one public 99jobs page without making network requests."""
+    soup = BeautifulSoup(html, "html.parser")
     jobs: list[Job] = []
     seen: set[str] = set()
 
     for anchor in soup.find_all("a", href=True):
-        href = anchor.get("href", "")
-        if "/jobs/" not in href:
+        href = (anchor.get("href") or "").strip()
+        absolute = urljoin(page_url, href)
+        job_id = _id_from_url(absolute)
+        if not job_id or job_id in seen:
             continue
+        seen.add(job_id)
 
-        absolute = urljoin(URL, href)
-        if absolute in seen:
-            continue
-        seen.add(absolute)
-
-        title = _clean(anchor.get_text(" ", strip=True))
+        title = _title_from_anchor(anchor)
         if not title or len(title) < 3:
             continue
 
         card = _find_card(anchor)
         card_text = _clean(card.get_text(" ", strip=True)) if card else title
-
-        job_id = _id_from_url(absolute)
-        company = _company_from_url_or_card(absolute, card_text, title)
-        location = _extract_location(card_text)
+        canonical = _canonical_url(absolute)
 
         jobs.append(
             Job(
                 source="99jobs",
                 source_type="public_page",
-                source_job_id=job_id or absolute,
-                company=company,
+                source_job_id=job_id,
+                company=_company_from_url_or_card(canonical, card_text, title),
                 title=title,
-                location=location,
-                url=absolute,
+                location=_extract_location(card_text),
+                url=canonical,
                 description=card_text,
                 employment_type=_employment_type(card_text),
                 workplace_type=_workplace(card_text),
+                metadata={
+                    "discovered_from": page_url,
+                    "url_style": "vagas" if "/vagas/" in urlparse(canonical).path else "jobs",
+                },
             )
         )
 
@@ -61,6 +99,26 @@ def collect_99jobs(max_jobs: int = 80) -> list[Job]:
             break
 
     return jobs
+
+
+def _title_from_anchor(anchor) -> str:
+    # Cards atuais normalmente têm o cargo em um heading dentro do link.
+    heading = anchor.find(["h1", "h2", "h3", "h4"])
+    if heading:
+        title = _clean(heading.get_text(" ", strip=True))
+        if title:
+            return title
+
+    # Alguns templates deixam o heading fora do <a>.
+    card = _find_card(anchor)
+    if card:
+        heading = card.find(["h1", "h2", "h3", "h4"])
+        if heading:
+            title = _clean(heading.get_text(" ", strip=True))
+            if title:
+                return title
+
+    return _clean(anchor.get_text(" ", strip=True))
 
 
 def _find_card(anchor):
@@ -75,38 +133,74 @@ def _find_card(anchor):
         if current is None:
             break
         text = _clean(current.get_text(" ", strip=True))
-        if 20 < len(text) < 1800:
+        if 20 < len(text) < 2200:
             return current
 
     return anchor.parent
 
 
 def _id_from_url(url: str) -> str:
-    m = re.search(r"/jobs/(\d+)", url)
-    return m.group(1) if m else ""
+    match = _JOB_PATH.search(urlsplit(url).path)
+    return match.group(1) if match else ""
+
+
+def _canonical_url(url: str) -> str:
+    parts = urlsplit(url)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
 def _company_from_url_or_card(url: str, card_text: str, title: str) -> str:
+    remainder = _clean(card_text.replace(title, " ", 1))
+
+    # O card público costuma terminar com: localização + empresa + nota + CTA.
+    company_match = re.search(
+        r"(?:Não informado|[A-Za-zÀ-ÿ .'-]{2,60}(?:,|\s+-)\s*[A-Z]{2})\s+"
+        r"(.{2,100}?)\s+\d(?:[.,]\d+)?\s+(?:Eu quero!?|Ver Oportunidade)\b",
+        remainder,
+        re.IGNORECASE,
+    )
+    if company_match:
+        company = _clean(company_match.group(1))
+        if company:
+            return company
+
     host = urlparse(url).netloc.lower()
     if host and host not in {"99jobs.com", "www.99jobs.com"}:
         sub = host.split(".")[0]
-        return sub.replace("-", " ").replace("_", " ").title()
+        aliases = {
+            "gruposmartfit": "Grupo Smart Fit",
+            "vagasgrupodpsp": "Grupo DPSP",
+            "carreiras": "99jobs",
+        }
+        return aliases.get(sub, sub.replace("-", " ").replace("_", " ").title())
 
-    remainder = card_text.replace(title, " ", 1)
-    # Várias cartas exibem empresa em caixa alta.
-    candidates = re.findall(r"\b[A-Z][A-Z0-9 &.\-]{3,80}\b", remainder)
+    # Fallback para cards antigos que exibem a empresa em caixa alta.
+    candidates = re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9 &.\-]{3,80}\b", remainder)
+    ignored = {"ESTÁGIO", "TRAINEE", "PRESENCIAL", "REMOTO", "REMOTA", "HÍBRIDO", "HÍBRIDA"}
+    candidates = [c for c in candidates if _clean(c).upper() not in ignored]
     if candidates:
         return _clean(candidates[-1])
     return "99jobs"
 
 
 def _extract_location(text: str) -> str:
-    m = re.search(
-        r"([A-Za-zÀ-ÿ .'-]{2,60}),\s*([A-Z]{2})\b",
-        text,
+    # Cards aparecem tanto como "Campinas, SP" quanto "Campinas - SP".
+    # Quando a modalidade está presente, a localização vem logo depois dela;
+    # limitar a busca a esse trecho evita engolir título/nível junto da cidade.
+    search_text = text
+    low = text.lower()
+    markers = ("presencial", "híbrido", "hibrido", "híbrida", "hibrida", "remoto", "remota")
+    positions = [(low.rfind(marker), marker) for marker in markers if low.rfind(marker) >= 0]
+    if positions:
+        pos, marker = max(positions, key=lambda item: item[0])
+        search_text = text[pos + len(marker):]
+
+    match = re.search(
+        r"([A-Za-zÀ-ÿ .'-]{2,60}?)\s*(?:,|-)\s*([A-Z]{2})\b",
+        search_text,
     )
-    if m:
-        return f"{m.group(1).strip()}, {m.group(2)}"
+    if match:
+        return f"{match.group(1).strip()}, {match.group(2)}"
     return ""
 
 
@@ -116,15 +210,34 @@ def _employment_type(text: str) -> str | None:
         return "Estágio"
     if "trainee" in low:
         return "Trainee"
+    if "jovem aprendiz" in low or "aprendiz" in low:
+        return "Aprendiz"
+    if "júnior" in low or "junior" in low:
+        return "Júnior"
     return None
 
 
 def _workplace(text: str) -> str | None:
     low = text.lower()
-    for word in ("remota", "remoto", "híbrida", "hibrida", "presencial"):
-        if word in low:
-            return word.capitalize()
+    if "híbrida" in low or "hibrida" in low or "híbrido" in low or "hibrido" in low:
+        return "Híbrido"
+    if "remota" in low or "remoto" in low:
+        return "Remoto"
+    if "presencial" in low:
+        return "Presencial"
     return None
+
+
+def _quality(job: Job) -> int:
+    return sum(
+        [
+            bool(job.title and not job.title.startswith("Vaga 99jobs")),
+            bool(job.company and job.company != "99jobs"),
+            bool(job.location),
+            bool(job.employment_type),
+            bool(job.workplace_type),
+        ]
+    )
 
 
 def _clean(value: str) -> str:

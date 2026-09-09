@@ -14,6 +14,7 @@ INTENT_COMPATIBILITY = {
     "entry_level": {"entry_level"},
     "research": {"research", "internship"},
     "apprentice": {"apprentice"},
+    "seasonal_job": {"seasonal_job"},
 }
 
 
@@ -96,7 +97,7 @@ def match_job(job: Job, profile: SearchProfile) -> JobMatch:
                 course_score=course_score,
                 distance_km=None,
                 eligible=False,
-                reasons=_dedupe(reasons + ["fora do país escolhido"]),
+                reasons=_dedupe(reasons + ["país fora da preferência"]),
             )
         else:
             score += 4
