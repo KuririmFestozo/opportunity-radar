@@ -57,7 +57,7 @@ PUBLIC_SOURCES = {
     },
     "jobs99": {
         "enabled": True,
-        "max_jobs": 150,
+        "max_jobs": 500,
     },
 }
 

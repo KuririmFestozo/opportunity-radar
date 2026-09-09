@@ -65,7 +65,38 @@ def test_collector_combines_entrypoints_and_deduplicates(monkeypatch):
     """
 
     monkeypatch.setattr(jobs99, "ENTRYPOINTS", ("page-a", "page-b"))
+    monkeypatch.setattr(jobs99, "SEARCH_TERMS", ())
     monkeypatch.setattr(jobs99, "get_text", lambda url: page_a if url == "page-a" else page_b)
 
     parsed = jobs99.collect_99jobs(max_jobs=20)
     assert {job.source_job_id for job in parsed} == {"492613", "507732", "600001"}
+
+
+def test_search_url_uses_public_term_and_page_parameter():
+    first = jobs99._search_page_url("estagio", 1)
+    second = jobs99._search_page_url("engenharia elétrica", 2)
+    assert "search%5Bterm%5D=estagio" in first
+    assert "page=" not in first
+    assert "search%5Bterm%5D=engenharia+el%C3%A9trica" in second
+    assert "page=2" in second
+
+
+def test_search_pagination_stops_when_page_repeats(monkeypatch):
+    page = """
+    <article><a href="/empresa/jobs/700001-estagio-engenharia">
+      <h3>Estágio em Engenharia</h3><span>Estágio</span><span>Presencial</span>
+      <span>São Carlos, SP</span><span>Empresa Teste</span><span>4.0</span><span>Eu quero!</span>
+    </a></article>
+    """
+    calls = []
+    monkeypatch.setattr(jobs99, "ENTRYPOINTS", ())
+    monkeypatch.setattr(jobs99, "SEARCH_TERMS", ("estagio",))
+    monkeypatch.setattr(jobs99, "MAX_PAGES_PER_SEARCH", 5)
+    def fake_get_text(url):
+        calls.append(url)
+        return page
+    monkeypatch.setattr(jobs99, "get_text", fake_get_text)
+    parsed = jobs99.collect_99jobs(max_jobs=20)
+    assert [job.source_job_id for job in parsed] == ["700001"]
+    assert len(calls) == 2
+    assert "page=2" in calls[-1]

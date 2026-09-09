@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
+from urllib.parse import urlencode, urljoin, urlparse, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup
 
@@ -23,6 +23,25 @@ ENTRYPOINTS = (
 
 _JOB_PATH = re.compile(r"/(?:jobs|vagas)/(\d+)(?:[-/?#]|$)", re.IGNORECASE)
 
+# Busca complementar por termos amplos. A 99jobs aceita search[term] na página
+# pública e isso aumenta o recall de programas que não aparecem no feed inicial.
+SEARCH_TERMS = (
+    "estagio",
+    "trainee",
+    "jovem aprendiz",
+    "junior",
+    "engenharia",
+    "tecnologia",
+    "software",
+    "dados",
+    "manutencao",
+    "administracao",
+)
+
+# Tentativa conservadora de paginação. Se page=N repetir os mesmos IDs, paramos
+# imediatamente; assim o coletor funciona mesmo se a 99jobs ignorar o parâmetro.
+MAX_PAGES_PER_SEARCH = 4
+
 
 def collect_99jobs(max_jobs: int = 80) -> list[Job]:
     """Collect public 99jobs opportunities from multiple discovery pages.
@@ -34,19 +53,66 @@ def collect_99jobs(max_jobs: int = 80) -> list[Job]:
     """
     found: dict[str, Job] = {}
 
+    # 1) Feed geral + coleções editoriais públicas.
     for entrypoint in ENTRYPOINTS:
         if len(found) >= max_jobs:
             break
+        _merge_jobs(found, _fetch_page_jobs(entrypoint, max_jobs), max_jobs)
 
-        html = get_text(entrypoint)
-        for job in parse_99jobs_html(html, entrypoint, max_jobs=max_jobs):
-            existing = found.get(job.source_job_id)
-            if existing is None or _quality(job) > _quality(existing):
-                found[job.source_job_id] = job
+    # 2) Buscas amplas por intenção/área, com paginação defensiva.
+    for term in SEARCH_TERMS:
+        if len(found) >= max_jobs:
+            break
+
+        previous_ids: set[str] = set()
+        for page in range(1, MAX_PAGES_PER_SEARCH + 1):
             if len(found) >= max_jobs:
                 break
 
+            page_url = _search_page_url(term, page)
+            page_jobs = _fetch_page_jobs(page_url, max_jobs)
+            page_ids = {job.source_job_id for job in page_jobs}
+
+            if not page_ids:
+                break
+            if page > 1 and page_ids <= previous_ids:
+                break
+
+            _merge_jobs(found, page_jobs, max_jobs)
+            previous_ids |= page_ids
+
     return list(found.values())[:max_jobs]
+
+
+def _search_page_url(term: str, page: int = 1) -> str:
+    params = {"search[term]": term, "utf8": "✓"}
+    if page > 1:
+        params["page"] = page
+    return f"{URL}?{urlencode(params)}"
+
+
+def _fetch_page_jobs(page_url: str, max_jobs: int) -> list[Job]:
+    try:
+        html = get_text(page_url)
+    except Exception:
+        # Uma consulta instável não derruba toda a fonte.
+        return []
+    return parse_99jobs_html(html, page_url, max_jobs=max_jobs)
+
+
+def _merge_jobs(found: dict[str, Job], jobs: list[Job], max_jobs: int) -> int:
+    added = 0
+    for job in jobs:
+        existing = found.get(job.source_job_id)
+        if existing is None:
+            found[job.source_job_id] = job
+            added += 1
+        elif _quality(job) > _quality(existing):
+            found[job.source_job_id] = job
+
+        if len(found) >= max_jobs:
+            break
+    return added
 
 
 def parse_99jobs_html(
