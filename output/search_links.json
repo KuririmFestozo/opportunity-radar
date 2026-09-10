@@ -1,0 +1,434 @@
+[
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio engenharia elétrica",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+engenharia+el%C3%A9trica&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio engenharia eletrônica",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+engenharia+eletr%C3%B4nica&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio automação",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+automa%C3%A7%C3%A3o&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio engenharia elétrica",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+engenharia+el%C3%A9trica&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio engenharia eletrônica",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+engenharia+eletr%C3%B4nica&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio automação",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+automa%C3%A7%C3%A3o&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "electrical engineering intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=electrical+engineering+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "electronics engineering intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=electronics+engineering+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "hardware engineering intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=hardware+engineering+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "electrical engineering internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=electrical+engineering+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "electronics engineering internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=electronics+engineering+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "LinkedIn",
+    "query": "hardware engineering internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=hardware+engineering+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "estágio — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "estágio de verão — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio+de+ver%C3%A3o&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "estágio de férias — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio+de+f%C3%A9rias&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "programa de estágio de férias — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=programa+de+est%C3%A1gio+de+f%C3%A9rias&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "summer internship — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=summer+internship&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "summer job — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=summer+job&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "trainee — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=trainee&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "jovem aprendiz — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=jovem+aprendiz&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "provider": "Indeed",
+    "query": "iniciação científica — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=inicia%C3%A7%C3%A3o+cient%C3%ADfica&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio ciência da computação",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+ci%C3%AAncia+da+computa%C3%A7%C3%A3o&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio desenvolvimento de software",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+desenvolvimento+de+software&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio engenharia de software",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+engenharia+de+software&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio ciência de dados",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+ci%C3%AAncia+de+dados&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio dados",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+dados&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "estagio machine learning",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=estagio+machine+learning&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio ciência da computação",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+ci%C3%AAncia+da+computa%C3%A7%C3%A3o&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio desenvolvimento de software",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+desenvolvimento+de+software&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio engenharia de software",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+engenharia+de+software&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio ciência de dados",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+ci%C3%AAncia+de+dados&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio dados",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+dados&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "programa de estagio machine learning",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=programa+de+estagio+machine+learning&location=Brasil&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "computer science intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=computer+science+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "software engineering intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=software+engineering+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "software developer intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=software+developer+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "data science intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=data+science+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "data analyst intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=data+analyst+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "machine learning intern",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=machine+learning+intern&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "computer science internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=computer+science+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "software engineering internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=software+engineering+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "software developer internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=software+developer+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "data science internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=data+science+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "data analyst internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=data+analyst+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "LinkedIn",
+    "query": "machine learning internship",
+    "kind": "manual_search_link",
+    "url": "https://www.linkedin.com/jobs/search/?keywords=machine+learning+internship&location=United+States&f_TPR=r604800",
+    "notes": "Busca manual; sem scraping automatizado."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "estágio — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "estágio de verão — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio+de+ver%C3%A3o&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "estágio de férias — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=est%C3%A1gio+de+f%C3%A9rias&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "programa de estágio de férias — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=programa+de+est%C3%A1gio+de+f%C3%A9rias&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "summer internship — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=summer+internship&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "summer job — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=summer+job&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "trainee — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=trainee&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "jovem aprendiz — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=jovem+aprendiz&fromage=14",
+    "notes": "Busca externa complementar."
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "provider": "Indeed",
+    "query": "iniciação científica — Brasil",
+    "kind": "manual_search_link",
+    "url": "https://br.indeed.com/jobs?q=inicia%C3%A7%C3%A3o+cient%C3%ADfica&fromage=14",
+    "notes": "Busca externa complementar."
+  }
+]

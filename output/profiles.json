@@ -1,0 +1,57 @@
+[
+  {
+    "id": "electrical_internship_br",
+    "name": "Engenharia Elétrica — Estágio no Brasil",
+    "course_ids": [
+      "electrical_engineering"
+    ],
+    "intent_ids": [
+      "internship"
+    ],
+    "include_keywords": [],
+    "exclude_keywords": [],
+    "preferred_workplace_types": [
+      "remote",
+      "hybrid",
+      "onsite"
+    ],
+    "preferred_countries": [
+      "BR"
+    ],
+    "home_city": "São Carlos - SP",
+    "home_latitude": null,
+    "home_longitude": null,
+    "max_distance_km": null,
+    "allow_unknown_distance": true,
+    "remote_ignores_distance": true,
+    "minimum_score": 45
+  },
+  {
+    "id": "computer_science_internship_br",
+    "name": "Computação — Estágio no Brasil",
+    "course_ids": [
+      "computer_science",
+      "data_science"
+    ],
+    "intent_ids": [
+      "internship"
+    ],
+    "include_keywords": [],
+    "exclude_keywords": [],
+    "preferred_workplace_types": [
+      "remote",
+      "hybrid",
+      "onsite"
+    ],
+    "preferred_countries": [
+      "BR"
+    ],
+    "home_city": "São Carlos - SP",
+    "home_latitude": null,
+    "home_longitude": null,
+    "max_distance_km": null,
+    "allow_unknown_distance": true,
+    "remote_ignores_distance": true,
+    "minimum_score": 45
+  }
+]
