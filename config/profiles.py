@@ -81,4 +81,18 @@ PROFILES = {
         allow_unknown_distance=True,
         minimum_score=40,
     ),
+
+    "summer_br": SearchProfile(
+        id="summer_br",
+        name="☀️ Estágio de Férias / Verão — Brasil",
+        course_ids=[],
+        intent_ids=["summer_internship", "seasonal_job"],
+        preferred_workplace_types=["remote", "hybrid", "onsite"],
+        preferred_countries=["BR"],
+        home_city="São Carlos - SP",
+        max_distance_km=None,
+        allow_unknown_distance=True,
+        minimum_score=45,
+    ),
+
 }

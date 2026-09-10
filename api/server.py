@@ -18,7 +18,7 @@ STATS_PATH = OUTPUT_DIR / "stats.json"
 
 app = FastAPI(
     title="Opportunity Radar API",
-    version="3.5",
+    version="3.13.1",
     description="Local API for cached and on-demand opportunity searches.",
 )
 
@@ -30,12 +30,16 @@ class NearbySearchRequest(BaseModel):
     radius_km: float = Field(default=50, ge=5, le=250)
     include_remote: bool = False
     force_refresh: bool = False
+    intent: str | None = None
 
     @model_validator(mode="after")
     def validate_target(self):
         has_coordinates = self.latitude is not None and self.longitude is not None
         if not has_coordinates and not (self.location or "").strip():
             raise ValueError("Informe location ou latitude/longitude.")
+        allowed_intents = {None, "internship", "summer_internship", "seasonal_job", "trainee", "apprentice", "entry_level"}
+        if self.intent not in allowed_intents:
+            raise ValueError("Tipo regional inválido.")
         return self
 
 
@@ -96,6 +100,7 @@ def dynamic_search(request: NearbySearchRequest):
         include_remote=request.include_remote,
         force_refresh=request.force_refresh,
         country_code=country_code,
+        intent=request.intent,
     )
     result["resolved_location"] = resolved_label
     return result

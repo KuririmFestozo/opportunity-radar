@@ -92,11 +92,96 @@ def test_search_pagination_stops_when_page_repeats(monkeypatch):
     monkeypatch.setattr(jobs99, "ENTRYPOINTS", ())
     monkeypatch.setattr(jobs99, "SEARCH_TERMS", ("estagio",))
     monkeypatch.setattr(jobs99, "MAX_PAGES_PER_SEARCH", 5)
+    monkeypatch.setattr(jobs99, "MAX_GLOBAL_PAGES", 0)
     def fake_get_text(url):
         calls.append(url)
         return page
     monkeypatch.setattr(jobs99, "get_text", fake_get_text)
     parsed = jobs99.collect_99jobs(max_jobs=20)
     assert [job.source_job_id for job in parsed] == ["700001"]
+    assert len(calls) == 2
+    assert "page=2" in calls[-1]
+
+
+def test_parser_accepts_external_opportunity_cards_and_keeps_useful_query():
+    html = """
+    <article>
+      <a class="opportunity-card"
+         href="https://carreiras.magazineluiza.com.br/job/123?jobId=ABC&utm_source=99jobs">
+        <h3>VENDEDOR(A)</h3>
+        <span>Pleno</span><span>Presencial</span><span>Campinas, SP</span>
+        <span>Magazine Luiza</span><span>4.54</span><span>Eu quero!</span>
+      </a>
+    </article>
+    """
+    parsed = jobs99.parse_99jobs_html(html)
+    assert len(parsed) == 1
+    job = parsed[0]
+    assert job.source_job_id.startswith("external-")
+    assert job.company == "Magazine Luiza"
+    assert job.location == "Campinas, SP"
+    assert job.metadata["url_style"] == "external"
+    assert job.metadata["external_destination"] is True
+    assert "jobId=ABC" in job.url
+    assert "utm_source" not in job.url
+
+
+def test_parser_ignores_unrelated_external_navigation_links():
+    html = """
+    <nav><a href="https://example.com"><h3>Para empresas</h3></a></nav>
+    <a href="https://linkedin.com/company/99jobs">LinkedIn</a>
+    """
+    assert jobs99.parse_99jobs_html(html) == []
+
+
+def test_global_catalog_runs_after_strategic_searches(monkeypatch):
+    strategic = """
+    <article><a href="/empresa/jobs/800001-estagio"><h3>Estágio</h3>
+    <span>Estágio</span><span>Presencial</span><span>São Carlos, SP</span>
+    <span>Empresa A</span><span>4.0</span><span>Eu quero!</span></a></article>
+    """
+    broad1 = """
+    <article><a href="/empresa/jobs/800002-analista"><h3>Analista</h3>
+    <span>Júnior</span><span>Híbrido</span><span>Araraquara, SP</span>
+    <span>Empresa B</span><span>4.0</span><span>Eu quero!</span></a></article>
+    """
+    broad2 = """
+    <article><a href="/empresa/jobs/800003-assistente"><h3>Assistente</h3>
+    <span>Assistente</span><span>Presencial</span><span>Campinas, SP</span>
+    <span>Empresa C</span><span>4.0</span><span>Eu quero!</span></a></article>
+    """
+    calls = []
+    monkeypatch.setattr(jobs99, "ENTRYPOINTS", ())
+    monkeypatch.setattr(jobs99, "SEARCH_TERMS", ("estagio",))
+    monkeypatch.setattr(jobs99, "MAX_PAGES_PER_SEARCH", 1)
+    monkeypatch.setattr(jobs99, "MAX_GLOBAL_PAGES", 3)
+
+    def fake_get_text(url):
+        calls.append(url)
+        if "search%5Bterm%5D=estagio" in url:
+            return strategic
+        if "page=2" in url:
+            return broad2
+        return broad1
+
+    monkeypatch.setattr(jobs99, "get_text", fake_get_text)
+    parsed = jobs99.collect_99jobs(max_jobs=3)
+    assert {job.source_job_id for job in parsed} == {"800001", "800002", "800003"}
+    assert any("search%5Bterm%5D=" in url for url in calls)
+
+
+def test_global_pagination_stops_when_page_repeats(monkeypatch):
+    page = """
+    <article><a href="/empresa/jobs/900001-vaga"><h3>Vaga</h3>
+    <span>Júnior</span><span>Presencial</span><span>São Paulo, SP</span>
+    <span>Empresa</span><span>4.0</span><span>Eu quero!</span></a></article>
+    """
+    calls = []
+    monkeypatch.setattr(jobs99, "ENTRYPOINTS", ())
+    monkeypatch.setattr(jobs99, "SEARCH_TERMS", ())
+    monkeypatch.setattr(jobs99, "MAX_GLOBAL_PAGES", 20)
+    monkeypatch.setattr(jobs99, "get_text", lambda url: calls.append(url) or page)
+    parsed = jobs99.collect_99jobs(max_jobs=100)
+    assert [job.source_job_id for job in parsed] == ["900001"]
     assert len(calls) == 2
     assert "page=2" in calls[-1]

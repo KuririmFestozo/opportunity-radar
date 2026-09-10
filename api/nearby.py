@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from collectors.gupy_global import collect_gupy_nearby
+from collectors.jobs99 import collect_99jobs_nearby
 from collectors.vagas_com import collect_vagas_com
 from config.sources import PUBLIC_SOURCES
 from models.job import Job
@@ -32,9 +33,10 @@ def search_nearby(
     include_remote: bool = False,
     force_refresh: bool = False,
     country_code: str | None = None,
+    intent: str | None = None,
 ) -> dict[str, Any]:
     radius_km = max(5.0, min(float(radius_km), 250.0))
-    cache_key = _cache_key(latitude, longitude, radius_km, include_remote)
+    cache_key = _cache_key(latitude, longitude, radius_km, include_remote, intent)
 
     if not force_refresh:
         cached_response = _get_cached(cache_key)
@@ -52,6 +54,8 @@ def search_nearby(
         radius_km=radius_km,
         include_remote=include_remote,
     )
+    if intent:
+        cached_nearby = [job for job in cached_nearby if intent in (job.detected_intents or [])]
 
     regional_cfg = PUBLIC_SOURCES.get("regional_search", {})
     max_cities = max(1, min(int(regional_cfg.get("max_cities", 24)), 40))
@@ -71,16 +75,44 @@ def search_nearby(
     gupy_cfg = PUBLIC_SOURCES.get("gupy_global", {})
     if gupy_cfg.get("enabled", True) and city_names:
         try:
-            gupy_jobs = collect_gupy_nearby(city_names, gupy_cfg)
+            gupy_jobs = collect_gupy_nearby(city_names, gupy_cfg, intent=intent)
             collected.extend(gupy_jobs)
             source_counts["gupy_global"] += len(gupy_jobs)
         except Exception as exc:
             errors.append(f"Gupy: {type(exc).__name__}: {exc}")
 
+    jobs99_cfg = PUBLIC_SOURCES.get("jobs99", {})
+    if regional_cfg.get("jobs99_enabled", True) and jobs99_cfg.get("enabled", True) and city_names:
+        try:
+            jobs99_jobs = collect_99jobs_nearby(
+                city_names,
+                intent=intent,
+                max_cities=max(1, min(int(jobs99_cfg.get("nearby_max_cities", 6)), len(city_names))),
+                max_pages_per_query=max(1, min(int(jobs99_cfg.get("nearby_max_pages_per_query", 1)), 3)),
+                max_jobs=max(20, min(int(jobs99_cfg.get("nearby_max_jobs", 400)), 800)),
+            )
+            collected.extend(jobs99_jobs)
+            source_counts["jobs99"] += len(jobs99_jobs)
+        except Exception as exc:
+            errors.append(f"99jobs: {type(exc).__name__}: {exc}")
+
     if regional_cfg.get("vagas_com_enabled", True) and city_names:
         vagas_city_limit = max(1, min(int(regional_cfg.get("vagas_com_city_limit", 4)), len(city_names)))
         max_jobs_per_query = max(10, min(int(regional_cfg.get("vagas_com_max_jobs_per_query", 40)), 80))
-        queries = list(regional_cfg.get("vagas_com_queries") or [
+        regional_intent_queries = {
+            "internship": ["estagio"],
+            "summer_internship": [
+                "estagio de ferias",
+                "estagio de verao",
+                "programa de ferias",
+                "programa de verao",
+            ],
+            "seasonal_job": ["trabalho de ferias", "trabalho temporario de verao", "summer job"],
+            "trainee": ["trainee"],
+            "apprentice": ["jovem aprendiz"],
+            "entry_level": ["junior"],
+        }
+        queries = regional_intent_queries.get(intent) or list(regional_cfg.get("vagas_com_queries") or [
             "estagio",
             "trainee",
             "jovem aprendiz",
@@ -109,6 +141,8 @@ def search_nearby(
         radius_km=radius_km,
         include_remote=include_remote,
     )
+    if intent:
+        fresh_nearby = [job for job in fresh_nearby if intent in (job.detected_intents or [])]
 
     combined = deduplicate_jobs(cached_nearby + fresh_nearby)
     new_jobs = [job for job in combined if fingerprint(job) not in base_fingerprints]
@@ -116,6 +150,7 @@ def search_nearby(
     response = {
         "cache_hit": False,
         "radius_km": radius_km,
+        "intent": intent,
         "center": {
             "latitude": latitude,
             "longitude": longitude,
@@ -224,8 +259,17 @@ def _load_base_jobs() -> list[Job]:
     return jobs
 
 
-def _cache_key(latitude: float, longitude: float, radius_km: float, include_remote: bool) -> str:
-    return f"{latitude:.3f}:{longitude:.3f}:{radius_km:.0f}:{int(include_remote)}"
+def _cache_key(
+    latitude: float,
+    longitude: float,
+    radius_km: float,
+    include_remote: bool,
+    intent: str | None = None,
+) -> str:
+    return (
+        f"{latitude:.3f}:{longitude:.3f}:{radius_km:.0f}:"
+        f"{int(include_remote)}:{intent or 'all'}"
+    )
 
 
 def _get_cached(key: str) -> dict[str, Any] | None:

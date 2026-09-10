@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from collectors.ashby import collect_ashby
 from collectors.ciee import collect_ciee
+from collectors.corporate_ats import collect_corporate_ats
 from collectors.greenhouse import collect_greenhouse
 from collectors.gupy_api import collect_gupy_api
 from collectors.gupy_global import collect_gupy_global
@@ -11,12 +12,14 @@ from collectors.gupy_public import collect_gupy_public
 from collectors.jobs99 import collect_99jobs
 from collectors.lever import collect_lever
 from collectors.search_links import build_search_links
+from collectors.summer_br import collect_gupy_summer_br, collect_99jobs_summer_br, collect_vagas_summer_br
 from collectors.vagas_com import collect_vagas_com
 
 from config.catalogs import INTENTS
 from config.companies import COMPANIES
 from config.profiles import PROFILES
 from config.sources import PUBLIC_SOURCES, GUPY_PUBLIC_PAGES
+from config.successfactors import SUCCESSFACTORS_PORTALS
 
 from processing.classification import classify_job
 from processing.collection_planner import build_collection_queries
@@ -42,7 +45,8 @@ def active_profiles():
                 "electrical_internship_br,"
                 "electrical_summer_us,"
                 "electrical_all_global,"
-                "computer_science_internship_br"
+                "computer_science_internship_br,"
+                "summer_br"
             ),
         ).split(",")
         if x.strip()
@@ -57,7 +61,7 @@ def main():
     source_stats = Counter()
 
     print("=" * 86)
-    print(" OPPORTUNITY RADAR v3.5 — GUPY GLOBAL + LIVE REGIONAL SEARCH")
+    print(" OPPORTUNITY RADAR v3.13.1 — SUCCESSFACTORS CSB UNIFIED SEARCH")
     print("=" * 86)
     print("Perfis ativos são apenas presets de filtro; NÃO limitam a coleta.")
     print()
@@ -105,7 +109,20 @@ def main():
                 source_stats,
             )
 
-    # 5) Public Brazilian sources. Query plan is global and independent from
+    # 5) Public corporate career portals / ATS sites. These sources catch
+    #    company-owned vacancies that never reach Gupy/99jobs/Vagas.com.
+    corporate_sources = [s for s in SUCCESSFACTORS_PORTALS if s.get("enabled", True)]
+    if corporate_sources:
+        print("\nPortais corporativos / ATS próprios.")
+        for source in corporate_sources:
+            _run(
+                f'{source["name"]} [{source["ats"]}]',
+                lambda s=source: collect_corporate_ats(s),
+                all_jobs,
+                source_stats,
+            )
+
+    # 6) Public Brazilian sources. Query plan is global and independent from
     #    active profiles.
     cfg = PUBLIC_SOURCES["vagas_com"]
     if cfg.get("enabled"):
@@ -141,6 +158,31 @@ def main():
             all_jobs,
             source_stats,
         )
+
+    summer_cfg = PUBLIC_SOURCES.get("summer_br", {})
+    if summer_cfg.get("enabled", True):
+        print("\nBusca dedicada Brasil — férias/verão (categoria rara).")
+        if summer_cfg.get("gupy_enabled", True):
+            _run(
+                "Gupy [Summer/Férias BR dedicado]",
+                lambda: collect_gupy_summer_br({**gupy_global_cfg, **summer_cfg}),
+                all_jobs,
+                source_stats,
+            )
+        if summer_cfg.get("jobs99_enabled", True):
+            _run(
+                "99jobs [Summer/Férias BR dedicado]",
+                lambda: collect_99jobs_summer_br(summer_cfg),
+                all_jobs,
+                source_stats,
+            )
+        if summer_cfg.get("vagas_com_enabled", True):
+            _run(
+                "Vagas.com [Summer/Férias BR dedicado]",
+                lambda: collect_vagas_summer_br(summer_cfg),
+                all_jobs,
+                source_stats,
+            )
 
     print()
     print(f"Vagas brutas: {len(all_jobs)}")

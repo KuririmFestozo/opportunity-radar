@@ -1,5 +1,13 @@
+import hashlib
 import re
-from urllib.parse import urlencode, urljoin, urlparse, urlsplit, urlunsplit
+from urllib.parse import (
+    parse_qsl,
+    urlencode,
+    urljoin,
+    urlparse,
+    urlsplit,
+    urlunsplit,
+)
 
 from bs4 import BeautifulSoup
 
@@ -8,6 +16,7 @@ from models.job import Job
 
 
 URL = "https://www.99jobs.com/opportunities/search"
+FILTERED_URL = "https://www.99jobs.com/opportunities/filtered_search"
 
 # A 99jobs mistura oportunidades no domínio principal (/jobs/<id>) com
 # páginas white-label de clientes (/vagas/<id>) em subdomínios. A busca
@@ -22,9 +31,8 @@ ENTRYPOINTS = (
 )
 
 _JOB_PATH = re.compile(r"/(?:jobs|vagas)/(\d+)(?:[-/?#]|$)", re.IGNORECASE)
-
-# Busca complementar por termos amplos. A 99jobs aceita search[term] na página
-# pública e isso aumenta o recall de programas que não aparecem no feed inicial.
+# Buscas estratégicas entram primeiro para garantir boa cobertura de programas
+# de entrada. Depois o feed amplo completa a base sem depender de curso/perfil.
 SEARCH_TERMS = (
     "estagio",
     "trainee",
@@ -38,18 +46,46 @@ SEARCH_TERMS = (
     "administracao",
 )
 
-# Tentativa conservadora de paginação. Se page=N repetir os mesmos IDs, paramos
-# imediatamente; assim o coletor funciona mesmo se a 99jobs ignorar o parâmetro.
 MAX_PAGES_PER_SEARCH = 4
+REGIONAL_INTENT_TERMS = {
+    "internship": ("estagio",),
+    "summer_internship": (
+        "estagio de ferias",
+        "estagio de verao",
+        "programa de ferias",
+        "programa de verao",
+        "summer internship",
+    ),
+    "seasonal_job": ("trabalho de ferias", "trabalho temporario de verao", "summer job"),
+    "trainee": ("trainee",),
+    "apprentice": ("jovem aprendiz",),
+    "entry_level": ("junior",),
+}
+REGIONAL_DEFAULT_TERMS = ("estagio", "trainee", "jovem aprendiz", "junior")
+# O catálogo público tinha ~4,5 mil oportunidades em 2026-09. A ideia não é
+# martelar todas as páginas: este teto permite aproximar a 99jobs do volume da
+# Gupy, e max_jobs encerra antes quando o alvo já foi atingido.
+MAX_GLOBAL_PAGES = 150
+
+_TRACKING_QUERY_KEYS = {
+    "fbclid",
+    "gclid",
+    "mc_cid",
+    "mc_eid",
+}
 
 
-def collect_99jobs(max_jobs: int = 80) -> list[Job]:
-    """Collect public 99jobs opportunities from multiple discovery pages.
+def collect_99jobs(max_jobs: int = 2500) -> list[Job]:
+    """Collect a broad public sample of current 99jobs opportunities.
 
-    This intentionally stays low-frequency and only reads pages available to
-    an unauthenticated candidate. No login, CAPTCHA or anti-bot mechanism is
-    bypassed. Course/intent/location filtering remains local to Opportunity
-    Radar (collect first, filter later).
+    Strategy:
+      1. Editorial entrypoints, for high-value internship/trainee programs.
+      2. Strategic public searches, to reinforce entry-level coverage.
+      3. Broad paginated catalog crawl until max_jobs is reached.
+
+    Only unauthenticated public pages are read. We stop on repeated pages, so a
+    site-side pagination change does not create an endless request loop. Course,
+    intent and location filtering remains local (collect first, filter later).
     """
     found: dict[str, Job] = {}
 
@@ -63,32 +99,93 @@ def collect_99jobs(max_jobs: int = 80) -> list[Job]:
     for term in SEARCH_TERMS:
         if len(found) >= max_jobs:
             break
+        _collect_pages(
+            found,
+            lambda page, term=term: _search_page_url(term, page),
+            MAX_PAGES_PER_SEARCH,
+            max_jobs,
+        )
 
-        previous_ids: set[str] = set()
-        for page in range(1, MAX_PAGES_PER_SEARCH + 1):
-            if len(found) >= max_jobs:
-                break
-
-            page_url = _search_page_url(term, page)
-            page_jobs = _fetch_page_jobs(page_url, max_jobs)
-            page_ids = {job.source_job_id for job in page_jobs}
-
-            if not page_ids:
-                break
-            if page > 1 and page_ids <= previous_ids:
-                break
-
-            _merge_jobs(found, page_jobs, max_jobs)
-            previous_ids |= page_ids
+    # 3) Catálogo amplo: traz oportunidades independentemente de curso/termo.
+    # Isso faz a 99jobs participar do dashboard em volume, como a Gupy.
+    if len(found) < max_jobs:
+        _collect_pages(
+            found,
+            _global_page_url,
+            MAX_GLOBAL_PAGES,
+            max_jobs,
+        )
 
     return list(found.values())[:max_jobs]
+
+
+
+def collect_99jobs_nearby(
+    city_names: list[str],
+    *,
+    intent: str | None = None,
+    max_cities: int = 6,
+    max_pages_per_query: int = 1,
+    max_jobs: int = 400,
+) -> list[Job]:
+    """Focused public 99jobs searches for cities around the requested point."""
+    found: dict[str, Job] = {}
+    terms = REGIONAL_INTENT_TERMS.get(intent or "", REGIONAL_DEFAULT_TERMS)
+
+    for city in city_names[: max(1, max_cities)]:
+        for term in terms:
+            if len(found) >= max_jobs:
+                return list(found.values())[:max_jobs]
+            query = f"{term} {city}".strip()
+            sequence_ids: set[str] = set()
+            for page in range(1, max(1, max_pages_per_query) + 1):
+                page_jobs = _fetch_page_jobs(_search_page_url(query, page), max_jobs)
+                page_ids = {job.source_job_id for job in page_jobs}
+                if not page_ids:
+                    break
+                if page > 1 and page_ids <= sequence_ids:
+                    break
+                for job in page_jobs:
+                    job.metadata["regional_query"] = query
+                _merge_jobs(found, page_jobs, max_jobs)
+                sequence_ids |= page_ids
+                if len(found) >= max_jobs:
+                    break
+
+    return list(found.values())[:max_jobs]
+
+def _collect_pages(found, url_builder, max_pages: int, max_jobs: int) -> None:
+    sequence_ids: set[str] = set()
+
+    for page in range(1, max_pages + 1):
+        if len(found) >= max_jobs:
+            break
+
+        page_jobs = _fetch_page_jobs(url_builder(page), max_jobs)
+        page_ids = {job.source_job_id for job in page_jobs}
+
+        if not page_ids:
+            break
+        # Se a 99jobs ignorar page=N e repetir a página, não insistimos.
+        if page > 1 and page_ids <= sequence_ids:
+            break
+
+        _merge_jobs(found, page_jobs, max_jobs)
+        sequence_ids |= page_ids
 
 
 def _search_page_url(term: str, page: int = 1) -> str:
     params = {"search[term]": term, "utf8": "✓"}
     if page > 1:
         params["page"] = page
-    return f"{URL}?{urlencode(params)}"
+    return f"{FILTERED_URL}?{urlencode(params)}"
+
+
+def _global_page_url(page: int = 1) -> str:
+    params = {"search[term]": "", "utf8": "✓"}
+    if page > 1:
+        params["page"] = page
+    return f"{FILTERED_URL}?{urlencode(params)}"
 
 
 def _fetch_page_jobs(page_url: str, max_jobs: int) -> list[Job]:
@@ -119,7 +216,7 @@ def parse_99jobs_html(
     html: str,
     page_url: str = URL,
     *,
-    max_jobs: int = 200,
+    max_jobs: int = 3000,
 ) -> list[Job]:
     """Parse one public 99jobs page without making network requests."""
     soup = BeautifulSoup(html, "html.parser")
@@ -128,35 +225,49 @@ def parse_99jobs_html(
 
     for anchor in soup.find_all("a", href=True):
         href = (anchor.get("href") or "").strip()
-        absolute = urljoin(page_url, href)
-        job_id = _id_from_url(absolute)
-        if not job_id or job_id in seen:
+        if not href or href.startswith(("#", "javascript:", "mailto:")):
             continue
-        seen.add(job_id)
+
+        absolute = urljoin(page_url, href)
+        canonical = _canonical_url(absolute)
 
         title = _title_from_anchor(anchor)
         if not title or len(title) < 3:
             continue
 
         card = _find_card(anchor)
-        card_text = _clean(card.get_text(" ", strip=True)) if card else title
-        canonical = _canonical_url(absolute)
+        card_text = _clean(card.get_text(" ", strip=True)) if card else _clean(anchor.get_text(" ", strip=True))
+
+        # Hosted /jobs and /vagas always count. External links are accepted only
+        # when the anchor/card actually looks like an opportunity card.
+        hosted_id = _id_from_url(canonical) if _is_99jobs_host(canonical) else ""
+        if not hosted_id and not _looks_like_opportunity_card(anchor, card_text):
+            continue
+
+        source_id = hosted_id or _external_source_id(canonical)
+        if not source_id or source_id in seen:
+            continue
+        seen.add(source_id)
+        source_level = _employment_type(card_text)
 
         jobs.append(
             Job(
                 source="99jobs",
                 source_type="public_page",
-                source_job_id=job_id,
+                source_job_id=source_id,
                 company=_company_from_url_or_card(canonical, card_text, title),
                 title=title,
                 location=_extract_location(card_text),
                 url=canonical,
                 description=card_text,
-                employment_type=_employment_type(card_text),
+                employment_type=source_level,
                 workplace_type=_workplace(card_text),
                 metadata={
                     "discovered_from": page_url,
-                    "url_style": "vagas" if "/vagas/" in urlparse(canonical).path else "jobs",
+                    "url_style": _url_style(canonical),
+                    "external_destination": not _is_99jobs_host(canonical),
+                    "source_level": source_level or "",
+                    "card_scope": "single_card",
                 },
             )
         )
@@ -165,6 +276,29 @@ def parse_99jobs_html(
             break
 
     return jobs
+
+
+def _looks_like_opportunity_card(anchor, card_text: str) -> bool:
+    classes = {str(x).lower() for x in (anchor.get("class") or [])}
+    if "opportunity-card" in classes:
+        return True
+
+    low = card_text.lower()
+    has_cta = "eu quero" in low or "ver oportunidade" in low
+    has_workplace = any(
+        word in low
+        for word in (
+            "presencial",
+            "remoto",
+            "remota",
+            "híbrido",
+            "hibrido",
+            "híbrida",
+            "hibrida",
+        )
+    )
+    has_heading = anchor.find(["h1", "h2", "h3", "h4"]) is not None
+    return has_heading and (has_cta or has_workplace)
 
 
 def _title_from_anchor(anchor) -> str:
@@ -188,21 +322,36 @@ def _title_from_anchor(anchor) -> str:
 
 
 def _find_card(anchor):
-    for tag in ("li", "article"):
-        parent = anchor.find_parent(tag)
-        if parent:
-            return parent
+    # Current 99jobs search results use the clickable opportunity anchor as the
+    # card. Returning a large parent used to merge neighbouring jobs together.
+    if _has_opportunity_card_class(anchor):
+        return anchor
 
     current = anchor
-    for _ in range(6):
+    for _ in range(4):
         current = current.parent
         if current is None:
             break
-        text = _clean(current.get_text(" ", strip=True))
-        if 20 < len(text) < 2200:
+        if _has_opportunity_card_class(current):
             return current
 
-    return anchor.parent
+        if getattr(current, "name", None) in {"li", "article"}:
+            job_links = [
+                a for a in current.find_all("a", href=True)
+                if _id_from_url(urljoin(URL, a.get("href") or ""))
+                or _has_opportunity_card_class(a)
+            ]
+            if len(job_links) == 1:
+                return current
+
+    return anchor
+
+
+def _has_opportunity_card_class(tag) -> bool:
+    classes = {str(value).lower() for value in (tag.get("class") or [])}
+    return "opportunity-card" in classes or any(
+        "opportunity" in value and "card" in value for value in classes
+    )
 
 
 def _id_from_url(url: str) -> str:
@@ -210,9 +359,48 @@ def _id_from_url(url: str) -> str:
     return match.group(1) if match else ""
 
 
+def _is_99jobs_host(url: str) -> bool:
+    host = (urlsplit(url).hostname or "").lower()
+    return host == "99jobs.com" or host.endswith(".99jobs.com")
+
+
+def _external_source_id(url: str) -> str:
+    if not url.startswith(("http://", "https://")):
+        return ""
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:20]
+    return f"external-{digest}"
+
+
 def _canonical_url(url: str) -> str:
     parts = urlsplit(url)
-    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+
+    # URLs hospedadas na 99jobs usam o ID no path; query costuma ser tracking.
+    if _is_99jobs_host(url):
+        return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+
+    # Em ATS externos a query pode conter o ID real da vaga. Removemos apenas
+    # tracking conhecido em vez de destruir todos os parâmetros.
+    clean_query = []
+    for key, value in parse_qsl(parts.query, keep_blank_values=True):
+        low = key.lower()
+        if low.startswith("utm_") or low in _TRACKING_QUERY_KEYS:
+            continue
+        clean_query.append((key, value))
+
+    return urlunsplit(
+        (parts.scheme, parts.netloc, parts.path, urlencode(clean_query), "")
+    )
+
+
+def _url_style(url: str) -> str:
+    if not _is_99jobs_host(url):
+        return "external"
+    path = urlparse(url).path.lower()
+    if "/vagas/" in path:
+        return "vagas"
+    if "/jobs/" in path:
+        return "jobs"
+    return "hosted"
 
 
 def _company_from_url_or_card(url: str, card_text: str, title: str) -> str:
@@ -230,15 +418,23 @@ def _company_from_url_or_card(url: str, card_text: str, title: str) -> str:
         if company:
             return company
 
-    host = urlparse(url).netloc.lower()
+    hosted_company = _company_from_hosted_path(url)
+    if hosted_company:
+        return hosted_company
+
+    host = (urlparse(url).hostname or "").lower()
     if host and host not in {"99jobs.com", "www.99jobs.com"}:
-        sub = host.split(".")[0]
-        aliases = {
-            "gruposmartfit": "Grupo Smart Fit",
-            "vagasgrupodpsp": "Grupo DPSP",
-            "carreiras": "99jobs",
-        }
-        return aliases.get(sub, sub.replace("-", " ").replace("_", " ").title())
+        if host.endswith(".99jobs.com"):
+            sub = host.split(".")[0]
+            aliases = {
+                "gruposmartfit": "Grupo Smart Fit",
+                "vagasgrupodpsp": "Grupo DPSP",
+                "carreiras": "99jobs",
+            }
+            return aliases.get(sub, sub.replace("-", " ").replace("_", " ").title())
+        inferred = _company_from_external_host(host)
+        if inferred:
+            return inferred
 
     # Fallback para cards antigos que exibem a empresa em caixa alta.
     candidates = re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9 &.\-]{3,80}\b", remainder)
@@ -247,6 +443,47 @@ def _company_from_url_or_card(url: str, card_text: str, title: str) -> str:
     if candidates:
         return _clean(candidates[-1])
     return "99jobs"
+
+
+
+def _company_from_hosted_path(url: str) -> str:
+    if not _is_99jobs_host(url):
+        return ""
+    host = (urlparse(url).hostname or "").lower()
+    if host not in {"99jobs.com", "www.99jobs.com"}:
+        return ""
+
+    parts = [part for part in urlparse(url).path.split("/") if part]
+    try:
+        marker = parts.index("jobs")
+    except ValueError:
+        return ""
+    if marker < 1:
+        return ""
+
+    slug = parts[marker - 1].strip().lower()
+    if not slug or slug in {"opportunities", "jobs", "vagas"}:
+        return ""
+    aliases = {
+        "siemens-energy": "Siemens Energy",
+        "magazine-luiza": "Magazine Luiza",
+    }
+    return aliases.get(slug, slug.replace("-", " ").replace("_", " ").title())
+
+def _company_from_external_host(host: str) -> str:
+    host = host.removeprefix("www.")
+    labels = host.split(".")
+    if len(labels) >= 3 and labels[-2:] == ["com", "br"]:
+        candidate = labels[-3]
+    elif len(labels) >= 2:
+        candidate = labels[-2]
+    else:
+        candidate = labels[0]
+
+    generic = {"carreiras", "career", "careers", "jobs", "vagas", "talentos"}
+    if candidate in generic and len(labels) >= 2:
+        candidate = labels[0]
+    return candidate.replace("-", " ").replace("_", " ").title()
 
 
 def _extract_location(text: str) -> str:

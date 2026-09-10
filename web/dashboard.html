@@ -61,7 +61,7 @@ button{cursor:pointer}
 
 .live-search{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
 .live-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.live-head h2{margin:0;font-size:1.05rem;letter-spacing:-.02em}.live-head p{margin:5px 0 0;color:var(--muted);font-size:.79rem;line-height:1.5;max-width:760px}.live-badge{white-space:nowrap;background:#ecfdf3;border:1px solid #abefc6;color:#067647;border-radius:999px;padding:6px 9px;font-size:.69rem;font-weight:850}
-.live-grid{display:grid;grid-template-columns:minmax(220px,1.5fr) 130px auto auto;gap:9px;align-items:end}.live-field{display:grid;gap:6px}.live-field label{font-size:.72rem;font-weight:800;color:#475467}.live-field input,.live-field select{width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:11px 12px;outline:none}.live-field input:focus,.live-field select:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px #eef2ff}.live-primary,.live-secondary{border-radius:12px;padding:11px 14px;font-weight:850;border:1px solid transparent;white-space:nowrap}.live-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 7px 18px rgba(79,70,229,.18)}.live-primary:disabled{opacity:.55;cursor:wait}.live-secondary{background:var(--primary-soft);border-color:#c7d2fe;color:#3730a3}.live-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}.check{display:inline-flex;gap:7px;align-items:center;font-size:.75rem;color:#475467;font-weight:700}.check input{accent-color:var(--primary)}.live-status{font-size:.75rem;color:var(--muted);line-height:1.55;margin:10px 0 0}.live-status strong{color:var(--text)}.live-status.error{color:#b42318}.live-cities{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.city-chip{border-radius:999px;background:#f8fafc;border:1px solid var(--line);padding:4px 8px;font-size:.66rem;color:#667085}.dynamic-note{display:inline-flex;align-items:center;gap:5px;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;border-radius:999px;padding:4px 8px;font-size:.68rem;font-weight:800}
+.live-grid{display:grid;grid-template-columns:minmax(220px,1.5fr) 130px minmax(170px,.8fr) auto auto;gap:9px;align-items:end}.live-field{display:grid;gap:6px}.live-field label{font-size:.72rem;font-weight:800;color:#475467}.live-field input,.live-field select{width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:11px 12px;outline:none}.live-field input:focus,.live-field select:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px #eef2ff}.live-primary,.live-secondary{border-radius:12px;padding:11px 14px;font-weight:850;border:1px solid transparent;white-space:nowrap}.live-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 7px 18px rgba(79,70,229,.18)}.live-primary:disabled{opacity:.55;cursor:wait}.live-secondary{background:var(--primary-soft);border-color:#c7d2fe;color:#3730a3}.live-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}.check{display:inline-flex;gap:7px;align-items:center;font-size:.75rem;color:#475467;font-weight:700}.check input{accent-color:var(--primary)}.live-status{font-size:.75rem;color:var(--muted);line-height:1.55;margin:10px 0 0}.live-status strong{color:var(--text)}.live-status.error{color:#b42318}.live-cities{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.city-chip{border-radius:999px;background:#f8fafc;border:1px solid var(--line);padding:4px 8px;font-size:.66rem;color:#667085}.dynamic-note{display:inline-flex;align-items:center;gap:5px;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;border-radius:999px;padding:4px 8px;font-size:.68rem;font-weight:800}
 .content{min-width:0}
 .result-bar{display:flex;gap:12px;justify-content:space-between;align-items:end;margin:2px 0 12px;padding:0 2px}.result-bar h2{margin:0;font-size:1.25rem;letter-spacing:-.02em}.result-bar p{margin:4px 0 0;color:var(--muted);font-size:.83rem}.mode-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--surface);border:1px solid var(--line);padding:8px 11px;font-size:.78rem;font-weight:800;color:#475467}
 .jobs{display:grid;gap:12px}
@@ -82,7 +82,7 @@ footer{text-align:center;color:#98a2b3;font-size:.72rem;padding:28px 0 8px}
 <body>
 <div class="app">
   <header class="hero">
-    <div class="eyebrow">✦ Opportunity Radar · v3.5</div>
+    <div class="eyebrow">✦ Opportunity Radar · v3.13.1</div>
     <h1>Encontre oportunidades sem depender de uma busca só.</h1>
     <p>O radar coleta de várias fontes, classifica por curso e tipo de oportunidade e deixa você filtrar tudo depois — sem um perfil limitar o que entra na base.</p>
     <div class="hero-search">
@@ -117,6 +117,18 @@ footer{text-align:center;color:#98a2b3;font-size:.72rem;padding:28px 0 8px}
           <option value="100">100 km</option>
           <option value="150">150 km</option>
           <option value="200">200 km</option>
+        </select>
+      </div>
+      <div class="live-field">
+        <label for="liveIntent">O que procurar</label>
+        <select id="liveIntent">
+          <option value="internship" selected>Estágio</option>
+          <option value="summer_internship">☀️ Estágio de Férias / Verão</option>
+          <option value="seasonal_job">☀️ Trabalho de Férias / Temporário</option>
+          <option value="trainee">Trainee</option>
+          <option value="apprentice">Jovem Aprendiz</option>
+          <option value="entry_level">Júnior / Entry Level</option>
+          <option value="">Todas de entrada</option>
         </select>
       </div>
       <button class="live-secondary" id="liveLocationBtn">◎ Minha localização</button>
@@ -259,7 +271,7 @@ for(const [id,cfg] of Object.entries(DATA.intents))addOption(intentEl,id,cfg.lab
 for(const s of [...new Set(DATA.jobs.map(j=>j.source))].sort())addOption($("source"),s,sourceLabel(s));
 
 function sourceLabel(s){
-  return ({gupy_global:"Gupy Global",gupy_api:"Gupy API",gupy_public:"Gupy",vagas_com:"Vagas.com",jobs99:"99jobs",ciee:"CIEE",lever:"Lever",ashby:"Ashby",greenhouse:"Greenhouse"})[s]||s;
+  return ({gupy_global:"Gupy Global",gupy_api:"Gupy API",gupy_public:"Gupy",vagas_com:"Vagas.com",jobs99:"99jobs",ciee:"CIEE",lever:"Lever",ashby:"Ashby",greenhouse:"Greenhouse",successfactors:"SAP SuccessFactors"})[s]||s;
 }
 function jobKey(j){return `${j.source}:${j.source_job_id}`}
 function profileById(id){return DATA.profiles.find(p=>p.id===id)}
@@ -492,6 +504,7 @@ async function runLiveSearch(){
     radius_km:radius,
     include_remote:$("liveRemote").checked,
     force_refresh:forceLiveRefresh,
+    intent:$("liveIntent").value||null,
   };
 
   btn.disabled=true;btn.textContent="Procurando…";

@@ -102,6 +102,10 @@ INTENTS = {
             "programa de estagio de ferias",
             "programa de férias",
             "programa de ferias",
+            "programa de verão",
+            "programa de verao",
+            "vacation internship",
+            "vacation intern",
         ],
         "search_prefixes_pt": [
             "estagio de verao",
@@ -132,6 +136,12 @@ INTENTS = {
             "trabalho de ferias",
             "vaga temporária de verão",
             "vaga temporaria de verao",
+            "trabalho temporário de férias",
+            "trabalho temporario de ferias",
+            "vaga de férias",
+            "vaga de ferias",
+            "vaga temporária de férias",
+            "vaga temporaria de ferias",
         ],
         "search_prefixes_pt": [
             "summer job",

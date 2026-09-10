@@ -34,6 +34,14 @@ DEFAULT_NATIVE_JOB_TYPES = [
     "vacancy_type_apprentice",
 ]
 
+SUMMER_NEARBY_KEYWORDS = [
+    "estagio de ferias",
+    "programa de estagio de ferias",
+    "estagio de verao",
+    "programa de verao",
+    "summer internship",
+]
+
 DEFAULT_KEYWORD_QUERIES = [
     "junior",
     "júnior",
@@ -92,15 +100,19 @@ def collect_gupy_global(config: dict | None = None) -> list[Job]:
 
 
 
-def collect_gupy_nearby(city_names: Iterable[str], config: dict | None = None) -> list[Job]:
+def collect_gupy_nearby(city_names: Iterable[str], config: dict | None = None, intent: str | None = None) -> list[Job]:
     """Target the Gupy portal by exact city names for an on-demand radius search."""
     cfg = config or {}
     page_size = max(10, min(int(cfg.get("page_size", 100)), 100))
     max_pages = max(1, min(int(cfg.get("nearby_max_pages_per_city", 2)), 5))
     native_types = list(cfg.get("native_job_types") or DEFAULT_NATIVE_JOB_TYPES)
-    combined_types = ",".join(native_types)
     keyword_city_limit = max(0, int(cfg.get("nearby_keyword_city_limit", 4)))
     keyword_queries = list(cfg.get("nearby_keyword_queries") or ["junior", "co-op", "research"])
+    if intent == "summer_internship":
+        native_types = ["vacancy_type_summer", "vacancy_type_internship"]
+        keyword_city_limit = 10_000  # every city supplied by nearby_cities
+        keyword_queries = SUMMER_NEARBY_KEYWORDS
+    combined_types = ",".join(native_types)
 
     cities = []
     seen = set()

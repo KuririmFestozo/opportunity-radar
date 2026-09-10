@@ -91,6 +91,7 @@ def test_live_search_combines_base_and_new_jobs(monkeypatch):
         ],
     )
     monkeypatch.setattr(nearby_api, "collect_gupy_nearby", lambda *args, **kwargs: [fresh])
+    monkeypatch.setattr(nearby_api, "collect_99jobs_nearby", lambda *args, **kwargs: [])
     monkeypatch.setattr(nearby_api, "collect_vagas_com", lambda *args, **kwargs: [])
 
     result = nearby_api.search_nearby(

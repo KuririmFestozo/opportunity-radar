@@ -15,6 +15,12 @@ def contains_any(text: str, terms: list[str]) -> list[str]:
     out = []
     for term in terms:
         n = normalize(term)
-        if n and n in text:
+        if n and _contains_term(text, n):
             out.append(term)
     return out
+
+
+def _contains_term(text: str, term: str) -> bool:
+    """Match a normalized term as a complete word/phrase, never substring."""
+    escaped = re.escape(term).replace(r"\ ", r"\s+")
+    return re.search(rf"(?<!\w){escaped}(?!\w)", text) is not None
