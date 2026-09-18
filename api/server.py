@@ -18,7 +18,7 @@ STATS_PATH = OUTPUT_DIR / "stats.json"
 
 app = FastAPI(
     title="Opportunity Radar API",
-    version="3.13.1",
+    version="3.15.3",
     description="Local API for cached and on-demand opportunity searches.",
 )
 

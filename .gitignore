@@ -11,3 +11,8 @@ output/*
 .v*-backup/
 *.bak
 *.bak-*
+
+# Local incremental job store
+data/*.db
+data/*.db-*
+!data/.gitkeep

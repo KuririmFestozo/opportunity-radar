@@ -1,6 +1,7 @@
 import os
 from collections import Counter
 from datetime import datetime, timezone
+from pathlib import Path
 
 from collectors.ashby import collect_ashby
 from collectors.ciee import collect_ciee
@@ -13,6 +14,7 @@ from collectors.jobs99 import collect_99jobs
 from collectors.lever import collect_lever
 from collectors.search_links import build_search_links
 from collectors.summer_br import collect_gupy_summer_br, collect_99jobs_summer_br, collect_vagas_summer_br
+from collectors.successfactors_incremental import probe_successfactors_recent
 from collectors.vagas_com import collect_vagas_com
 
 from config.catalogs import INTENTS
@@ -27,6 +29,7 @@ from processing.deduplicate import deduplicate_jobs
 from processing.export import export_all
 from processing.geolocation import enrich_job_location
 from processing.matching import match_job
+from storage.job_store import JobStore, deduplicate_source_jobs
 
 
 ATS_COLLECTORS = {
@@ -59,11 +62,22 @@ def main():
     profiles = active_profiles()
     all_jobs = []
     source_stats = Counter()
+    store = JobStore()
+    bootstrap = store.bootstrap_from_json(Path("output/jobs.json"))
+    full_refresh = os.getenv("FULL_REFRESH", "").strip().lower() in {"1", "true", "yes", "on"}
 
     print("=" * 86)
-    print(" OPPORTUNITY RADAR v3.13.1 — SUCCESSFACTORS CSB UNIFIED SEARCH")
+    print(" OPPORTUNITY RADAR v3.15.3 — STRICT INTENTS + SAP EXPANSION")
     print("=" * 86)
     print("Perfis ativos são apenas presets de filtro; NÃO limitam a coleta.")
+    if bootstrap["imported"]:
+        print(f"Banco incremental criado do jobs.json: {bootstrap['imported']} vagas preservadas.")
+    else:
+        print(f"Banco incremental: {store.count()} registros armazenados.")
+    if full_refresh:
+        print("Modo FULL_REFRESH: early-stop e cache de detalhes desativados nesta execução.")
+    else:
+        print("Modo incremental: early-stop ativo para fontes paginadas com IDs conhecidos.")
     print()
 
     # 1) ATS: always collect ALL published jobs from configured companies.
@@ -81,9 +95,15 @@ def main():
     #    This replaces company-by-company page scraping in normal operation.
     gupy_global_cfg = PUBLIC_SOURCES.get("gupy_global", {})
     if gupy_global_cfg.get("enabled", True):
+        gupy_runtime_cfg = dict(gupy_global_cfg)
+        known_gupy = set() if full_refresh else store.known_ids("gupy_global")
+        if known_gupy:
+            gupy_runtime_cfg["known_source_job_ids"] = known_gupy
+            gupy_runtime_cfg["early_stop_known_pages"] = 2
+            gupy_runtime_cfg["show_incremental_stats"] = True
         _run(
             "Gupy Global [public portal API]",
-            lambda: collect_gupy_global(gupy_global_cfg),
+            lambda: collect_gupy_global(gupy_runtime_cfg),
             all_jobs,
             source_stats,
         )
@@ -115,9 +135,82 @@ def main():
     if corporate_sources:
         print("\nPortais corporativos / ATS próprios.")
         for source in corporate_sources:
+            runtime_source = dict(source)
+            if runtime_source.get("ats", "successfactors") == "successfactors":
+                tenant_prefix = f'{runtime_source["id"]}:'
+                known = set() if full_refresh else store.known_ids("successfactors", prefix=tenant_prefix)
+                runtime_source["known_source_job_ids"] = known
+                runtime_source["skip_known_details"] = not full_refresh
+                runtime_source["early_stop_known_pages"] = 2 if known else 0
+
+                # v3.15.3: bounded first-sync bootstrap for new SAP tenants
+                if not known and not full_refresh:
+                    bootstrap_pages = max(
+                        1, int(runtime_source.get("bootstrap_max_pages", 6))
+                    )
+                    runtime_source["max_pages_per_listing"] = min(
+                        int(runtime_source.get("max_pages_per_listing", bootstrap_pages)),
+                        bootstrap_pages,
+                    )
+                    runtime_source["max_tile_pages"] = min(
+                        int(runtime_source.get("max_tile_pages", bootstrap_pages)),
+                        bootstrap_pages,
+                    )
+                    runtime_source["max_csb_pages_per_locale"] = min(
+                        int(runtime_source.get("max_csb_pages_per_locale", bootstrap_pages)),
+                        bootstrap_pages,
+                    )
+                    runtime_source["max_listing_urls"] = min(
+                        int(runtime_source.get("max_listing_urls", 10)),
+                        max(1, int(runtime_source.get("bootstrap_max_listing_urls", 10))),
+                    )
+                    runtime_source["max_details"] = min(
+                        int(runtime_source.get("max_details", 20)),
+                        max(0, int(runtime_source.get("bootstrap_max_details", 20))),
+                    )
+                    print(
+                        f'  [BOOT] {runtime_source["name"]}: primeiro sync; '
+                        f'até {bootstrap_pages} páginas por rota e '
+                        f'{runtime_source["max_details"]} detalhes.'
+                    )
+                if known:
+                    print(
+                        f'  [CACHE] {runtime_source["name"]}: {len(known)} IDs conhecidos; '
+                        "checando somente as páginas recentes primeiro."
+                    )
+                    probe = probe_successfactors_recent(
+                        runtime_source,
+                        known,
+                        consecutive_known_pages=2,
+                    )
+                    if probe.supported:
+                        print(
+                            f'  [FAST] {runtime_source["name"]}: {probe.method} | '
+                            f'{probe.pages} req/página(s) | '
+                            f'{len(probe.seen_native_ids)} IDs verificados | '
+                            f'{len(probe.new_native_ids)} novos'
+                        )
+                    if probe.safe_stop:
+                        for native_id in probe.seen_native_ids:
+                            store.touch(
+                                "successfactors",
+                                f'{runtime_source["id"]}:{native_id}',
+                            )
+                        source_stats["successfactors"] += len(probe.seen_native_ids)
+                        print(
+                            f'  [FAST-STOP] {runtime_source["name"]}: nenhuma vaga nova nas '
+                            "páginas recentes; varredura universal pulada."
+                        )
+                        continue
+                    if probe.new_native_ids:
+                        print(
+                            f'  [NOVAS] {runtime_source["name"]}: '
+                            f'{len(probe.new_native_ids)} ID(s) novo(s); '
+                            "executando varredura universal."
+                        )
             _run(
-                f'{source["name"]} [{source["ats"]}]',
-                lambda s=source: collect_corporate_ats(s),
+                f'{runtime_source["name"]} [{runtime_source.get("ats", "successfactors")}]',
+                lambda s=runtime_source: collect_corporate_ats(s),
                 all_jobs,
                 source_stats,
             )
@@ -152,9 +245,15 @@ def main():
 
     cfg = PUBLIC_SOURCES["jobs99"]
     if cfg.get("enabled"):
+        known_99jobs = set() if full_refresh else store.known_ids("99jobs")
         _run(
             "99jobs [public_page]",
-            lambda: collect_99jobs(cfg.get("max_jobs", 150)),
+            lambda: collect_99jobs(
+                cfg.get("max_jobs", 150),
+                known_source_job_ids=known_99jobs,
+                early_stop_known_pages=3 if known_99jobs else 0,
+                show_incremental_stats=bool(known_99jobs),
+            ),
             all_jobs,
             source_stats,
         )
@@ -185,21 +284,46 @@ def main():
             )
 
     print()
-    print(f"Vagas brutas: {len(all_jobs)}")
+    print(f"Vagas brutas nesta coleta: {len(all_jobs)}")
 
-    unique = deduplicate_jobs(all_jobs)
-    print(f"Vagas únicas: {len(unique)}")
+    # First dedup only exact source-native IDs. This preserves alternative
+    # sources in SQLite even when the dashboard later collapses them.
+    source_unique = deduplicate_source_jobs(all_jobs)
+    print(f"IDs únicos nesta coleta: {len(source_unique)}")
+
+    incremental = Counter()
+    for incoming in source_unique:
+        job, status, needs_processing = store.prepare(incoming)
+        incremental[status] += 1
+        if needs_processing:
+            classify_job(job)
+            enrich_job_location(job)
+            store.upsert(job, commit=False)
+        else:
+            store.touch(job.source, job.source_job_id, commit=False)
+    store.commit()
+
+    # Do not delete/close jobs just because one run did not see them: a
+    # source outage must not look like a vacancy closure. Lifecycle rules
+    # are intentionally deferred to a later version.
+    stored_jobs = store.load_jobs(active_only=True)
+    unique = deduplicate_jobs(stored_jobs)
+
+    print(
+        "Incremental: "
+        f"{incremental['new']} novas | "
+        f"{incremental['changed']} alteradas | "
+        f"{incremental['reprocess']} reprocessadas | "
+        f"{incremental['unchanged']} reaproveitadas"
+    )
+    print(f"Banco persistente: {len(stored_jobs)} registros por fonte/ID")
+    print(f"Vagas únicas no catálogo: {len(unique)}")
 
     geocoded = 0
     intent_counts = Counter()
-
     for job in unique:
-        classify_job(job)
-        enrich_job_location(job)
-
         if job.latitude is not None and job.longitude is not None:
             geocoded += 1
-
         for intent_id in job.detected_intents:
             intent_counts[intent_id] += 1
 
@@ -242,14 +366,18 @@ def main():
     stats = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "raw_jobs": len(all_jobs),
+        "source_unique_collected": len(source_unique),
         "unique_jobs": len(unique),
         "geocoded_jobs": geocoded,
+        "incremental": dict(incremental),
+        "store": store.stats(),
         "profiles": [p.id for p in profiles],
         "sources": dict(source_stats),
         "intent_counts": dict(intent_counts),
     }
 
     export_all(unique, profiles, matches, links, stats)
+    store.close()
 
     print()
     print("Dashboard gerado em output/index.html")

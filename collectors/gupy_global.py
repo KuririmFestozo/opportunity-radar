@@ -18,6 +18,7 @@ import requests
 
 from collectors.common import PUBLIC_DELAY, get_json
 from models.job import Job
+from processing.incremental import KnownPageStopper
 
 
 API_URL = "https://employability-portal.gupy.io/api/v1/jobs"
@@ -75,6 +76,9 @@ def collect_gupy_global(config: dict | None = None) -> list[Job]:
     keyword_pages = max(1, int(cfg.get("max_pages_per_keyword", 2)))
     native_types = list(cfg.get("native_job_types") or DEFAULT_NATIVE_JOB_TYPES)
     keyword_queries = list(cfg.get("keyword_queries") or DEFAULT_KEYWORD_QUERIES)
+    known_source_job_ids = {str(x) for x in (cfg.get("known_source_job_ids") or set())}
+    early_stop_known_pages = max(0, int(cfg.get("early_stop_known_pages", 0)))
+    incremental_stats = {"pages": 0, "early_stops": 0}
 
     jobs: list[Job] = []
 
@@ -84,6 +88,9 @@ def collect_gupy_global(config: dict | None = None) -> list[Job]:
                 page_size=page_size,
                 max_pages=native_pages,
                 job_type=job_type,
+                known_source_job_ids=known_source_job_ids,
+                early_stop_known_pages=early_stop_known_pages,
+                incremental_stats=incremental_stats,
             )
         )
 
@@ -93,11 +100,20 @@ def collect_gupy_global(config: dict | None = None) -> list[Job]:
                 page_size=page_size,
                 max_pages=keyword_pages,
                 keyword=keyword,
+                known_source_job_ids=known_source_job_ids,
+                early_stop_known_pages=early_stop_known_pages,
+                incremental_stats=incremental_stats,
             )
         )
 
-    return _deduplicate_gupy(jobs)
-
+    result = _deduplicate_gupy(jobs)
+    if cfg.get("show_incremental_stats") and known_source_job_ids:
+        print(
+            f"  Gupy incremental: {incremental_stats['pages']} páginas | "
+            f"{incremental_stats['early_stops']} early-stop(s) | "
+            f"{len(known_source_job_ids)} IDs conhecidos"
+        )
+    return result
 
 
 def collect_gupy_nearby(city_names: Iterable[str], config: dict | None = None, intent: str | None = None) -> list[Job]:
@@ -156,8 +172,12 @@ def _collect_segment(
     city: str | None = None,
     state: str | None = None,
     country: str | None = None,
+    known_source_job_ids: set[str] | None = None,
+    early_stop_known_pages: int = 0,
+    incremental_stats: dict | None = None,
 ) -> list[Job]:
     jobs: list[Job] = []
+    stopper = KnownPageStopper(known_source_job_ids, early_stop_known_pages)
 
     for page_index in range(max_pages):
         params = _build_params(
@@ -175,12 +195,22 @@ def _collect_segment(
         if not isinstance(items, list) or not items:
             break
 
+        page_jobs: list[Job] = []
         for item in items:
             if not isinstance(item, dict):
                 continue
             job = job_from_item(item)
             if job is not None:
-                jobs.append(job)
+                page_jobs.append(job)
+        jobs.extend(page_jobs)
+
+        if incremental_stats is not None:
+            incremental_stats["pages"] = incremental_stats.get("pages", 0) + 1
+        page_ids = {job.source_job_id for job in page_jobs}
+        if stopper.observe(page_ids):
+            if incremental_stats is not None:
+                incremental_stats["early_stops"] = incremental_stats.get("early_stops", 0) + 1
+            break
 
         # pagination.total has behaved inconsistently across versions of the
         # public portal. A short page is the safest end-of-list signal.

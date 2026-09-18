@@ -22,6 +22,7 @@ from bs4 import BeautifulSoup
 
 from collectors.common import DEFAULT_HEADERS, PUBLIC_DELAY, TIMEOUT, get_text
 from models.job import Job
+from processing.incremental import KnownPageStopper
 from processing.text import normalize
 
 
@@ -134,6 +135,17 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
     keyword_fallback = bool(config.get("keyword_fallback", True))
     verbose = bool(config.get("show_discovery_stats", False))
 
+    known_source_job_ids = {str(x) for x in (config.get("known_source_job_ids") or [])}
+    known_native_ids: set[str] = set()
+    tenant_prefix = f"{portal_id}:"
+    for source_job_id in known_source_job_ids:
+        if source_job_id.startswith(tenant_prefix):
+            known_native_ids.add(source_job_id[len(tenant_prefix):])
+        elif source_job_id.isdigit():
+            known_native_ids.add(source_job_id)
+    early_stop_known_pages = max(0, int(config.get("early_stop_known_pages", 0)))
+    early_stop_hits = 0
+
     refs: dict[str, JobRef] = {}
     method_ids: dict[str, set[str]] = defaultdict(set)
     errors: list[str] = []
@@ -197,6 +209,7 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
         tile_max_pages = max(1, min(int(config.get("max_tile_pages", max_pages)), max_pages, 300))
         startrow = 0
         seen_tile_signatures: set[tuple[str, ...]] = set()
+        tile_stopper = KnownPageStopper(known_native_ids, early_stop_known_pages)
         for _ in range(tile_max_pages):
             tile_url = f"{csb_base.rstrip('/')}/tile-search-results/?" + urlencode({"startrow": startrow})
             try:
@@ -212,6 +225,9 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
                 break
             seen_tile_signatures.add(signature)
             add_refs(tile_refs, "tile", tile_url)
+            if tile_stopper.observe(signature):
+                early_stop_hits += 1
+                break
             startrow += len(tile_refs)
             if len(refs) >= max_jobs:
                 break
@@ -235,6 +251,7 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
         jobs_api = f"{csb_base.rstrip('/')}/services/recruiting/v1/jobs"
 
         for locale in locales[:max_csb_locales]:
+            csb_stopper = KnownPageStopper(known_native_ids, early_stop_known_pages)
             for page_number in range(csb_pages):
                 try:
                     payload = _post_successfactors_json(
@@ -258,6 +275,10 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
                     break
                 add_refs(csb_refs, "csb_json", jobs_api)
 
+                csb_page_ids = {ref.native_job_id for ref in csb_refs}
+                if csb_stopper.observe(csb_page_ids):
+                    early_stop_hits += 1
+                    break
                 if len(refs) >= max_jobs:
                     break
                 if total_jobs and (page_number + 1) * 10 >= total_jobs:
@@ -293,6 +314,7 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
     while queue and len(refs) < max_jobs:
         listing_url, method = queue.popleft()
         seen_page_signatures: set[tuple[str, ...]] = set()
+        listing_stopper = KnownPageStopper(known_native_ids, early_stop_known_pages)
         for page in range(max_pages):
             page_url = _successfactors_listing_url(
                 listing_url,
@@ -320,6 +342,9 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
                 enqueue(child, child_method)
             discovered_xml_urls.extend(discover_successfactors_xml_urls(html, page_url, config))
 
+            if listing_stopper.observe(signature):
+                early_stop_hits += 1
+                break
             if len(refs) >= max_jobs:
                 break
             # A short page usually means the end. Some tenants repeat the last
@@ -375,7 +400,16 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
                 break
 
     ordered = sorted(refs.values(), key=lambda ref: (not _is_priority_ref(ref), ref.title.lower()))[:max_jobs]
-    detail_ids = _select_detail_ids(ordered, max_details)
+
+    # known_native_ids já foi preparado antes da descoberta (v3.15).
+    if config.get("skip_known_details", True):
+        detail_candidates = [
+            ref for ref in ordered
+            if ref.native_job_id not in known_native_ids
+        ]
+    else:
+        detail_candidates = ordered
+    detail_ids = _select_detail_ids(detail_candidates, max_details)
 
     jobs: list[Job] = []
     detail_requests = 0
@@ -412,6 +446,11 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
         "tile_requests": tile_requests,
         "csb_json_requests": csb_json_requests,
         "detail_requests": detail_requests,
+        "known_refs": len(known_native_ids & set(refs)),
+        "details_skipped_known": len([
+            ref for ref in ordered if ref.native_job_id in known_native_ids
+        ]),
+        "early_stop_hits": early_stop_hits,
         "errors": errors,
     }
 
@@ -1086,6 +1125,8 @@ def _print_discovery_stats(stats: dict) -> None:
     print(f"    {'tiles req':<12} {stats.get('tile_requests', 0):>5}")
     print(f"    {'CSB JSON':<12} {stats.get('csb_json_requests', 0):>5}")
     print(f"    {'detalhes':<12} {stats.get('detail_requests', 0):>5}")
+    if stats.get("early_stop_hits", 0):
+        print(f"    {'early-stop':<12} {stats.get('early_stop_hits', 0):>5}")
 
 
 def _clean(value: str) -> str:

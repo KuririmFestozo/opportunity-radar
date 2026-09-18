@@ -7,12 +7,12 @@ from processing.text import contains_any, normalize
 
 
 INTENT_COMPATIBILITY = {
-    "summer_internship": {"summer_internship", "internship"},
-    "co_op": {"co_op", "internship"},
+    "summer_internship": {"summer_internship"},
+    "co_op": {"co_op"},
     "internship": {"internship", "summer_internship", "co_op"},
     "trainee": {"trainee"},
     "entry_level": {"entry_level"},
-    "research": {"research", "internship"},
+    "research": {"research"},
     "apprentice": {"apprentice"},
     "seasonal_job": {"seasonal_job"},
 }

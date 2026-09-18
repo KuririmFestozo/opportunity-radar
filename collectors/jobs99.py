@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 from collectors.common import get_text
 from models.job import Job
+from processing.incremental import KnownPageStopper
 
 
 URL = "https://www.99jobs.com/opportunities/search"
@@ -75,7 +76,13 @@ _TRACKING_QUERY_KEYS = {
 }
 
 
-def collect_99jobs(max_jobs: int = 2500) -> list[Job]:
+def collect_99jobs(
+    max_jobs: int = 2500,
+    *,
+    known_source_job_ids: set[str] | None = None,
+    early_stop_known_pages: int = 0,
+    show_incremental_stats: bool = False,
+) -> list[Job]:
     """Collect a broad public sample of current 99jobs opportunities.
 
     Strategy:
@@ -88,6 +95,8 @@ def collect_99jobs(max_jobs: int = 2500) -> list[Job]:
     intent and location filtering remains local (collect first, filter later).
     """
     found: dict[str, Job] = {}
+    known_source_job_ids = {str(x) for x in (known_source_job_ids or set())}
+    incremental_stats = {"pages": 0, "early_stops": 0}
 
     # 1) Feed geral + coleções editoriais públicas.
     for entrypoint in ENTRYPOINTS:
@@ -104,6 +113,9 @@ def collect_99jobs(max_jobs: int = 2500) -> list[Job]:
             lambda page, term=term: _search_page_url(term, page),
             MAX_PAGES_PER_SEARCH,
             max_jobs,
+            known_source_job_ids=known_source_job_ids,
+            early_stop_known_pages=early_stop_known_pages,
+            incremental_stats=incremental_stats,
         )
 
     # 3) Catálogo amplo: traz oportunidades independentemente de curso/termo.
@@ -114,6 +126,16 @@ def collect_99jobs(max_jobs: int = 2500) -> list[Job]:
             _global_page_url,
             MAX_GLOBAL_PAGES,
             max_jobs,
+            known_source_job_ids=known_source_job_ids,
+            early_stop_known_pages=early_stop_known_pages,
+            incremental_stats=incremental_stats,
+        )
+
+    if show_incremental_stats and known_source_job_ids:
+        print(
+            f"  99jobs incremental: {incremental_stats['pages']} páginas | "
+            f"{incremental_stats['early_stops']} early-stop(s) | "
+            f"{len(known_source_job_ids)} IDs conhecidos"
         )
 
     return list(found.values())[:max_jobs]
@@ -154,14 +176,26 @@ def collect_99jobs_nearby(
 
     return list(found.values())[:max_jobs]
 
-def _collect_pages(found, url_builder, max_pages: int, max_jobs: int) -> None:
+def _collect_pages(
+    found,
+    url_builder,
+    max_pages: int,
+    max_jobs: int,
+    *,
+    known_source_job_ids: set[str] | None = None,
+    early_stop_known_pages: int = 0,
+    incremental_stats: dict | None = None,
+) -> None:
     sequence_ids: set[str] = set()
+    stopper = KnownPageStopper(known_source_job_ids, early_stop_known_pages)
 
     for page in range(1, max_pages + 1):
         if len(found) >= max_jobs:
             break
 
         page_jobs = _fetch_page_jobs(url_builder(page), max_jobs)
+        if incremental_stats is not None:
+            incremental_stats["pages"] = incremental_stats.get("pages", 0) + 1
         page_ids = {job.source_job_id for job in page_jobs}
 
         if not page_ids:
@@ -172,6 +206,11 @@ def _collect_pages(found, url_builder, max_pages: int, max_jobs: int) -> None:
 
         _merge_jobs(found, page_jobs, max_jobs)
         sequence_ids |= page_ids
+
+        if stopper.observe(page_ids):
+            if incremental_stats is not None:
+                incremental_stats["early_stops"] = incremental_stats.get("early_stops", 0) + 1
+            break
 
 
 def _search_page_url(term: str, page: int = 1) -> str:
