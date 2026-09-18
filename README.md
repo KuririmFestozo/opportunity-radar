@@ -181,6 +181,34 @@ não altera o SQLite nem recalcula coordenadas históricas.
 
 ## Arquivos gerados
 
+A deduplicação tem duas etapas, centralizadas em `processing/deduplicate.py`:
+
+- **Persistência:** mesma fonte e mesmo ID não vazio representam o mesmo
+  registro. IDs diferentes permanecem no SQLite, mesmo quando usam a mesma URL.
+- **Catálogo e busca regional:** além da identidade exata, duas entradas podem
+  ser consolidadas quando compartilham uma URL de detalhe com identificador no
+  caminho ou parâmetro explícito de vaga, empresa e título equivalentes, sem
+  conflitos conhecidos de localização, publicação, modalidade, vínculo,
+  descrição, departamento ou unidade. Sem evidência suficiente, ambas ficam.
+
+A comparação de URLs remove somente tracking conhecido (`utm_*`, `fbclid`,
+`gclid`, `mc_cid`, `mc_eid`). Preserva parâmetros desconhecidos, IDs, fragmentos,
+ordem dos parâmetros e diferenças de caminho. Não segue redirecionamentos.
+As URLs originais continuam intactas. Quando há consolidação,
+`metadata.source_references` guarda uma lista de `{source, source_job_id, url}`;
+não há mudança nos campos principais de `Job` ou na chave do SQLite. Novas
+referências também são preservadas em registros incrementais inalterados,
+sem forçar nova classificação. O catálogo mantém um representante com dados
+mais completos, enquanto o banco continua mantendo os registros por fonte.
+
+O consolidado não armazena snapshots completos de cada anúncio. Coletores
+podem já ter canonicalizado URLs ou eliminado repetições antes deste estágio;
+referências que não chegam ao pipeline não podem ser recuperadas aqui. A futura
+modelagem PostgreSQL poderá separar oportunidade, anúncios de origem e
+histórico. A deduplicação deliberadamente pode manter duplicatas quando URLs
+ou campos divergem, em vez de ocultar uma vaga legítima. Os filtros atuais de
+fonte usam a fonte do representante.
+
 ```text
 output/
 ├── jobs.json

@@ -9,9 +9,9 @@ import sqlite3
 from dataclasses import fields
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
 
 from models.job import Job
+from processing.deduplicate import deduplicate_source_jobs, source_references
 from processing.geolocation import is_remote
 from processing.text import normalize
 
@@ -80,31 +80,6 @@ def raw_content_hash(job: Job) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
-def deduplicate_source_jobs(jobs: Iterable[Job]) -> list[Job]:
-    """Collapse repeated discovery paths for the same source-native ID."""
-    unique: dict[tuple[str, str], Job] = {}
-    for job in jobs:
-        key = (job.source, job.source_job_id)
-        current = unique.get(key)
-        if current is None:
-            unique[key] = job
-            continue
-
-        current_quality = (
-            len(current.description or "")
-            + len(current.location or "")
-            + (100 if current.published_at else 0)
-        )
-        candidate_quality = (
-            len(job.description or "")
-            + len(job.location or "")
-            + (100 if job.published_at else 0)
-        )
-        if candidate_quality > current_quality:
-            unique[key] = job
-    return list(unique.values())
-
-
 def _merge_cached_fields(incoming: Job, cached: Job) -> Job:
     """Reuse expensive/detail fields when collection returns a lightweight stub."""
     for attr in (
@@ -125,6 +100,9 @@ def _merge_cached_fields(incoming: Job, cached: Job) -> Job:
         for key in _LOCATION_METADATA_KEYS:
             metadata.pop(key, None)
     metadata.update(_clean_metadata(incoming.metadata))
+    references = source_references(cached, incoming)
+    if len(references) > 1 or "source_references" in metadata:
+        metadata["source_references"] = references
     location_changed = (
         text_changed
         or is_remote(incoming) != is_remote(cached)
@@ -250,6 +228,12 @@ class JobStore:
         same_raw = raw_content_hash(candidate) == row["raw_hash"]
 
         if same_raw and row["processing_version"] == PROCESSING_VERSION:
+            references = candidate.metadata.get("source_references")
+            if references != cached.metadata.get("source_references"):
+                # Retain new references without reclassifying. The caller
+                # still commits this metadata-only update with the batch.
+                cached.metadata["source_references"] = references
+                self.upsert(cached, commit=False)
             return cached, "unchanged", False
         if same_raw:
             return candidate, "reprocess", True

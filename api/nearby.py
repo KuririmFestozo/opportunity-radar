@@ -15,7 +15,7 @@ from collectors.vagas_com import collect_vagas_com
 from config.sources import PUBLIC_SOURCES
 from models.job import Job
 from processing.classification import classify_job
-from processing.deduplicate import deduplicate_jobs, fingerprint
+from processing.deduplicate import deduplicate_jobs, source_identities
 from processing.geolocation import distance_km, enrich_job_location, is_remote, nearby_cities, resolve_location
 
 
@@ -46,7 +46,7 @@ def search_nearby(
             return response
 
     base_jobs = _load_base_jobs()
-    base_fingerprints = {fingerprint(job) for job in base_jobs}
+    base_identities = {identity for job in base_jobs for identity in source_identities(job)}
     cached_nearby = _filter_by_radius(
         base_jobs,
         latitude=latitude,
@@ -145,7 +145,7 @@ def search_nearby(
         fresh_nearby = [job for job in fresh_nearby if intent in (job.detected_intents or [])]
 
     combined = deduplicate_jobs(cached_nearby + fresh_nearby)
-    new_jobs = [job for job in combined if fingerprint(job) not in base_fingerprints]
+    new_jobs = [job for job in combined if not source_identities(job) & base_identities]
 
     response = {
         "cache_hit": False,
