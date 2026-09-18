@@ -149,6 +149,36 @@ python server.py
 
 Depois abra `http://localhost:8000`. O `main.py` atualiza a base ampla; o `server.py` serve o dashboard e expõe a busca regional sob demanda.
 
+### Consistência dos presets e validação
+
+Presets usam a elegibilidade calculada no backend, incluindo a melhor afinidade
+entre todos os cursos do perfil. Uma palavra excluída torna a vaga inelegível
+somente para aquele perfil; ela continua no catálogo e em **Explorar tudo**.
+O seletor de relevância preserva o score mínimo exato do preset. Vagas da busca
+ao vivo sem matching calculado ficam disponíveis em Explorar.
+
+O armazenamento incremental invalida a localização geocodificada quando a
+localização muda. O hash inclui os sinais de origem `source_level`,
+`gupy_job_type`, `gupy_city`, `gupy_state` e `gupy_country`; scores, localização
+resolvida e metadados de diagnóstico não entram no hash. Registros antigos
+reencontrados na coleta são reprocessados uma vez com a nova versão.
+
+Para executar os testes:
+
+```powershell
+python -m pytest -q
+python check_project.py
+```
+
+Os testes do dashboard executam seu JavaScript com Node.js e um DOM mínimo
+simulado, sem pacotes npm. Sem Node.js, esses testes são sinalizados como
+ignorados. Eles não substituem uma validação visual em navegador.
+
+Arquivos já gerados em `output/` não mudam ao editar o template. Para atualizar
+o dashboard e seus matches sem nova coleta, use
+`python tools/reclassify_existing.py`. Esse comando atualiza as exportações;
+não altera o SQLite nem recalcula coordenadas históricas.
+
 ## Arquivos gerados
 
 ```text

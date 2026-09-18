@@ -300,14 +300,18 @@ function haversine(lat1,lon1,lat2,lon2){
 function terms(value){return value.toLowerCase().split(",").map(x=>x.trim()).filter(Boolean)}
 function applyProfile(){
   const p=profileById(profileEl.value);if(!p)return;
-  courseEl.value=p.course_ids?.[0]||"";
+  courseEl.value=p.course_ids?.length===1?p.course_ids[0]:"";
   intentEl.value=p.intent_ids?.length===1?p.intent_ids[0]:"";
   $("country").value=p.preferred_countries?.length===1?p.preferred_countries[0]:"";
   $("workplace").value=p.preferred_workplace_types?.length===1?p.preferred_workplace_types[0]:"";
   $("distance").value=p.max_distance_km??"";
   $("include").value=(p.include_keywords||[]).join(", ");
   $("exclude").value=(p.exclude_keywords||[]).join(", ");
-  $("score").value=String(Math.max(0,p.minimum_score??0));
+  const minimum=String(p.minimum_score??0);
+  if(![...$("score").options].some(option=>option.value===minimum)){
+    addOption($("score"),minimum,`≥ ${minimum}%`);
+  }
+  $("score").value=minimum;
 }
 function resetFilters(){
   profileEl.value="__explore__";courseEl.value="";intentEl.value="";
@@ -364,20 +368,23 @@ function render(){
 
   for(const j of DATA.jobs){
     const m=matches[jobKey(j)]||null;
-    const relevance=exploring?exploreRelevance(j):(m?.score??exploreRelevance(j));
+    // Profile compatibility is computed by the backend, including all courses,
+    // intent compatibility, excluded terms and unknown-location preferences.
+    if(!exploring&&m?.eligible!==true)continue;
+    const relevance=exploring?exploreRelevance(j):m.score;
     if(relevance<minScore)continue;
     if(source&&j.source!==source)continue;
-    if(intent&&!(j.detected_intents||[]).includes(intent))continue;
-    if(wp&&workplace(j)!==wp)continue;
-    if(course&&Number(j.course_scores?.[course]||0)<35)continue;
+    if(exploring&&intent&&!(j.detected_intents||[]).includes(intent))continue;
+    if(exploring&&wp&&workplace(j)!==wp)continue;
+    if(exploring&&course&&Number(j.course_scores?.[course]||0)<35)continue;
     const resolvedCountry=j.metadata?.resolved_country||"";
-    if(country&&resolvedCountry!==country)continue;
+    if(exploring&&country&&resolvedCountry!==country)continue;
     const hay=`${j.title} ${j.company} ${j.location} ${j.description}`.toLowerCase();
     if(q&&!hay.includes(q))continue;
-    if(includeTerms.length&&!includeTerms.some(x=>hay.includes(x)))continue;
-    if(excludeTerms.some(x=>hay.includes(x)))continue;
+    if(exploring&&includeTerms.length&&!includeTerms.some(x=>hay.includes(x)))continue;
+    if(exploring&&excludeTerms.some(x=>hay.includes(x)))continue;
     const dist=baseDistance(j,m);
-    if(radius!=null&&workplace(j)!=="remote"&&(dist==null||dist>radius))continue;
+    if(exploring&&radius!=null&&workplace(j)!=="remote"&&(dist==null||dist>radius))continue;
     rows.push({j,m,dist,relevance});
   }
 

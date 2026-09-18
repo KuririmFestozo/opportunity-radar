@@ -104,7 +104,7 @@ def match_job(job: Job, profile: SearchProfile) -> JobMatch:
             reasons.append("país desejado")
 
     dist = _distance_for_profile(job, profile)
-    eligible = True
+    eligible = not bool(exclude_matches)
 
     if profile.max_distance_km is not None:
         if is_remote(job) and profile.remote_ignores_distance:

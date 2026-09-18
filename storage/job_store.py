@@ -12,9 +12,16 @@ from pathlib import Path
 from typing import Iterable
 
 from models.job import Job
+from processing.geolocation import is_remote
+from processing.text import normalize
 
 DEFAULT_DB_PATH = Path(os.getenv("OPPORTUNITY_DB_PATH", "data/opportunity_radar.db"))
-PROCESSING_VERSION = "3.14"
+PROCESSING_VERSION = "3.15.4"
+# Source signals consumed by classification and regional location processing.
+# Derived scores, resolved locations and collection diagnostics are excluded.
+_LOCATION_METADATA_KEYS = ("gupy_city", "gupy_state", "gupy_country")
+_PROCESSING_METADATA_KEYS = ("gupy_job_type", "source_level", *_LOCATION_METADATA_KEYS)
+_DERIVED_LOCATION_KEYS = ("resolved_city", "resolved_country", "search_distance_km")
 _JOB_FIELDS = {f.name for f in fields(Job)}
 _STORE_METADATA_KEYS = {
     "store_first_seen_at",
@@ -58,6 +65,10 @@ def raw_content_hash(job: Job) -> str:
         "workplace_type": job.workplace_type,
         "source_type": job.source_type,
         "salary": job.salary,
+        "processing_metadata": {
+            key: (job.metadata or {}).get(key) or None
+            for key in _PROCESSING_METADATA_KEYS
+        },
     }
     raw = json.dumps(
         payload,
@@ -107,15 +118,39 @@ def _merge_cached_fields(incoming: Job, cached: Job) -> Job:
         if not getattr(incoming, attr, None) and getattr(cached, attr, None):
             setattr(incoming, attr, getattr(cached, attr))
 
-    if incoming.latitude is None and cached.latitude is not None:
+    metadata = _clean_metadata(cached.metadata)
+    text_changed = normalize(incoming.location) != normalize(cached.location)
+    if text_changed:
+        # An old structured city must not override the new textual location.
+        for key in _LOCATION_METADATA_KEYS:
+            metadata.pop(key, None)
+    metadata.update(_clean_metadata(incoming.metadata))
+    location_changed = (
+        text_changed
+        or is_remote(incoming) != is_remote(cached)
+        or any(
+            normalize(str(metadata.get(key) or ""))
+            != normalize(str((cached.metadata or {}).get(key) or ""))
+            for key in _LOCATION_METADATA_KEYS
+        )
+    )
+    if location_changed:
+        for key in _DERIVED_LOCATION_KEYS:
+            metadata.pop(key, None)
+        # Gupy also supplies this country directly, including countries the
+        # text geocoder cannot infer. Keep a fresh source value, never the cache.
+        if (incoming.metadata or {}).get("resolved_country"):
+            metadata["resolved_country"] = incoming.metadata["resolved_country"]
+        # Preserve a complete, fresh coordinate pair supplied by the source.
+        # Never combine one new coordinate with one cached coordinate.
+        if incoming.latitude is None or incoming.longitude is None:
+            incoming.latitude = incoming.longitude = None
+            incoming.location_confidence = None
+    elif incoming.latitude is None and incoming.longitude is None:
         incoming.latitude = cached.latitude
-    if incoming.longitude is None and cached.longitude is not None:
         incoming.longitude = cached.longitude
-    if not incoming.location_confidence and cached.location_confidence:
         incoming.location_confidence = cached.location_confidence
 
-    metadata = _clean_metadata(cached.metadata)
-    metadata.update(_clean_metadata(incoming.metadata))
     incoming.metadata = metadata
 
     if not incoming.detected_intents and cached.detected_intents:
