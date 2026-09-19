@@ -1,26 +1,26 @@
 {
-  "raw_jobs": 1738,
-  "unique_jobs": 1388,
-  "geocoded_jobs": 1227,
+  "raw_jobs": 1753,
+  "unique_jobs": 1406,
+  "geocoded_jobs": 1243,
   "profiles": [
     "electrical_internship_br",
     "computer_science_internship_br"
   ],
   "sources": {
-    "lever": 608,
-    "ashby": 233,
-    "gupy_public": 23,
-    "vagas_com": 873,
+    "lever": 605,
+    "ashby": 234,
+    "gupy_public": 24,
+    "vagas_com": 889,
     "99jobs": 1
   },
   "intent_counts": {
-    "internship": 406,
+    "internship": 431,
     "co_op": 25,
     "summer_internship": 39,
     "entry_level": 71,
     "seasonal_job": 2,
-    "apprentice": 47,
+    "apprentice": 44,
     "trainee": 9,
-    "research": 7
+    "research": 9
   }
 }

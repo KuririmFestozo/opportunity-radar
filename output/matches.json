@@ -1,6 +1,19 @@
 [
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "lever:938a7ddf-521f-4581-b5ba-c3ba29f9308a",
+    "score": 0,
+    "course_score": 17,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "lever:41468aca-c1c2-4a7b-aec8-f499e64b6d1e",
     "score": 0,
     "course_score": 0,
@@ -238,13 +251,13 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "lever:92396bac-e719-4886-8a43-0a0b0f163944",
-    "score": 0,
-    "course_score": 12,
+    "job_key": "lever:5dbf3db4-aa8c-4064-9d8f-3ca3fb02f8f8",
+    "score": 30,
+    "course_score": 0,
     "distance_km": null,
     "eligible": false,
     "reasons": [
-      "tipo de oportunidade não confirmado",
+      "tipo de oportunidade desejado",
       "modalidade desejada",
       "fora do país escolhido"
     ]
@@ -432,6 +445,20 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "lever:bd60cbc1-1ecc-4603-b609-9e6cbb4c7f28",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "senioridade incompatível",
       "modalidade desejada",
       "fora do país escolhido"
     ]
@@ -1656,8 +1683,8 @@
   {
     "profile_id": "electrical_internship_br",
     "job_key": "lever:c03bc781-786f-4bac-9884-4328b98e2534",
-    "score": 27,
-    "course_score": 60,
+    "score": 26,
+    "course_score": 59,
     "distance_km": null,
     "eligible": false,
     "reasons": [
@@ -1916,20 +1943,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "lever:cf32e29c-4468-4917-8c6a-f21bbac635e8",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "lever:2fc30e70-aa40-44e0-82e8-369a10891981",
     "score": 0,
     "course_score": 0,
@@ -1947,20 +1960,6 @@
     "job_key": "lever:1505271b-dfd0-4439-8d87-38b894492249",
     "score": 0,
     "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "lever:938a7ddf-521f-4581-b5ba-c3ba29f9308a",
-    "score": 0,
-    "course_score": 9,
     "distance_km": null,
     "eligible": false,
     "reasons": [
@@ -2058,7 +2057,7 @@
     "profile_id": "electrical_internship_br",
     "job_key": "lever:a64042bd-5490-4ef7-9e93-38e1b120b1d3",
     "score": 0,
-    "course_score": 9,
+    "course_score": 12,
     "distance_km": null,
     "eligible": false,
     "reasons": [
@@ -3406,20 +3405,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "lever:8a292a29-1368-4f35-ab80-73754b9f5839",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "lever:ee614940-c594-41da-8432-8a677e21520d",
     "score": 0,
     "course_score": 0,
@@ -4163,6 +4148,20 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "lever:e899be5d-2c00-4fa2-be0a-51841d4a18fb",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "lever:262ee1a9-2588-4047-987c-91d1f11b14dd",
     "score": 0,
     "course_score": 9,
@@ -4264,6 +4263,20 @@
     "job_key": "lever:6b500b70-dca1-41aa-a283-ce36d0b02a65",
     "score": 0,
     "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "lever:92396bac-e719-4886-8a43-0a0b0f163944",
+    "score": 0,
+    "course_score": 12,
     "distance_km": null,
     "eligible": false,
     "reasons": [
@@ -5165,20 +5178,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "lever:77b463a8-a2bb-423e-952b-c9e63b45b0fa",
-    "score": 0,
-    "course_score": 15,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "senioridade incompatível",
       "modalidade desejada",
       "fora do país escolhido"
@@ -6408,6 +6407,20 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "lever:2527684b-f4fb-4c16-9ca8-c5532d3f70be",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "lever:920ddfc2-b289-4ca6-8d33-e10bfa7e575f",
     "score": 0,
     "course_score": 12,
@@ -6479,20 +6492,6 @@
   {
     "profile_id": "electrical_internship_br",
     "job_key": "lever:3d6d5608-23f6-4a7c-81ff-f41aaf05eb27",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "lever:ec372658-f958-46e9-b968-a4f48dc25708",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
@@ -6802,33 +6801,7 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "lever:688eda0d-b749-4a29-80e9-e6e1d4a80d2d",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "lever:a197979d-ed30-4da9-91b1-a578097522ad",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 0.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "lever:ef16315f-376b-4453-b804-42b0352c7f99",
     "score": 0,
     "course_score": 12,
     "distance_km": 0.0,
@@ -8229,20 +8202,6 @@
   {
     "profile_id": "electrical_internship_br",
     "job_key": "lever:d9462595-16b5-439a-82e0-f32b8afad3ab",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "lever:1ad590c4-5972-4463-8097-98bc424c72a4",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
@@ -9928,6 +9887,20 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "ashby:https://jobs.ashbyhq.com/etched/157ed4f4-6e3b-4ec9-b93f-3e363e92041e",
+    "score": 72,
+    "course_score": 61,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "aderência parcial ao curso",
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "ashby:https://jobs.ashbyhq.com/etched/f05e3218-5ec7-41d1-bc99-bb7014422229",
     "score": 74,
     "course_score": 64,
@@ -11433,6 +11406,17 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "gupy_public:11845034",
+    "score": 43,
+    "course_score": 27,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "gupy_public:11746327",
     "score": 35,
     "course_score": 15,
@@ -11686,18 +11670,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832768",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 268.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2834938",
     "score": 29,
     "course_score": 0,
@@ -11714,6 +11686,18 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 1414.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832768",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 268.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11770,37 +11754,14 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2783038",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829947",
+    "job_key": "vagas_com:2835625",
     "score": 35,
     "course_score": 9,
-    "distance_km": 211.4,
+    "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830689",
-    "score": 25,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -11818,10 +11779,21 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831123",
+    "job_key": "vagas_com:2830689",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831849",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 229.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11830,43 +11802,19 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831206",
-    "score": 29,
+    "job_key": "vagas_com:2826790",
+    "score": 25,
     "course_score": 0,
-    "distance_km": 82.5,
+    "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
+      "fora do país escolhido"
     ]
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831256",
-    "score": 37,
-    "course_score": 12,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831860",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 79.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833124",
+    "job_key": "vagas_com:2831599",
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
@@ -11878,10 +11826,22 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832880",
+    "job_key": "vagas_com:2832421",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832468",
     "score": 35,
     "course_score": 9,
-    "distance_km": 213.3,
+    "distance_km": 210.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11890,10 +11850,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2825121",
+    "job_key": "vagas_com:2832491",
     "score": 29,
     "course_score": 0,
-    "distance_km": 195.9,
+    "distance_km": 2263.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11902,14 +11862,14 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2824690",
-    "score": 69,
-    "course_score": 58,
-    "distance_km": 365.2,
-    "eligible": true,
+    "job_key": "vagas_com:2832512",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 170.9,
+    "eligible": false,
     "reasons": [
-      "aderência parcial ao curso",
       "tipo de oportunidade desejado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -11940,9 +11900,9 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831599",
-    "score": 29,
-    "course_score": 0,
+    "job_key": "vagas_com:2831256",
+    "score": 37,
+    "course_score": 12,
     "distance_km": 213.3,
     "eligible": false,
     "reasons": [
@@ -11952,10 +11912,35 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831899",
+    "job_key": "vagas_com:2831206",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 82.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2824690",
+    "score": 69,
+    "course_score": 58,
+    "distance_km": 365.2,
+    "eligible": true,
+    "reasons": [
+      "aderência parcial ao curso",
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832035",
     "score": 35,
     "course_score": 9,
-    "distance_km": 230.7,
+    "distance_km": 624.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11964,10 +11949,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831917",
+    "job_key": "vagas_com:2832568",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 624.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11976,10 +11961,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832421",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 230.7,
+    "job_key": "vagas_com:2832880",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -11988,10 +11973,58 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832491",
+    "job_key": "vagas_com:2830095",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 467.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832667",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 310.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832664",
     "score": 29,
     "course_score": 0,
-    "distance_km": 2263.9,
+    "distance_km": 310.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831547",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 814.2,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832704",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 138.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12024,140 +12057,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832035",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 624.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834484",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 461.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834701",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 642.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834425",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834436",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833621",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2817542",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833760",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833713",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829260",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833926",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2832341",
     "score": 29,
     "course_score": 0,
@@ -12170,10 +12069,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830695",
+    "job_key": "vagas_com:2832392",
     "score": 29,
     "course_score": 0,
-    "distance_km": 958.1,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12182,14 +12081,85 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833897",
+    "job_key": "vagas_com:2831917",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831860",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 79.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831899",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2783038",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2825345",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 265.2,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2823788",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 387.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2783052",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -12206,13 +12176,14 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2783052",
-    "score": 25,
+    "job_key": "vagas_com:2833897",
+    "score": 29,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
-      "tipo de oportunidade desejado"
+      "tipo de oportunidade desejado",
+      "país desejado"
     ]
   },
   {
@@ -12253,18 +12224,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834276",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 507.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2818493",
     "score": 29,
     "course_score": 0,
@@ -12277,10 +12236,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835131",
+    "job_key": "vagas_com:2834276",
     "score": 29,
     "course_score": 0,
-    "distance_km": 202.7,
+    "distance_km": 507.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12301,14 +12260,13 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835365",
-    "score": 34,
+    "job_key": "vagas_com:2835131",
+    "score": 29,
     "course_score": 0,
-    "distance_km": 698.2,
+    "distance_km": 202.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -12318,6 +12276,19 @@
     "score": 34,
     "course_score": 0,
     "distance_km": 2135.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835365",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 698.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12339,18 +12310,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2822295",
-    "score": 43,
-    "course_score": 21,
-    "distance_km": 82.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2831205",
     "score": 29,
     "course_score": 0,
@@ -12363,21 +12322,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830558",
-    "score": 31,
-    "course_score": 9,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833616",
+    "job_key": "vagas_com:2831965",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12386,10 +12334,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831965",
+    "job_key": "vagas_com:2833616",
     "score": 29,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -12418,6 +12366,17 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2830558",
+    "score": 31,
+    "course_score": 9,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -12559,6 +12518,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2828445",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2783038",
     "score": 29,
     "course_score": 0,
@@ -12579,6 +12550,140 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833124",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2825121",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834484",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 461.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834701",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 642.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834425",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834436",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833621",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2817542",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833760",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833713",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2829260",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
       "país desejado"
     ]
   },
@@ -12636,18 +12741,6 @@
     "score": 0,
     "course_score": 9,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834492",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 211.4,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -12813,6 +12906,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835616",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 1119.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2835304",
     "score": 0,
     "course_score": 9,
@@ -12850,10 +12955,22 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834647",
+    "job_key": "vagas_com:2834199",
     "score": 0,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835703",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 501.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -12946,6 +13063,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835648",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2831747",
     "score": 0,
     "course_score": 9,
@@ -13006,10 +13135,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831231",
+    "job_key": "vagas_com:2835228",
     "score": 0,
     "course_score": 0,
-    "distance_km": 723.5,
+    "distance_km": 181.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -13018,10 +13147,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835228",
+    "job_key": "vagas_com:2835732",
     "score": 0,
     "course_score": 0,
-    "distance_km": 181.6,
+    "distance_km": 723.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -13042,10 +13171,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833518",
+    "job_key": "vagas_com:2834673",
     "score": 0,
     "course_score": 0,
-    "distance_km": 814.2,
+    "distance_km": 393.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -13054,10 +13183,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834673",
+    "job_key": "vagas_com:2833518",
     "score": 0,
     "course_score": 0,
-    "distance_km": 393.7,
+    "distance_km": 814.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -13173,18 +13302,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833236",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2085.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2833890",
     "score": 0,
     "course_score": 0,
@@ -13197,10 +13314,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834329",
+    "job_key": "vagas_com:2833236",
     "score": 0,
     "course_score": 0,
-    "distance_km": 67.3,
+    "distance_km": 2085.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -13511,55 +13628,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831006",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 1088.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831016",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831060",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 2287.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831103",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 469.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2830610",
     "score": 0,
     "course_score": 0,
@@ -13569,18 +13637,6 @@
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
       "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830954",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
     ]
   },
   {
@@ -13690,6 +13746,68 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831542",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 693.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831726",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831634",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831846",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831847",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2785090",
     "score": 0,
     "course_score": 0,
@@ -13753,19 +13871,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831107",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 530.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -13963,18 +14068,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831847",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2831845",
     "score": 0,
     "course_score": 0,
@@ -14035,23 +14128,34 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831634",
+    "job_key": "vagas_com:2824536",
     "score": 0,
-    "course_score": 9,
-    "distance_km": null,
+    "course_score": 0,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2824536",
+    "job_key": "vagas_com:2833218",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 450.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834454",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 93.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -14089,18 +14193,6 @@
     "score": 0,
     "course_score": 9,
     "distance_km": 187.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835563",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -14150,6 +14242,18 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834345",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -14229,18 +14333,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833488",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 934.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2834968",
     "score": 0,
     "course_score": 0,
@@ -14277,6 +14369,17 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835679",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2831197",
     "score": 0,
     "course_score": 0,
@@ -14289,7 +14392,7 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832552",
+    "job_key": "vagas_com:2827053",
     "score": 0,
     "course_score": 9,
     "distance_km": 493.8,
@@ -14365,54 +14468,6 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833782",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2085.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834955",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 268.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834420",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 212.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835165",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 416.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -14505,18 +14560,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834622",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 166.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2822083",
     "score": 0,
     "course_score": 0,
@@ -14542,6 +14585,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835785",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 202.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2828643",
     "score": 0,
     "course_score": 0,
@@ -14550,6 +14605,18 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835597",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1118.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -14603,34 +14670,22 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835601",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1118.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2828618",
     "score": 29,
     "course_score": 0,
     "distance_km": 202.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832468",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 210.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835096",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14651,10 +14706,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832392",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 472.0,
+    "job_key": "vagas_com:2835787",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14687,10 +14742,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835454",
+    "job_key": "vagas_com:2835536",
     "score": 29,
     "course_score": 0,
-    "distance_km": 197.3,
+    "distance_km": 1339.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14699,10 +14754,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835457",
+    "job_key": "vagas_com:2835454",
     "score": 29,
     "course_score": 0,
-    "distance_km": 1339.7,
+    "distance_km": 197.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14843,10 +14898,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833765",
+    "job_key": "vagas_com:2835641",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14859,18 +14914,6 @@
     "score": 35,
     "course_score": 9,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834039",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 1414.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -14976,46 +15019,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831006",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 1088.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831846",
+    "job_key": "vagas_com:2835621",
     "score": 0,
     "course_score": 0,
     "distance_km": 195.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832871",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 624.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2825733",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15048,10 +15055,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831423",
+    "job_key": "vagas_com:2832209",
     "score": 0,
     "course_score": 9,
-    "distance_km": 472.0,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15060,10 +15067,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834112",
+    "job_key": "vagas_com:2831846",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 195.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15108,6 +15115,79 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831423",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832871",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 624.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2825733",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834112",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834895",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 1353.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2827592",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2833724",
     "score": 0,
     "course_score": 0,
@@ -15144,10 +15224,22 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2827592",
+    "job_key": "vagas_com:2833442",
+    "score": 0,
+    "course_score": 12,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833491",
     "score": 0,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 610.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15157,9 +15249,9 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832209",
+    "job_key": "vagas_com:2833383",
     "score": 0,
-    "course_score": 9,
+    "course_score": 0,
     "distance_km": 493.8,
     "eligible": false,
     "reasons": [
@@ -15193,10 +15285,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833383",
+    "job_key": "vagas_com:2834811",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 110.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15205,47 +15297,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833442",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833491",
+    "job_key": "vagas_com:2832782",
     "score": 0,
     "course_score": 0,
-    "distance_km": 610.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830614",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832163",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15267,46 +15322,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835149",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834895",
+    "job_key": "vagas_com:2835635",
     "score": 0,
     "course_score": 9,
-    "distance_km": 1353.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832782",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 404.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834811",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 110.1,
+    "distance_km": 413.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15338,7 +15357,7 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832933",
+    "job_key": "vagas_com:2835149",
     "score": 0,
     "course_score": 0,
     "distance_km": 213.3,
@@ -15350,10 +15369,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834442",
+    "job_key": "vagas_com:2835670",
     "score": 0,
-    "course_score": 9,
-    "distance_km": 115.6,
+    "course_score": 0,
+    "distance_km": 693.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15362,10 +15381,34 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833646",
+    "job_key": "vagas_com:2835782",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 166.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832865",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 202.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834057",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -15405,20 +15448,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2824941",
-    "score": 83,
-    "course_score": 70,
-    "distance_km": 170.9,
-    "eligible": true,
-    "reasons": [
-      "forte aderência ao curso",
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -15625,6 +15654,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835621",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2828957",
     "score": 18,
     "course_score": 49,
@@ -15675,18 +15716,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833765",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2833926",
     "score": 35,
     "course_score": 9,
@@ -15715,18 +15744,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831010",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -15795,19 +15812,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831542",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 693.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2785114",
     "score": 0,
     "course_score": 0,
@@ -15849,6 +15853,19 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835715",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -15903,46 +15920,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831066",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 404.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2835014",
     "score": 39,
     "course_score": 15,
     "distance_km": 230.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831010",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829907",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 2477.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16011,6 +15992,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835654",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2835010",
     "score": 29,
     "course_score": 0,
@@ -16035,6 +16028,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835647",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2827296",
     "score": 34,
     "course_score": 0,
@@ -16043,18 +16048,6 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833765",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
       "país desejado"
     ]
   },
@@ -16096,10 +16089,362 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835730",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 130.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832773",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835082",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 112.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834181",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 610.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834210",
+    "score": 44,
+    "course_score": 22,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2823982",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 473.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834203",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 2088.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834140",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 932.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835466",
+    "score": 78,
+    "course_score": 70,
+    "distance_km": null,
+    "eligible": true,
+    "reasons": [
+      "forte aderência ao curso",
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835506",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835604",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 268.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834571",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834376",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 1435.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2826517",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 346.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832683",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 445.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833252",
+    "score": 37,
+    "course_score": 12,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835687",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 110.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2824147",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2825298",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832903",
+    "score": 37,
+    "course_score": 12,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835229",
+    "score": 36,
+    "course_score": 9,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2825294",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831734",
+    "score": 40,
+    "course_score": 17,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832902",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835653",
+    "score": 44,
+    "course_score": 22,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835659",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832993",
+    "score": 30,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831556",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 130.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2827637",
     "score": 29,
     "course_score": 0,
     "distance_km": 478.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835518",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 461.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16124,18 +16469,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835518",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 461.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16240,66 +16573,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835257",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834596",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829390",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835619",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 346.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2825733",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2834457",
     "score": 29,
     "course_score": 0,
@@ -16360,10 +16633,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833765",
+    "job_key": "vagas_com:2835650",
     "score": 29,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16444,10 +16717,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833716",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 213.3,
+    "job_key": "vagas_com:2835738",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 365.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16554,30 +16827,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2824147",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831734",
-    "score": 40,
-    "course_score": 17,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2818493",
     "score": 29,
     "course_score": 0,
@@ -16618,6 +16867,18 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835635",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 413.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -16734,18 +16995,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2826883",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 2580.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2834159",
     "score": 29,
     "course_score": 0,
@@ -16761,6 +17010,18 @@
     "job_key": "vagas_com:2835005",
     "score": 29,
     "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835654",
+    "score": 35,
+    "course_score": 9,
     "distance_km": 213.3,
     "eligible": false,
     "reasons": [
@@ -16806,10 +17067,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832704",
+    "job_key": "vagas_com:2835738",
     "score": 35,
     "course_score": 9,
-    "distance_km": 138.5,
+    "distance_km": 365.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16822,18 +17083,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834140",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 932.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -16881,30 +17130,6 @@
     "score": 35,
     "course_score": 9,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2830095",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 467.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831547",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 814.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -17142,10 +17367,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833691",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
+    "job_key": "vagas_com:2833553",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -17154,10 +17379,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833553",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 213.3,
+    "job_key": "vagas_com:2833691",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -17173,31 +17398,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832667",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 310.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2823982",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": 473.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -17301,14 +17501,25 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831103",
-    "score": 0,
+    "job_key": "vagas_com:2825555",
+    "score": 29,
     "course_score": 0,
-    "distance_km": 469.3,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832209",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -17322,18 +17533,6 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832396",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -17363,60 +17562,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2831107",
+    "job_key": "vagas_com:2832396",
     "score": 0,
-    "course_score": 0,
-    "distance_km": 530.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834506",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 153.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829430",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1120.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832810",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2827592",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 195.9,
+    "course_score": 9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17438,13 +17587,50 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832209",
+    "job_key": "vagas_com:2834506",
     "score": 0,
-    "course_score": 9,
-    "distance_km": 493.8,
+    "course_score": 0,
+    "distance_km": 153.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2827592",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2832810",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2829430",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1120.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -17461,23 +17647,22 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833966",
+    "job_key": "vagas_com:2832782",
     "score": 0,
-    "course_score": 9,
-    "distance_km": 213.3,
+    "course_score": 0,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2832782",
+    "job_key": "vagas_com:2835786",
     "score": 0,
     "course_score": 0,
-    "distance_km": 404.5,
+    "distance_km": 2477.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17511,42 +17696,6 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834433",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2834543",
-    "score": 0,
-    "course_score": 12,
-    "distance_km": 230.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829678",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2832560",
     "score": 0,
     "course_score": 0,
@@ -17571,10 +17720,46 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2829678",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2834433",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2834314",
     "score": 0,
     "course_score": 0,
     "distance_km": 1120.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2835011",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17595,10 +17780,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2835011",
+    "job_key": "vagas_com:2834543",
     "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
+    "course_score": 12,
+    "distance_km": 230.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17607,10 +17792,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829037",
+    "job_key": "vagas_com:2835809",
     "score": 0,
     "course_score": 0,
-    "distance_km": 242.9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17619,22 +17804,10 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829032",
+    "job_key": "vagas_com:2831091",
     "score": 0,
     "course_score": 0,
-    "distance_km": 486.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2829033",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1437.8,
+    "distance_km": 226.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -17667,14 +17840,37 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2833345",
+    "job_key": "vagas_com:2829037",
     "score": 0,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 242.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2829033",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1437.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2829032",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 486.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -17687,6 +17883,19 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2833345",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -17717,6 +17926,18 @@
   },
   {
     "profile_id": "electrical_internship_br",
+    "job_key": "vagas_com:2831632",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "electrical_internship_br",
     "job_key": "vagas_com:2832038",
     "score": 0,
     "course_score": 9,
@@ -17725,18 +17946,6 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "electrical_internship_br",
-    "job_key": "vagas_com:2827337",
-    "score": 0,
-    "course_score": 9,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -18006,16 +18215,28 @@
   },
   {
     "profile_id": "electrical_internship_br",
-    "job_key": "99jobs:510091",
+    "job_key": "99jobs:499347",
+    "score": 45,
+    "course_score": 17,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "lever:938a7ddf-521f-4581-b5ba-c3ba29f9308a",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
     "eligible": false,
     "reasons": [
-      "tipo de oportunidade desejado",
-      "senioridade incompatível",
+      "tipo de oportunidade não confirmado",
       "modalidade desejada",
-      "país desejado"
+      "fora do país escolhido"
     ]
   },
   {
@@ -18255,14 +18476,13 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "lever:92396bac-e719-4886-8a43-0a0b0f163944",
-    "score": 19,
-    "course_score": 49,
+    "job_key": "lever:5dbf3db4-aa8c-4064-9d8f-3ca3fb02f8f8",
+    "score": 30,
+    "course_score": 0,
     "distance_km": null,
     "eligible": false,
     "reasons": [
-      "aderência parcial ao curso",
-      "tipo de oportunidade não confirmado",
+      "tipo de oportunidade desejado",
       "modalidade desejada",
       "fora do país escolhido"
     ]
@@ -18450,6 +18670,20 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "lever:bd60cbc1-1ecc-4603-b609-9e6cbb4c7f28",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "senioridade incompatível",
       "modalidade desejada",
       "fora do país escolhido"
     ]
@@ -19135,8 +19369,8 @@
   {
     "profile_id": "computer_science_internship_br",
     "job_key": "lever:fe7531e1-c25e-4e4a-9661-19e3a2ab8e69",
-    "score": 34,
-    "course_score": 70,
+    "score": 45,
+    "course_score": 87,
     "distance_km": null,
     "eligible": false,
     "reasons": [
@@ -19929,20 +20163,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "lever:cf32e29c-4468-4917-8c6a-f21bbac635e8",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "lever:2fc30e70-aa40-44e0-82e8-369a10891981",
     "score": 0,
     "course_score": 0,
@@ -19958,20 +20178,6 @@
   {
     "profile_id": "computer_science_internship_br",
     "job_key": "lever:1505271b-dfd0-4439-8d87-38b894492249",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "lever:938a7ddf-521f-4581-b5ba-c3ba29f9308a",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
@@ -21436,20 +21642,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "lever:8a292a29-1368-4f35-ab80-73754b9f5839",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "lever:ee614940-c594-41da-8432-8a677e21520d",
     "score": 0,
     "course_score": 0,
@@ -22204,6 +22396,20 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "lever:e899be5d-2c00-4fa2-be0a-51841d4a18fb",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "lever:262ee1a9-2588-4047-987c-91d1f11b14dd",
     "score": 0,
     "course_score": 9,
@@ -22309,6 +22515,21 @@
     "distance_km": null,
     "eligible": false,
     "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "lever:92396bac-e719-4886-8a43-0a0b0f163944",
+    "score": 0,
+    "course_score": 49,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "aderência parcial ao curso",
       "tipo de oportunidade não confirmado",
       "senioridade incompatível",
       "modalidade desejada",
@@ -23215,20 +23436,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "lever:77b463a8-a2bb-423e-952b-c9e63b45b0fa",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "senioridade incompatível",
       "modalidade desejada",
       "fora do país escolhido"
@@ -24469,6 +24676,20 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "lever:2527684b-f4fb-4c16-9ca8-c5532d3f70be",
+    "score": 0,
+    "course_score": 9,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "lever:920ddfc2-b289-4ca6-8d33-e10bfa7e575f",
     "score": 0,
     "course_score": 0,
@@ -24540,20 +24761,6 @@
   {
     "profile_id": "computer_science_internship_br",
     "job_key": "lever:3d6d5608-23f6-4a7c-81ff-f41aaf05eb27",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "lever:ec372658-f958-46e9-b968-a4f48dc25708",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
@@ -24863,33 +25070,7 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "lever:688eda0d-b749-4a29-80e9-e6e1d4a80d2d",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "lever:a197979d-ed30-4da9-91b1-a578097522ad",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 0.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "lever:ef16315f-376b-4453-b804-42b0352c7f99",
     "score": 0,
     "course_score": 0,
     "distance_km": 0.0,
@@ -26278,20 +26459,6 @@
   {
     "profile_id": "computer_science_internship_br",
     "job_key": "lever:d9462595-16b5-439a-82e0-f32b8afad3ab",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "modalidade desejada",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "lever:1ad590c4-5972-4463-8097-98bc424c72a4",
     "score": 0,
     "course_score": 0,
     "distance_km": null,
@@ -27968,6 +28135,20 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "ashby:https://jobs.ashbyhq.com/etched/157ed4f4-6e3b-4ec9-b93f-3e363e92041e",
+    "score": 67,
+    "course_score": 54,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "aderência parcial ao curso",
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "ashby:https://jobs.ashbyhq.com/etched/f05e3218-5ec7-41d1-bc99-bb7014422229",
     "score": 30,
     "course_score": 0,
@@ -29470,6 +29651,17 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "gupy_public:11845034",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "gupy_public:11746327",
     "score": 25,
     "course_score": 0,
@@ -29723,18 +29915,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832768",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 268.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2834938",
     "score": 29,
     "course_score": 0,
@@ -29751,6 +29931,18 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 1414.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832768",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 268.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -29807,7 +29999,7 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2783038",
+    "job_key": "vagas_com:2835625",
     "score": 29,
     "course_score": 0,
     "distance_km": null,
@@ -29815,29 +30007,6 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829947",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 211.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830689",
-    "score": 25,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -29855,10 +30024,21 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831123",
+    "job_key": "vagas_com:2830689",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831849",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 229.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -29867,43 +30047,19 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831206",
-    "score": 29,
+    "job_key": "vagas_com:2826790",
+    "score": 25,
     "course_score": 0,
-    "distance_km": 82.5,
+    "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
+      "fora do país escolhido"
     ]
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831256",
-    "score": 37,
-    "course_score": 12,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831860",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 79.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833124",
+    "job_key": "vagas_com:2831599",
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
@@ -29915,10 +30071,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832880",
+    "job_key": "vagas_com:2832421",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 230.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -29927,10 +30083,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2825121",
+    "job_key": "vagas_com:2832468",
     "score": 29,
     "course_score": 0,
-    "distance_km": 195.9,
+    "distance_km": 210.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -29939,13 +30095,26 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2824690",
+    "job_key": "vagas_com:2832491",
     "score": 29,
     "course_score": 0,
-    "distance_km": 365.2,
+    "distance_km": 2263.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832512",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 170.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -29976,7 +30145,67 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831599",
+    "job_key": "vagas_com:2831256",
+    "score": 37,
+    "course_score": 12,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831206",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 82.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2824690",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 365.2,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832035",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 624.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832568",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 624.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832880",
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
@@ -29988,10 +30217,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831899",
+    "job_key": "vagas_com:2830095",
     "score": 29,
     "course_score": 0,
-    "distance_km": 230.7,
+    "distance_km": 467.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30000,10 +30229,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831917",
+    "job_key": "vagas_com:2832667",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 310.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30012,10 +30241,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832421",
+    "job_key": "vagas_com:2832664",
     "score": 29,
     "course_score": 0,
-    "distance_km": 230.7,
+    "distance_km": 310.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30024,10 +30253,22 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832491",
+    "job_key": "vagas_com:2831547",
     "score": 29,
     "course_score": 0,
-    "distance_km": 2263.9,
+    "distance_km": 814.2,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832704",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 138.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30060,140 +30301,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832035",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 624.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834484",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 461.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834701",
-    "score": 35,
-    "course_score": 9,
-    "distance_km": 642.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834425",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834436",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833621",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2817542",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833760",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833713",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829260",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833926",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2832341",
     "score": 29,
     "course_score": 0,
@@ -30206,10 +30313,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830695",
+    "job_key": "vagas_com:2832392",
     "score": 29,
     "course_score": 0,
-    "distance_km": 958.1,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30218,14 +30325,85 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833897",
+    "job_key": "vagas_com:2831917",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831860",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 79.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831899",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2783038",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2825345",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 265.2,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2823788",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 387.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2783052",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -30242,13 +30420,14 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2783052",
-    "score": 25,
+    "job_key": "vagas_com:2833897",
+    "score": 29,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
-      "tipo de oportunidade desejado"
+      "tipo de oportunidade desejado",
+      "país desejado"
     ]
   },
   {
@@ -30289,18 +30468,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834276",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 507.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2818493",
     "score": 29,
     "course_score": 0,
@@ -30313,10 +30480,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835131",
+    "job_key": "vagas_com:2834276",
     "score": 29,
     "course_score": 0,
-    "distance_km": 202.7,
+    "distance_km": 507.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30337,14 +30504,13 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835365",
-    "score": 34,
+    "job_key": "vagas_com:2835131",
+    "score": 29,
     "course_score": 0,
-    "distance_km": 698.2,
+    "distance_km": 202.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -30354,6 +30520,19 @@
     "score": 34,
     "course_score": 0,
     "distance_km": 2135.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835365",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 698.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30375,19 +30554,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2822295",
-    "score": 63,
-    "course_score": 49,
-    "distance_km": 82.5,
-    "eligible": true,
-    "reasons": [
-      "aderência parcial ao curso",
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2831205",
     "score": 29,
     "course_score": 0,
@@ -30400,21 +30566,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830558",
-    "score": 25,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833616",
+    "job_key": "vagas_com:2831965",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30423,10 +30578,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831965",
+    "job_key": "vagas_com:2833616",
     "score": 29,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -30455,6 +30610,17 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2830558",
+    "score": 25,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado"
     ]
   },
   {
@@ -30595,6 +30761,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2828445",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2783038",
     "score": 29,
     "course_score": 0,
@@ -30615,6 +30793,140 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833124",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2825121",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834484",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 461.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834701",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 642.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834425",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834436",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833621",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2817542",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833760",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833713",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2829260",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
       "país desejado"
     ]
   },
@@ -30672,18 +30984,6 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834492",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 211.4,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -30849,6 +31149,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835616",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1119.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2835304",
     "score": 0,
     "course_score": 0,
@@ -30886,10 +31198,22 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834647",
+    "job_key": "vagas_com:2834199",
     "score": 0,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835703",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 501.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -30982,6 +31306,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835648",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2831747",
     "score": 0,
     "course_score": 0,
@@ -31042,10 +31378,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831231",
+    "job_key": "vagas_com:2835228",
     "score": 0,
     "course_score": 0,
-    "distance_km": 723.5,
+    "distance_km": 181.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -31054,10 +31390,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835228",
+    "job_key": "vagas_com:2835732",
     "score": 0,
     "course_score": 0,
-    "distance_km": 181.6,
+    "distance_km": 723.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -31078,10 +31414,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833518",
+    "job_key": "vagas_com:2834673",
     "score": 0,
     "course_score": 0,
-    "distance_km": 814.2,
+    "distance_km": 393.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -31090,10 +31426,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834673",
+    "job_key": "vagas_com:2833518",
     "score": 0,
     "course_score": 0,
-    "distance_km": 393.7,
+    "distance_km": 814.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -31209,18 +31545,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833236",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2085.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2833890",
     "score": 0,
     "course_score": 0,
@@ -31233,10 +31557,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834329",
+    "job_key": "vagas_com:2833236",
     "score": 0,
     "course_score": 0,
-    "distance_km": 67.3,
+    "distance_km": 2085.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -31548,55 +31872,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831006",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1088.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831016",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831060",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2287.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831103",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 469.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2830610",
     "score": 0,
     "course_score": 0,
@@ -31606,18 +31881,6 @@
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
       "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830954",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
     ]
   },
   {
@@ -31727,6 +31990,68 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831542",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 693.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831726",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831634",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831846",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831847",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2785090",
     "score": 0,
     "course_score": 0,
@@ -31790,19 +32115,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831107",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 530.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -32000,18 +32312,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831847",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2831845",
     "score": 0,
     "course_score": 0,
@@ -32073,23 +32373,34 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831634",
+    "job_key": "vagas_com:2824536",
     "score": 0,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2824536",
+    "job_key": "vagas_com:2833218",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 450.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834454",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 93.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -32127,18 +32438,6 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 187.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835563",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -32188,6 +32487,18 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834345",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -32267,18 +32578,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833488",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 934.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2834968",
     "score": 0,
     "course_score": 9,
@@ -32315,6 +32614,17 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835679",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2831197",
     "score": 0,
     "course_score": 0,
@@ -32327,7 +32637,7 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832552",
+    "job_key": "vagas_com:2827053",
     "score": 0,
     "course_score": 0,
     "distance_km": 493.8,
@@ -32403,54 +32713,6 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833782",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2085.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834955",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 268.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834420",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 212.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835165",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 416.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -32543,18 +32805,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834622",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 166.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2822083",
     "score": 0,
     "course_score": 0,
@@ -32580,6 +32830,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835785",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 202.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2828643",
     "score": 0,
     "course_score": 0,
@@ -32588,6 +32850,18 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835597",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1118.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -32641,34 +32915,22 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835601",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1118.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2828618",
     "score": 29,
     "course_score": 0,
     "distance_km": 202.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832468",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 210.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835096",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -32689,10 +32951,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832392",
+    "job_key": "vagas_com:2835787",
     "score": 29,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -32725,10 +32987,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835454",
+    "job_key": "vagas_com:2835536",
     "score": 29,
     "course_score": 0,
-    "distance_km": 197.3,
+    "distance_km": 1339.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -32737,10 +32999,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835457",
+    "job_key": "vagas_com:2835454",
     "score": 29,
     "course_score": 0,
-    "distance_km": 1339.7,
+    "distance_km": 197.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -32881,10 +33143,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833765",
+    "job_key": "vagas_com:2835641",
     "score": 29,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -32897,18 +33159,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834039",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 1414.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -33014,46 +33264,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831006",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1088.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831846",
+    "job_key": "vagas_com:2835621",
     "score": 0,
     "course_score": 0,
     "distance_km": 195.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832871",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 624.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2825733",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33086,10 +33300,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831423",
+    "job_key": "vagas_com:2832209",
     "score": 0,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33098,10 +33312,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834112",
+    "job_key": "vagas_com:2831846",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 195.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33146,6 +33360,79 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831423",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832871",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 624.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2825733",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834112",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834895",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1353.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2827592",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2833724",
     "score": 0,
     "course_score": 0,
@@ -33182,10 +33469,22 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2827592",
+    "job_key": "vagas_com:2833442",
+    "score": 0,
+    "course_score": 15,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833491",
     "score": 0,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 610.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33195,7 +33494,7 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832209",
+    "job_key": "vagas_com:2833383",
     "score": 0,
     "course_score": 0,
     "distance_km": 493.8,
@@ -33231,10 +33530,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833383",
+    "job_key": "vagas_com:2834811",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 110.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33243,47 +33542,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833442",
-    "score": 0,
-    "course_score": 15,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833491",
+    "job_key": "vagas_com:2832782",
     "score": 0,
     "course_score": 0,
-    "distance_km": 610.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830614",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832163",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33305,46 +33567,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835149",
+    "job_key": "vagas_com:2835635",
     "score": 0,
     "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834895",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1353.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832782",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 404.5,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834811",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 110.1,
+    "distance_km": 413.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33376,7 +33602,7 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832933",
+    "job_key": "vagas_com:2835149",
     "score": 0,
     "course_score": 0,
     "distance_km": 213.3,
@@ -33388,10 +33614,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834442",
+    "job_key": "vagas_com:2835670",
     "score": 0,
     "course_score": 0,
-    "distance_km": 115.6,
+    "distance_km": 693.6,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33400,10 +33626,34 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833646",
+    "job_key": "vagas_com:2835782",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 166.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832865",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 202.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834057",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -33442,19 +33692,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2824941",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": 170.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -33653,6 +33890,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835621",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2828957",
     "score": 13,
     "course_score": 42,
@@ -33702,18 +33951,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833765",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2833926",
     "score": 29,
     "course_score": 0,
@@ -33745,19 +33982,6 @@
     "distance_km": 493.8,
     "eligible": false,
     "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831010",
-    "score": 68,
-    "course_score": 56,
-    "distance_km": 213.3,
-    "eligible": true,
-    "reasons": [
-      "aderência parcial ao curso",
       "tipo de oportunidade desejado",
       "país desejado"
     ]
@@ -33827,20 +34051,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831542",
-    "score": 0,
-    "course_score": 56,
-    "distance_km": 693.6,
-    "eligible": false,
-    "reasons": [
-      "aderência parcial ao curso",
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2785114",
     "score": 0,
     "course_score": 0,
@@ -33884,6 +34094,20 @@
     "reasons": [
       "aderência parcial ao curso",
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835715",
+    "score": 23,
+    "course_score": 49,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "aderência parcial ao curso",
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -33942,48 +34166,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831066",
-    "score": 58,
-    "course_score": 42,
-    "distance_km": 404.5,
-    "eligible": true,
-    "reasons": [
-      "aderência parcial ao curso",
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2835014",
     "score": 29,
     "course_score": 0,
     "distance_km": 230.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831010",
-    "score": 68,
-    "course_score": 56,
-    "distance_km": 213.3,
-    "eligible": true,
-    "reasons": [
-      "aderência parcial ao curso",
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829907",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 2477.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34052,6 +34238,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835654",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2835010",
     "score": 29,
     "course_score": 0,
@@ -34076,6 +34274,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835647",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2827296",
     "score": 34,
     "course_score": 0,
@@ -34084,18 +34294,6 @@
     "reasons": [
       "tipo de oportunidade desejado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833765",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
       "país desejado"
     ]
   },
@@ -34137,10 +34335,361 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835730",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 130.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832773",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835082",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 112.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834181",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 610.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834210",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2823982",
+    "score": 34,
+    "course_score": 0,
+    "distance_km": 473.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834203",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 2088.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834140",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 932.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835466",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835506",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835604",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 268.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834571",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834376",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 1435.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2826517",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 346.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832683",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 445.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833252",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835687",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 110.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2824147",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2825298",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832903",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835229",
+    "score": 30,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2825294",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 493.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831734",
+    "score": 35,
+    "course_score": 9,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832902",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 230.7,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835653",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835659",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832993",
+    "score": 30,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "modalidade desejada",
+      "fora do país escolhido"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831556",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 130.5,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2827637",
     "score": 29,
     "course_score": 0,
     "distance_km": 478.4,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835518",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 461.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34165,18 +34714,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835518",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 461.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34281,66 +34818,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835257",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "fora do país escolhido"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834596",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829390",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835619",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 346.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2825733",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2834457",
     "score": 29,
     "course_score": 0,
@@ -34401,10 +34878,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833765",
+    "job_key": "vagas_com:2835650",
     "score": 29,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34485,10 +34962,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833716",
+    "job_key": "vagas_com:2835738",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 365.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34595,30 +35072,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2824147",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831734",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2818493",
     "score": 29,
     "course_score": 0,
@@ -34659,6 +35112,18 @@
     "score": 0,
     "course_score": 0,
     "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835635",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 413.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -34775,18 +35240,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2826883",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 2580.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2834159",
     "score": 29,
     "course_score": 0,
@@ -34800,6 +35253,18 @@
   {
     "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2835005",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835654",
     "score": 29,
     "course_score": 0,
     "distance_km": 213.3,
@@ -34847,10 +35312,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832704",
+    "job_key": "vagas_com:2835738",
     "score": 29,
     "course_score": 0,
-    "distance_km": 138.5,
+    "distance_km": 365.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34863,18 +35328,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834140",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 932.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -34922,30 +35375,6 @@
     "score": 29,
     "course_score": 0,
     "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2830095",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 467.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831547",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 814.2,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -35183,10 +35612,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833691",
+    "job_key": "vagas_com:2833553",
     "score": 29,
     "course_score": 0,
-    "distance_km": null,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -35195,10 +35624,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833553",
+    "job_key": "vagas_com:2833691",
     "score": 29,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
@@ -35214,31 +35643,6 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832667",
-    "score": 29,
-    "course_score": 0,
-    "distance_km": 310.9,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2823982",
-    "score": 34,
-    "course_score": 0,
-    "distance_km": 473.4,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade desejado",
-      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -35342,14 +35746,25 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831103",
+    "job_key": "vagas_com:2825555",
+    "score": 29,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade desejado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832209",
     "score": 0,
     "course_score": 0,
-    "distance_km": 469.3,
+    "distance_km": 493.8,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -35363,18 +35778,6 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832396",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -35404,60 +35807,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2831107",
+    "job_key": "vagas_com:2832396",
     "score": 0,
     "course_score": 0,
-    "distance_km": 530.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834506",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 153.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829430",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1120.1,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832810",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 472.0,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2827592",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 195.9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35479,13 +35832,50 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832209",
+    "job_key": "vagas_com:2834506",
     "score": 0,
     "course_score": 0,
-    "distance_km": 493.8,
+    "distance_km": 153.1,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2827592",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 195.9,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2832810",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2829430",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1120.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "senioridade incompatível",
       "país desejado"
     ]
   },
@@ -35502,23 +35892,22 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833966",
+    "job_key": "vagas_com:2832782",
     "score": 0,
     "course_score": 0,
-    "distance_km": 213.3,
+    "distance_km": 404.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "senioridade incompatível",
       "país desejado"
     ]
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2832782",
+    "job_key": "vagas_com:2835786",
     "score": 0,
     "course_score": 0,
-    "distance_km": 404.5,
+    "distance_km": 2477.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35552,42 +35941,6 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834433",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": null,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2834543",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 230.7,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829678",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 213.3,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2832560",
     "score": 0,
     "course_score": 0,
@@ -35612,10 +35965,46 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2829678",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2834433",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": null,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2834314",
     "score": 0,
     "course_score": 0,
     "distance_km": 1120.1,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2835011",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35636,10 +36025,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2835011",
+    "job_key": "vagas_com:2834543",
     "score": 0,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 230.7,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35648,10 +36037,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829037",
+    "job_key": "vagas_com:2835809",
     "score": 0,
     "course_score": 0,
-    "distance_km": 242.9,
+    "distance_km": 213.3,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35660,22 +36049,10 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829032",
+    "job_key": "vagas_com:2831091",
     "score": 0,
     "course_score": 0,
-    "distance_km": 486.6,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2829033",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 1437.8,
+    "distance_km": 226.5,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
@@ -35708,14 +36085,37 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2833345",
+    "job_key": "vagas_com:2829037",
     "score": 0,
     "course_score": 0,
-    "distance_km": 472.0,
+    "distance_km": 242.9,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
-      "modalidade desejada",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2829033",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 1437.8,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2829032",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 486.6,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -35728,6 +36128,19 @@
     "eligible": false,
     "reasons": [
       "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2833345",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 472.0,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "modalidade desejada",
       "país desejado"
     ]
   },
@@ -35758,6 +36171,18 @@
   },
   {
     "profile_id": "computer_science_internship_br",
+    "job_key": "vagas_com:2831632",
+    "score": 0,
+    "course_score": 0,
+    "distance_km": 213.3,
+    "eligible": false,
+    "reasons": [
+      "tipo de oportunidade não confirmado",
+      "país desejado"
+    ]
+  },
+  {
+    "profile_id": "computer_science_internship_br",
     "job_key": "vagas_com:2832038",
     "score": 0,
     "course_score": 0,
@@ -35766,18 +36191,6 @@
     "reasons": [
       "tipo de oportunidade não confirmado",
       "modalidade desejada",
-      "país desejado"
-    ]
-  },
-  {
-    "profile_id": "computer_science_internship_br",
-    "job_key": "vagas_com:2827337",
-    "score": 0,
-    "course_score": 0,
-    "distance_km": 493.8,
-    "eligible": false,
-    "reasons": [
-      "tipo de oportunidade não confirmado",
       "país desejado"
     ]
   },
@@ -36047,14 +36460,13 @@
   },
   {
     "profile_id": "computer_science_internship_br",
-    "job_key": "99jobs:510091",
-    "score": 0,
+    "job_key": "99jobs:499347",
+    "score": 34,
     "course_score": 0,
     "distance_km": null,
     "eligible": false,
     "reasons": [
       "tipo de oportunidade desejado",
-      "senioridade incompatível",
       "modalidade desejada",
       "país desejado"
     ]
