@@ -7,13 +7,14 @@ from processing.text import contains_any, normalize
 
 
 INTENT_COMPATIBILITY = {
-    "summer_internship": {"summer_internship", "internship"},
-    "co_op": {"co_op", "internship"},
+    "summer_internship": {"summer_internship"},
+    "co_op": {"co_op"},
     "internship": {"internship", "summer_internship", "co_op"},
     "trainee": {"trainee"},
     "entry_level": {"entry_level"},
-    "research": {"research", "internship"},
+    "research": {"research"},
     "apprentice": {"apprentice"},
+    "seasonal_job": {"seasonal_job"},
 }
 
 
@@ -96,14 +97,14 @@ def match_job(job: Job, profile: SearchProfile) -> JobMatch:
                 course_score=course_score,
                 distance_km=None,
                 eligible=False,
-                reasons=_dedupe(reasons + ["fora do país escolhido"]),
+                reasons=_dedupe(reasons + ["país fora da preferência"]),
             )
         else:
             score += 4
             reasons.append("país desejado")
 
     dist = _distance_for_profile(job, profile)
-    eligible = True
+    eligible = not bool(exclude_matches)
 
     if profile.max_distance_km is not None:
         if is_remote(job) and profile.remote_ignores_distance:

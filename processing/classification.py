@@ -3,6 +3,7 @@ import re
 from config.catalogs import COURSES, INTENTS
 from models.job import Job
 from processing.text import normalize, contains_any
+from processing.course_affinity import score_course_affinities
 
 
 def classify_job(job: Job) -> Job:
@@ -12,12 +13,34 @@ def classify_job(job: Job) -> Job:
     whole = f"{title} {body} {employment}"
     title_employment = f"{title} {employment}"
 
-    job.course_scores = {
-        course_id: _course_affinity(title, whole, cfg)
-        for course_id, cfg in COURSES.items()
-    }
+    job.course_scores, course_reasons = score_course_affinities(job)
+    job.metadata["course_score_reasons"] = course_reasons
 
     detected = []
+
+    # Gupy exposes structured vacancy types. Prefer them over text inference
+    # whenever available so generic titles such as "Programa 2027" are not
+    # lost.
+    gupy_type = str(job.metadata.get("gupy_job_type") or "").strip().lower()
+    gupy_intents = {
+        "vacancy_type_internship": ["internship"],
+        "vacancy_type_summer": ["summer_internship", "internship"],
+        "vacancy_type_trainee": ["trainee"],
+        "vacancy_type_apprentice": ["apprentice"],
+    }
+    detected.extend(gupy_intents.get(gupy_type, []))
+
+    # 99jobs exposes the opportunity level in its card. Prefer this
+    # structured source signal over free-text inference.
+    source_level = normalize(str(job.metadata.get("source_level") or ""))
+    source_level_intents = {
+        "estagio": ["internship"],
+        "trainee": ["trainee"],
+        "jovem aprendiz": ["apprentice"],
+        "aprendiz": ["apprentice"],
+        "junior": ["entry_level"],
+    }
+    detected.extend(source_level_intents.get(source_level, []))
 
     # Strong signal: title / explicit employment type.
     for intent_id, cfg in INTENTS.items():
@@ -40,6 +63,9 @@ def classify_job(job: Job) -> Job:
             "estagio de ferias",
             "programa de estagio de ferias",
             "programa de ferias",
+            "programa de verao",
+            "vacation internship",
+            "vacation intern",
         ]
     ):
         detected += ["summer_internship", "internship"]
@@ -57,6 +83,9 @@ def classify_job(job: Job) -> Job:
             "estagio de ferias",
             "programa de estagio de ferias",
             "programa de ferias",
+            "programa de verao",
+            "vacation internship",
+            "vacation intern",
         ],
         "seasonal_job": [
             "summer job",
@@ -64,6 +93,9 @@ def classify_job(job: Job) -> Job:
             "seasonal work",
             "trabalho de ferias",
             "trabalho temporario de verao",
+            "trabalho temporario de ferias",
+            "vaga de ferias",
+            "vaga temporaria de ferias",
         ],
         "co_op": ["co-op", "co op", "coop"],
         "trainee": [
@@ -96,26 +128,6 @@ def classify_job(job: Job) -> Job:
     job.detected_intents = _unique(detected)
     return job
 
-
-def _course_affinity(title: str, whole: str, cfg: dict) -> int:
-    core_title = contains_any(title, cfg["core_terms"])
-    core_all = contains_any(whole, cfg["core_terms"])
-    related_title = contains_any(title, cfg["related_terms"])
-    related_all = contains_any(whole, cfg["related_terms"])
-
-    score = 0
-
-    if core_title:
-        score += 70
-    elif core_all:
-        score += min(60, 35 + 7 * len(set(core_all)))
-
-    if related_title:
-        score += min(30, 12 + 5 * len(set(related_title)))
-    elif related_all:
-        score += min(25, 6 + 3 * len(set(related_all)))
-
-    return min(100, score)
 
 
 def _unique(values):

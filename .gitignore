@@ -3,3 +3,19 @@ __pycache__/
 *.pyc
 .env
 .pytest_cache/
+
+output/*
+!output/.gitkeep
+
+# Local patch/applicator backups
+.v*-backup/
+*.bak
+*.bak-*
+
+# Local incremental job store
+data/*.db
+data/*.db-*
+!data/.gitkeep
+
+baseline_stdout.log
+baseline_stderr.log

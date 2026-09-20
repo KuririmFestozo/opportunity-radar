@@ -33,6 +33,92 @@ def _city_index():
     return exact
 
 
+
+@lru_cache(maxsize=1)
+def _small_br_city_index():
+    try:
+        import geonamescache
+    except ImportError:
+        return {}
+    gc = geonamescache.GeonamesCache(min_city_population=1000)
+    exact = {}
+    for city in gc.get_cities().values():
+        if city.get("countrycode") != "BR":
+            continue
+        key = _norm(city.get("name", ""))
+        if key:
+            exact.setdefault(key, []).append(city)
+        for alt in city.get("alternatenames", []) or []:
+            akey = _norm(alt)
+            if akey:
+                exact.setdefault(akey, []).append(city)
+    return exact
+
+
+@lru_cache(maxsize=1)
+def _city_records():
+    try:
+        import geonamescache
+    except ImportError:
+        return tuple()
+
+    gc = geonamescache.GeonamesCache(min_city_population=1000)
+    records = []
+    seen = set()
+    for city in gc.get_cities().values():
+        name = (city.get("name") or "").strip()
+        country = (city.get("countrycode") or "").strip()
+        if not name:
+            continue
+        try:
+            lat = float(city["latitude"])
+            lon = float(city["longitude"])
+        except Exception:
+            continue
+
+        key = (_norm(name), country, round(lat, 4), round(lon, 4))
+        if key in seen:
+            continue
+        seen.add(key)
+        records.append((name, country, lat, lon, int(city.get("population") or 0)))
+    return tuple(records)
+
+
+def nearby_cities(
+    latitude: float,
+    longitude: float,
+    radius_km: float,
+    *,
+    country_code: str | None = None,
+    max_cities: int = 24,
+) -> list[dict]:
+    """Return GeoNames cities inside a radius, nearest first.
+
+    This is used only to plan targeted regional collection. The final radius
+    filter is still applied to each collected job after geocoding.
+    """
+    radius_km = max(1.0, float(radius_km))
+    max_cities = max(1, min(int(max_cities), 60))
+    country_code = (country_code or "").upper() or None
+
+    matches = []
+    for name, country, lat, lon, population in _city_records():
+        if country_code and country != country_code:
+            continue
+        dist = distance_km(latitude, longitude, lat, lon)
+        if dist <= radius_km:
+            matches.append({
+                "name": name,
+                "country_code": country,
+                "latitude": lat,
+                "longitude": lon,
+                "distance_km": round(dist, 1),
+                "population": population,
+            })
+
+    matches.sort(key=lambda item: (item["distance_km"], -item["population"], item["name"]))
+    return matches[:max_cities]
+
 def enrich_job_location(job: Job) -> Job:
     # Mesmo uma vaga remota pode declarar o país (ex.: "United States - Remote").
     inferred_country = infer_country(job.location)
@@ -73,6 +159,9 @@ def resolve_location(value: str) -> Optional[dict]:
         ).strip()
         candidates = list(_city_index().get(_norm(shortened), []))
         city_hint = shortened or city_hint
+
+    if not candidates and country_hint == "BR":
+        candidates = list(_small_br_city_index().get(_norm(city_hint), []))
 
     if not candidates:
         return None
