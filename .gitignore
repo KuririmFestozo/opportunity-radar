@@ -16,3 +16,6 @@ output/*
 data/*.db
 data/*.db-*
 !data/.gitkeep
+
+baseline_stdout.log
+baseline_stderr.log

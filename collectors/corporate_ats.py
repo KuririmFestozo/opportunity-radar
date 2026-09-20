@@ -37,6 +37,25 @@ _SUCCESSFACTORS_JOB_PATH = re.compile(
 _EARLY_CAREER_TERMS = (
     "estagio", "estagiario", "intern", "internship", "summer", "ferias", "verao",
     "trainee", "aprendiz", "apprentice", "junior", "entry level", "graduate", "co-op", "coop",
+    "new grad", "working student", "student", "research", "thesis", "temporary", "seasonal",
+)
+_DEFAULT_TARGETED_QUERIES = (
+    "estágio",
+    "intern",
+    "summer",
+    "trainee",
+    "aprendiz",
+    "apprentice",
+    "junior",
+    "entry level",
+    "new grad",
+    "graduate",
+    "co-op",
+    "working student",
+    "research",
+    "thesis",
+    "temporary",
+    "seasonal",
 )
 _PT_MONTHS = {
     "jan": 1, "janeiro": 1,
@@ -123,6 +142,9 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
     detail page is fetched.
     """
     validate_successfactors_portal(config)
+    if bool(config.get("targeted_early_career", False)):
+        return _collect_successfactors_targeted(config)
+
     portal_id = str(config["id"]).strip()
     company = str(config["name"]).strip()
 
@@ -152,6 +174,16 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
     pages_fetched = 0
     tile_requests = 0
     csb_json_requests = 0
+    bounded_queries: set[str] = set()
+    query_early_stop_hits = 0
+    query_early_stop = bool(
+        known_native_ids
+        and config.get("targeted_query_early_stop", True)
+    )
+    query_early_stop_pages = max(
+        2,
+        min(int(config.get("targeted_query_early_stop_known_pages", 5)), 20),
+    )
 
     def add_refs(items: list[JobRef], method: str, origin: str = "") -> None:
         nonlocal refs
@@ -460,6 +492,420 @@ def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
     return DiscoveryResult(jobs=jobs, stats=stats)
 
 
+def _targeted_successfactors_queries(config: dict) -> list[str]:
+    """Return stable, profile-independent early-career search terms."""
+    configured = config.get("targeted_queries")
+    if configured is None:
+        configured = config.get("queries")
+
+    values = [str(value or "").strip() for value in (configured or [])]
+    # Portal-specific terms stay first; shared product-scope terms fill gaps.
+    values.extend(_DEFAULT_TARGETED_QUERIES)
+
+    limit = max(1, min(int(config.get("targeted_max_queries", 16)), 32))
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if not value:
+            continue
+        key = normalize(value)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(value)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _collect_successfactors_targeted(config: dict) -> DiscoveryResult:
+    """Collect the shared catalog's early-career scope from one SAP tenant.
+
+    This is source-level product scoping, not user-profile filtering. The
+    universal collector remains available with targeted_early_career=False.
+    """
+    portal_id = str(config["id"]).strip()
+    company = str(config["name"]).strip()
+    queries = _targeted_successfactors_queries(config)
+
+    page_size = max(10, min(int(config.get("page_size", 25)), 100))
+    configured_max_pages = int(config.get("targeted_max_pages_per_query", 0) or 0)
+    max_pages = (
+        max(1, min(configured_max_pages, 200))
+        if configured_max_pages > 0
+        else 200
+    )
+    configured_max_jobs = int(config.get("targeted_max_jobs", 0) or 0)
+    max_jobs = (
+        max(1, min(configured_max_jobs, 10000))
+        if configured_max_jobs > 0
+        else 10000
+    )
+    max_details = max(0, min(
+        int(config.get("max_details", 60)),
+        int(config.get("targeted_max_details", 25)),
+        250,
+    ))
+    max_locales = max(1, min(int(config.get("targeted_max_csb_locales", 2)), 8))
+    max_listing_urls = max(1, min(int(config.get("targeted_max_listing_urls", 2)), 10))
+    broad_fallback_pages = max(0, min(int(config.get("targeted_broad_fallback_pages", 1)), 3))
+    html_fallback = bool(config.get("targeted_html_fallback", True))
+    verbose = bool(config.get("show_discovery_stats", False))
+
+    known_source_job_ids = {str(x) for x in (config.get("known_source_job_ids") or [])}
+    tenant_prefix = f"{portal_id}:"
+    known_native_ids: set[str] = set()
+    for source_job_id in known_source_job_ids:
+        if source_job_id.startswith(tenant_prefix):
+            known_native_ids.add(source_job_id[len(tenant_prefix):])
+        elif source_job_id.isdigit():
+            known_native_ids.add(source_job_id)
+
+    refs: dict[str, JobRef] = {}
+    method_ids: dict[str, set[str]] = defaultdict(set)
+    errors: list[str] = []
+    pages_fetched = 0
+    tile_requests = 0
+    csb_json_requests = 0
+    bounded_queries: set[str] = set()
+    query_early_stop_hits = 0
+    query_early_stop = bool(
+        known_native_ids
+        and config.get("targeted_query_early_stop", True)
+    )
+    query_early_stop_pages = max(
+        2,
+        min(int(config.get("targeted_query_early_stop_known_pages", 5)), 20),
+    )
+
+    def add_refs(
+        items: list[JobRef],
+        method: str,
+        origin: str = "",
+        *,
+        query_scoped: bool = False,
+    ) -> None:
+        for ref in items:
+            if not ref.native_job_id:
+                continue
+            # Broad pages are admitted only when the visible title is in scope.
+            # Keyword-query results are trusted because the hit may be in fields
+            # not present in the listing card.
+            if not query_scoped and not _is_priority_ref(ref):
+                continue
+            if origin and not ref.discovered_from:
+                ref.discovered_from = origin
+            methods = set(ref.discovery_methods)
+            methods.add(method)
+            ref.discovery_methods = sorted(methods)
+            method_ids[method].add(ref.native_job_id)
+            current = refs.get(ref.native_job_id)
+            refs[ref.native_job_id] = ref if current is None else _merge_refs(current, ref)
+
+    career_url = str(config.get("career_url") or "").strip()
+    home_html = ""
+    if career_url:
+        try:
+            home_html = get_text(career_url)
+            pages_fetched += 1
+            add_refs(
+                parse_successfactors_listing(home_html, career_url),
+                "home_targeted",
+                career_url,
+            )
+        except Exception as exc:
+            errors.append(f"home: {type(exc).__name__}: {exc}")
+
+    csb_base = _successfactors_csb_base(config)
+    csb_keyword_hits = 0
+    if csb_base and bool(config.get("try_csb_json", False)):
+        search_url = f"{csb_base.rstrip('/')}/search/"
+        search_html = home_html
+        try:
+            locale_html = get_text(search_url)
+            pages_fetched += 1
+            search_html = f"{search_html}\n{locale_html}"
+        except Exception as exc:
+            errors.append(f"csb_locales: {type(exc).__name__}: {exc}")
+
+        locales = discover_successfactors_locales(search_html, config)[:max_locales]
+        jobs_api = f"{csb_base.rstrip('/')}/services/recruiting/v1/jobs"
+        for locale in locales:
+            for query in queries:
+                seen_signatures: set[tuple[str, ...]] = set()
+                known_streak = 0
+                for page_number in range(max_pages):
+                    try:
+                        payload = _post_successfactors_json(
+                            jobs_api,
+                            {
+                                "keywords": query,
+                                "locale": locale,
+                                "location": "",
+                                "pageNumber": page_number,
+                                "sortBy": "recent",
+                            },
+                        )
+                        pages_fetched += 1
+                        csb_json_requests += 1
+                    except Exception as exc:
+                        errors.append(
+                            f"csb_keyword[{locale}:{query}]: {type(exc).__name__}: {exc}"
+                        )
+                        break
+
+                    query_refs, total_jobs = parse_successfactors_csb_json(
+                        payload,
+                        csb_base,
+                        locale,
+                    )
+                    signature = tuple(sorted({ref.native_job_id for ref in query_refs}))
+                    if not signature or signature in seen_signatures:
+                        break
+                    seen_signatures.add(signature)
+                    before = len(refs)
+                    add_refs(
+                        query_refs,
+                        "csb_keyword",
+                        jobs_api,
+                        query_scoped=True,
+                    )
+                    csb_keyword_hits += max(0, len(refs) - before)
+
+                    page_ids = {
+                        ref.native_job_id for ref in query_refs if ref.native_job_id
+                    }
+                    if query_early_stop and page_ids and page_ids <= known_native_ids:
+                        known_streak += 1
+                    else:
+                        known_streak = 0
+                    if known_streak >= query_early_stop_pages:
+                        query_early_stop_hits += 1
+                        break
+
+                    if (
+                        page_number + 1 >= max_pages
+                        and total_jobs
+                        and (page_number + 1) * 10 < total_jobs
+                    ):
+                        bounded_queries.add(f"csb:{locale}:{query}")
+
+                    if len(refs) >= max_jobs:
+                        break
+                    if total_jobs and (page_number + 1) * 10 >= total_jobs:
+                        break
+                    if len(query_refs) < 10:
+                        break
+                if len(refs) >= max_jobs:
+                    break
+            if len(refs) >= max_jobs:
+                break
+
+    # Older RMK tenants often support q= on /search/ but not the CSB JSON API.
+    if html_fallback and (
+        csb_keyword_hits == 0 or bool(config.get("targeted_html_also", False))
+    ):
+        candidate_urls: list[str] = []
+        if career_url:
+            parts = urlsplit(career_url)
+            root = urlunsplit((parts.scheme, parts.netloc, "/", "", ""))
+            candidate_urls.append(urljoin(root, "search/"))
+        candidate_urls.extend(
+            str(x).strip()
+            for x in (config.get("listing_urls") or [])
+            if str(x or "").strip()
+        )
+        single = str(config.get("listing_url") or "").strip()
+        if single:
+            candidate_urls.append(single)
+
+        listing_urls: list[str] = []
+        seen_urls: set[str] = set()
+        for value in candidate_urls:
+            canonical = _canonical_listing_url(value)
+            if canonical and canonical not in seen_urls:
+                seen_urls.add(canonical)
+                listing_urls.append(canonical)
+            if len(listing_urls) >= max_listing_urls:
+                break
+
+        for listing_url in listing_urls:
+            for query in queries:
+                seen_signatures: set[tuple[str, ...]] = set()
+                known_streak = 0
+                for page in range(max_pages):
+                    page_url = _successfactors_listing_url(
+                        listing_url,
+                        query=query,
+                        startrow=page * page_size,
+                    )
+                    try:
+                        html = get_text(page_url)
+                        pages_fetched += 1
+                    except Exception as exc:
+                        errors.append(
+                            f"keyword[{query}]: {type(exc).__name__}: {exc}"
+                        )
+                        break
+                    page_refs = parse_successfactors_listing(html, page_url)
+                    signature = tuple(sorted({ref.native_job_id for ref in page_refs}))
+                    if not signature or signature in seen_signatures:
+                        break
+                    seen_signatures.add(signature)
+                    add_refs(
+                        page_refs,
+                        "keyword",
+                        page_url,
+                        query_scoped=bool(
+                            config.get("targeted_trust_html_query", False)
+                        ),
+                    )
+
+                    page_ids = {
+                        ref.native_job_id for ref in page_refs if ref.native_job_id
+                    }
+                    if query_early_stop and page_ids and page_ids <= known_native_ids:
+                        known_streak += 1
+                    else:
+                        known_streak = 0
+                    if known_streak >= query_early_stop_pages:
+                        query_early_stop_hits += 1
+                        break
+
+                    if page + 1 >= max_pages and len(page_refs) >= page_size:
+                        bounded_queries.add(f"html:{query}")
+
+                    if len(refs) >= max_jobs or len(page_refs) < page_size:
+                        break
+                if len(refs) >= max_jobs:
+                    break
+            if len(refs) >= max_jobs:
+                break
+
+    # Last-resort bounded broad probe. Never walks the entire tenant.
+    if (
+        not refs
+        and broad_fallback_pages > 0
+        and csb_base
+        and bool(config.get("try_tile_search", False))
+    ):
+        startrow = 0
+        seen_signatures: set[tuple[str, ...]] = set()
+        for _ in range(broad_fallback_pages):
+            tile_url = (
+                f"{csb_base.rstrip('/')}/tile-search-results/?"
+                + urlencode({"startrow": startrow})
+            )
+            try:
+                tile_html = get_text(tile_url)
+                pages_fetched += 1
+                tile_requests += 1
+            except Exception as exc:
+                errors.append(f"tile_fallback: {type(exc).__name__}: {exc}")
+                break
+            tile_refs = parse_successfactors_tiles(tile_html, tile_url)
+            signature = tuple(sorted({ref.native_job_id for ref in tile_refs}))
+            if not signature or signature in seen_signatures:
+                break
+            seen_signatures.add(signature)
+            add_refs(tile_refs, "tile_fallback", tile_url)
+            startrow += len(tile_refs)
+
+    ordered = sorted(
+        refs.values(),
+        key=lambda ref: (
+            not _is_priority_ref(ref),
+            ref.title.lower(),
+            ref.native_job_id,
+        ),
+    )[:max_jobs]
+
+    if config.get("skip_known_details", True):
+        detail_candidates = [
+            ref for ref in ordered if ref.native_job_id not in known_native_ids
+        ]
+    else:
+        detail_candidates = ordered
+    detail_ids = _select_detail_ids(detail_candidates, max_details)
+
+    jobs: list[Job] = []
+    detail_requests = 0
+    for ref in ordered:
+        job = _job_from_ref(ref, portal_id, company)
+        if ref.native_job_id in detail_ids:
+            detail_requests += 1
+            try:
+                detail_html = get_text(ref.url)
+                detail = parse_successfactors_detail(
+                    detail_html,
+                    ref.url,
+                    portal_id=portal_id,
+                    company=company,
+                    fallback_title=ref.title,
+                    fallback_location=ref.location,
+                )
+                if detail:
+                    job = detail
+                    job.metadata["discovered_from"] = ref.discovered_from
+                    job.metadata["discovery_methods"] = sorted(
+                        set(ref.discovery_methods)
+                    )
+            except Exception:
+                job.metadata["detail_fetched"] = False
+        jobs.append(job)
+
+    stats = {
+        "mode": "targeted_early_career",
+        "portal_id": portal_id,
+        "company": company,
+        "query_count": len(queries),
+        "method_counts": {
+            method: len(ids) for method, ids in sorted(method_ids.items())
+        },
+        "references_seen": sum(len(ids) for ids in method_ids.values()),
+        "unique_refs": len(refs),
+        "jobs_returned": len(jobs),
+        "listing_pages_fetched": pages_fetched,
+        "tile_requests": tile_requests,
+        "csb_json_requests": csb_json_requests,
+        "detail_requests": detail_requests,
+        "known_refs": len(known_native_ids & set(refs)),
+        "details_skipped_known": len([
+            ref for ref in ordered if ref.native_job_id in known_native_ids
+        ]),
+        "early_stop_hits": query_early_stop_hits,
+        "query_early_stop_hits": query_early_stop_hits,
+        "query_early_stop_enabled": query_early_stop,
+        "query_early_stop_known_pages": query_early_stop_pages,
+        "html_query_results_trusted": bool(
+            config.get("targeted_trust_html_query", False)
+        ),
+        "bounded_queries": sorted(bounded_queries),
+        "configured_max_jobs": configured_max_jobs,
+        "configured_max_pages_per_query": configured_max_pages,
+        "safety_job_ceiling_hit": len(refs) >= max_jobs,
+        "errors": errors,
+    }
+    if verbose:
+        _print_discovery_stats(stats)
+    if len(refs) >= max_jobs:
+        cap_kind = "configurado" if configured_max_jobs > 0 else "de segurança"
+        print(
+            f"  [LIMIT] {company}: teto {cap_kind} de jobs={max_jobs} atingido; "
+            "cobertura pode estar incompleta."
+        )
+    if bounded_queries:
+        page_kind = (
+            "configurado" if configured_max_pages > 0 else "de segurança"
+        )
+        print(
+            f"  [LIMIT] {company}: {len(bounded_queries)} query(s) atingiram "
+            f"o teto {page_kind} de {max_pages} páginas; "
+            "cobertura pode estar incompleta."
+        )
+    return DiscoveryResult(jobs=jobs, stats=stats)
+
+
 def discover_successfactors_listing_urls(career_url: str) -> list[str]:
     if not career_url:
         return []
@@ -535,7 +981,7 @@ def discover_successfactors_locales(html: str, config: dict | None = None) -> li
     )
 
 
-def parse_successfactors_tiles(html: str, page_url: str) -> list[JobRef]:
+def parse_successfactors_tiles(html: str, page_url: str, *, include_untitled: bool = False) -> list[JobRef]:
     """Parse classic RMK /tile-search-results/ fragments."""
     soup = BeautifulSoup(html or "", "html.parser")
     found: dict[str, JobRef] = {}
@@ -554,7 +1000,7 @@ def parse_successfactors_tiles(html: str, page_url: str) -> list[JobRef]:
         if not native_id:
             continue
         title = _clean(link.get_text(" ", strip=True)) if link is not None else ""
-        if not title:
+        if not title and not include_untitled:
             continue
         city = ""
         city_node = tile.select_one("[id$='-section-city-value'], .jobLocation, .job-location")
@@ -573,7 +1019,7 @@ def parse_successfactors_tiles(html: str, page_url: str) -> list[JobRef]:
     return list(found.values())
 
 
-def parse_successfactors_csb_json(payload: dict, base_url: str, locale: str) -> tuple[list[JobRef], int]:
+def parse_successfactors_csb_json(payload: dict, base_url: str, locale: str, *, include_untitled: bool = False) -> tuple[list[JobRef], int]:
     """Parse the newer Career Site Builder Unified Search JSON response."""
     records = payload.get("jobSearchResult") if isinstance(payload, dict) else None
     if not isinstance(records, list):
@@ -589,7 +1035,7 @@ def parse_successfactors_csb_json(payload: dict, base_url: str, locale: str) -> 
             continue
         native_id = native_id.group(0)
         title = _clean(str(response.get("unifiedStandardTitle") or response.get("jobTitle") or response.get("title") or ""))
-        if not title:
+        if not title and not include_untitled:
             continue
         raw_slug = html_lib.unescape(str(response.get("unifiedUrlTitle") or response.get("urlTitle") or "job"))
         slug = re.sub(r"[?#&]+", "-", raw_slug.strip("/")) or "job"
@@ -1117,7 +1563,15 @@ def _xml_local_name(tag: str) -> str:
 
 
 def _print_discovery_stats(stats: dict) -> None:
-    print(f"  {stats['company']} [SuccessFactors universal]")
+    mode = stats.get("mode")
+    label = "targeted early-career" if mode == "targeted_early_career" else "universal"
+    print(f"  {stats['company']} [SuccessFactors {label}]")
+    if mode == "targeted_early_career":
+        print(f"    {'queries':<12} {stats.get('query_count', 0):>5}")
+        print(
+            f"    {'query stops':<12} "
+            f"{stats.get('query_early_stop_hits', 0):>5}"
+        )
     for method, count in stats.get("method_counts", {}).items():
         print(f"    {method:<12} {count:>5} refs")
     print(f"    {'somadas':<12} {stats.get('references_seen', 0):>5} refs")

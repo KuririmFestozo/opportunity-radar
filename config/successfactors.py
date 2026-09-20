@@ -844,3 +844,81 @@ SUCCESSFACTORS_PORTALS = [{'id': 'ternium',
   'bootstrap_max_pages': 5,
   'bootstrap_max_listing_urls': 8,
   'bootstrap_max_details': 20}]
+
+# CPFL Energia uses a public SuccessFactors/RMK career site.
+SUCCESSFACTORS_PORTALS.append({
+    "id": "cpfl",
+    "name": "CPFL Energia",
+    "enabled": True,
+    "career_url": "https://vagas.cpfl.com.br/",
+    "listing_urls": ["https://vagas.cpfl.com.br/viewalljobs/"],
+    "queries": [
+        "",
+        "estágio",
+        "estagiário",
+        "intern",
+        "trainee",
+        "aprendiz",
+        "junior",
+        "júnior",
+    ],
+    "page_size": 25,
+    "max_pages_per_query": 4,
+    "max_jobs": 1000,
+    "max_details": 40,
+    "ats": "successfactors",
+    "universal_discovery": True,
+    "try_xml_feed": True,
+    "keyword_fallback": True,
+    "max_listing_urls": 12,
+    "max_pages_per_listing": 40,
+    "show_discovery_stats": True,
+    "try_tile_search": True,
+    "try_csb_json": True,
+    "max_tile_pages": 40,
+    "max_csb_pages_per_locale": 40,
+    "max_csb_locales": 6,
+    "csb_locales": ["pt_BR", "en_US"],
+    "bootstrap_max_pages": 5,
+    "bootstrap_max_listing_urls": 6,
+    "bootstrap_max_details": 20,
+})
+
+# Regional priority. Both portals expose the existing public SAP/RMK contract.
+for portal_id, name, career_url in (
+    ("citrosuco", "Citrosuco", "https://carreiras.citrosuco.com.br/"),
+    ("volkswagen", "Volkswagen Group", "https://jobs.volkswagen-group.com/"),
+):
+    SUCCESSFACTORS_PORTALS.insert(0, {
+        "id": portal_id, "name": name, "career_url": career_url,
+        "enabled": True, "ats": "successfactors",
+        "listing_urls": [career_url + "search/", career_url + "viewalljobs/"],
+        "queries": ["", "estágio", "intern", "trainee", "aprendiz", "junior"],
+        "page_size": 25, "max_jobs": 1000, "max_details": 25,
+        "universal_discovery": True, "try_xml_feed": True,
+        # CSB JSON returned 401 on these two public portals; RMK HTML works.
+        "try_tile_search": True, "try_csb_json": False, "keyword_fallback": True,
+        "max_pages_per_listing": 10, "max_listing_urls": 6,
+        "max_tile_pages": 10, "max_csb_pages_per_locale": 10,
+        "max_csb_locales": 2, "csb_locales": ["pt_BR", "en_US"],
+        "bootstrap_max_pages": 5, "bootstrap_max_details": 20,
+        "bootstrap_max_listing_urls": 6,
+        "show_discovery_stats": True,
+    })
+
+# CP2.8: official vacancy portals replacing corporate/legacy landing pages.
+for portal in SUCCESSFACTORS_PORTALS:
+    corrected = {
+        "delaval": ("https://delaval-careers.jobs.hr.cloud.sap/", "en_US"),
+        "basf": ("https://basf.jobs/", "en_US"),
+        "tetra_pak": ("https://jobs.tetrapak.com/", "en_GB"),
+    }.get(portal["id"])
+    if corrected:
+        base, locale = corrected
+        portal.update(career_url=base, listing_urls=[base + "search/"],
+                      try_csb_json=True, try_tile_search=False,
+                      csb_locales=[locale], targeted_max_csb_locales=1)
+    if portal["id"] == "amkor":
+        # Legacy RCM/JUIC search is incompatible with the current RMK/CSB collector.
+        portal["enabled"] = False
+        portal["disabled_reason"] = "Legacy RCM/JUIC; no compatible public RMK/CSB route confirmed (2026-09-18)."

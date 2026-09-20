@@ -129,6 +129,69 @@ def get_json(url: str, params: dict | None = None, headers: dict | None = None):
     return _request(url, params=params, headers=headers).json()
 
 
+def post_json(
+    url: str,
+    payload: dict,
+    params: dict | None = None,
+    headers: dict | None = None,
+    polite_delay: bool = True,
+):
+    merged = dict(DEFAULT_HEADERS)
+    if headers:
+        merged.update(headers)
+    merged.setdefault("Accept", "application/json")
+    merged.setdefault("Content-Type", "application/json")
+
+    if polite_delay:
+        time.sleep(PUBLIC_DELAY)
+
+    last_error = None
+    for attempt in range(1, REQUEST_RETRIES + 1):
+        response = None
+        try:
+            response = _SESSION.post(
+                url,
+                params=params,
+                json=payload,
+                headers=merged,
+                timeout=TIMEOUT,
+                stream=True,
+            )
+            if response.status_code in {429, 500, 502, 503, 504}:
+                response.close()
+                if attempt < REQUEST_RETRIES:
+                    wait = (
+                        RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                        + random.uniform(0, 0.25)
+                    )
+                    time.sleep(wait)
+                    continue
+
+            response.raise_for_status()
+            response = _read_response_with_deadline(response)
+            return response.json()
+
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            last_error = exc
+            if response is not None:
+                response.close()
+            if attempt >= REQUEST_RETRIES:
+                raise
+            wait = (
+                RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                + random.uniform(0, 0.25)
+            )
+            time.sleep(wait)
+
+        except Exception:
+            if response is not None:
+                response.close()
+            raise
+
+    if last_error:
+        raise last_error
+    raise RuntimeError(f"Falha inesperada ao acessar {url}")
+
 def get_text(
     url: str,
     params: dict | None = None,

@@ -25,3 +25,15 @@ class KnownPageStopper:
         else:
             self.streak = 0
         return self.streak >= self.consecutive_pages
+
+
+def report_incremental(config, jobs, requests, *, stopped=False):
+    """Report distinct returned IDs; known records still reach JobStore.prepare."""
+    if not config.get("show_incremental_stats", False):
+        return
+    ids = {job.source_job_id for job in jobs}
+    known = ids & set(config.get("known_source_job_ids") or ())
+    print(f"[FAST] {config['name']}: {len(known)} conhecidos | "
+          f"{len(ids - known)} novos | {requests} páginas/requests")
+    if stopped:
+        print(f"[FAST-STOP] {config['name']}: catálogo recente já conhecido.")

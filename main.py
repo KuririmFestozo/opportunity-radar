@@ -12,16 +12,34 @@ from collectors.gupy_global import collect_gupy_global
 from collectors.gupy_public import collect_gupy_public
 from collectors.jobs99 import collect_99jobs
 from collectors.lever import collect_lever
+from collectors.inhire import collect_inhire
+from collectors.izirh import collect_izirh
+from collectors.smartrecruiters import collect_smartrecruiters
+from collectors.workday import collect_workday
+from collectors.totvs import collect_totvs
+from collectors.eightfold import collect_eightfold
+from config.eightfold import EIGHTFOLD_TENANTS
+from collectors.teamtailor import collect_teamtailor
 from collectors.search_links import build_search_links
 from collectors.summer_br import collect_gupy_summer_br, collect_99jobs_summer_br, collect_vagas_summer_br
 from collectors.successfactors_incremental import probe_successfactors_recent
 from collectors.vagas_com import collect_vagas_com
+from collectors.early_career_brazil import collect_early_career_source
 
 from config.catalogs import INTENTS
 from config.companies import COMPANIES
 from config.profiles import PROFILES
+from config.additional_ats import (
+    TOTVS_TENANTS,
+    TEAMTAILOR_BOARDS,
+    INHIRE_TENANTS,
+    IZIRH_TENANTS,
+    SMARTRECRUITERS_BOARDS,
+    WORKDAY_BOARDS,
+)
 from config.sources import PUBLIC_SOURCES, GUPY_PUBLIC_PAGES
 from config.successfactors import SUCCESSFACTORS_PORTALS
+from config.early_career_sources import EARLY_CAREER_SOURCES
 
 from processing.classification import classify_job
 from processing.collection_planner import build_collection_queries
@@ -58,6 +76,17 @@ def active_profiles():
     return profiles or list(PROFILES.values())
 
 
+def additional_ats_runtime(source, source_name, store, full_refresh):
+    runtime = dict(source)
+    runtime["known_source_job_ids"] = (
+        set() if full_refresh else store.known_ids(source_name, prefix=f"{source['id']}:")
+    )
+    runtime["early_stop_known_pages"] = 0 if full_refresh else 2
+    runtime["skip_known_details"] = not full_refresh
+    runtime["show_incremental_stats"] = True
+    return runtime
+
+
 def main():
     profiles = active_profiles()
     all_jobs = []
@@ -65,6 +94,7 @@ def main():
     store = JobStore()
     bootstrap = store.bootstrap_from_json(Path("output/jobs.json"))
     full_refresh = os.getenv("FULL_REFRESH", "").strip().lower() in {"1", "true", "yes", "on"}
+    full_discovery = os.getenv("FULL_DISCOVERY", "").strip().lower() in {"1", "true", "yes", "on"}
 
     print("=" * 86)
     print(" OPPORTUNITY RADAR v3.15.3 — STRICT INTENTS + SAP EXPANSION")
@@ -78,6 +108,8 @@ def main():
         print("Modo FULL_REFRESH: early-stop e cache de detalhes desativados nesta execução.")
     else:
         print("Modo incremental: early-stop ativo para fontes paginadas com IDs conhecidos.")
+    if full_discovery:
+        print("Modo FULL_DISCOVERY: baseline exaustivo; FAST-stop SAP e query early-stop desativados.")
     print()
 
     # 1) ATS: always collect ALL published jobs from configured companies.
@@ -91,12 +123,29 @@ def main():
                 source_stats,
             )
 
+    # Regional sources first; known IDs are isolated by source and tenant.
+    for source_name, registry, collector in (
+        ("eightfold", EIGHTFOLD_TENANTS, collect_eightfold),
+        ("totvs", TOTVS_TENANTS, collect_totvs),
+        ("teamtailor", TEAMTAILOR_BOARDS, collect_teamtailor),
+        ("smartrecruiters", SMARTRECRUITERS_BOARDS, collect_smartrecruiters),
+        ("inhire", INHIRE_TENANTS, collect_inhire),
+        ("izirh", IZIRH_TENANTS, collect_izirh),
+        ("workday", WORKDAY_BOARDS, collect_workday),
+    ):
+        for source in registry:
+            if not source.get("enabled", True):
+                continue
+            runtime = additional_ats_runtime(source, source_name, store, full_refresh)
+            _run(f'{source["name"]} [{source_name}]',
+                 lambda c=collector, s=runtime: c(s), all_jobs, source_stats)
+
     # 2) Public global Gupy candidate portal.
     #    This replaces company-by-company page scraping in normal operation.
     gupy_global_cfg = PUBLIC_SOURCES.get("gupy_global", {})
     if gupy_global_cfg.get("enabled", True):
         gupy_runtime_cfg = dict(gupy_global_cfg)
-        known_gupy = set() if full_refresh else store.known_ids("gupy_global")
+        known_gupy = set() if (full_refresh or full_discovery) else store.known_ids("gupy_global")
         if known_gupy:
             gupy_runtime_cfg["known_source_job_ids"] = known_gupy
             gupy_runtime_cfg["early_stop_known_pages"] = 2
@@ -137,9 +186,32 @@ def main():
         for source in corporate_sources:
             runtime_source = dict(source)
             if runtime_source.get("ats", "successfactors") == "successfactors":
+                # Normal operation is scoped to the product's early-career
+                # universe. This is source-level scope, not profile filtering.
+                force_universal_sap = os.getenv(
+                    "SUCCESSFACTORS_UNIVERSAL", ""
+                ).strip().lower() in {"1", "true", "yes", "on"}
+                if force_universal_sap:
+                    runtime_source["targeted_early_career"] = False
+                else:
+                    runtime_source.setdefault("targeted_early_career", True)
+                    runtime_source.setdefault("targeted_max_pages_per_query", 0)
+                    runtime_source.setdefault("targeted_max_csb_locales", 2)
+                    runtime_source.setdefault("targeted_max_queries", 16)
+                    runtime_source.setdefault("targeted_max_jobs", 0)
+                    runtime_source.setdefault("targeted_max_details", 25)
+                    runtime_source.setdefault("targeted_max_listing_urls", 2)
+                    runtime_source.setdefault("targeted_broad_fallback_pages", 1)
+
                 tenant_prefix = f'{runtime_source["id"]}:'
                 known = set() if full_refresh else store.known_ids("successfactors", prefix=tenant_prefix)
                 runtime_source["known_source_job_ids"] = known
+                runtime_source["targeted_query_early_stop"] = not (
+                    full_refresh or full_discovery
+                )
+                runtime_source.setdefault(
+                    "targeted_query_early_stop_known_pages", 5
+                )
                 runtime_source["skip_known_details"] = not full_refresh
                 runtime_source["early_stop_known_pages"] = 2 if known else 0
 
@@ -173,7 +245,7 @@ def main():
                         f'até {bootstrap_pages} páginas por rota e '
                         f'{runtime_source["max_details"]} detalhes.'
                     )
-                if known:
+                if known and not full_discovery:
                     print(
                         f'  [CACHE] {runtime_source["name"]}: {len(known)} IDs conhecidos; '
                         "checando somente as páginas recentes primeiro."
@@ -184,33 +256,47 @@ def main():
                         consecutive_known_pages=2,
                     )
                     if probe.supported:
-                        print(
-                            f'  [FAST] {runtime_source["name"]}: {probe.method} | '
-                            f'{probe.pages} req/página(s) | '
-                            f'{len(probe.seen_native_ids)} IDs verificados | '
-                            f'{len(probe.new_native_ids)} novos'
-                        )
+                        print("  " + probe.summary(runtime_source["name"]))
                     if probe.safe_stop:
-                        for native_id in probe.seen_native_ids:
+                        for native_id in probe.seen_native_ids & {x[len(tenant_prefix):] for x in known}:
                             store.touch(
                                 "successfactors",
                                 f'{runtime_source["id"]}:{native_id}',
                             )
-                        source_stats["successfactors"] += len(probe.seen_native_ids)
+                        source_stats["successfactors"] += len(probe.seen_native_ids & {x[len(tenant_prefix):] for x in known})
                         print(
-                            f'  [FAST-STOP] {runtime_source["name"]}: nenhuma vaga nova nas '
-                            "páginas recentes; varredura universal pulada."
+                            f'  [FAST-STOP] {runtime_source["name"]}: nenhuma oportunidade early-career nova.'
                         )
                         continue
-                    if probe.new_native_ids:
+                    if probe.relevant_new_native_ids or probe.uncertain_new_native_ids:
                         print(
                             f'  [NOVAS] {runtime_source["name"]}: '
-                            f'{len(probe.new_native_ids)} ID(s) novo(s); '
-                            "executando varredura universal."
+                            f'{len(probe.relevant_new_native_ids)} oportunidades early-career novas | '
+                            f'{len(probe.uncertain_new_native_ids)} títulos insuficientes; '
+                            "executando coleta SuccessFactors configurada."
                         )
             _run(
                 f'{runtime_source["name"]} [{runtime_source.get("ats", "successfactors")}]',
                 lambda s=runtime_source: collect_corporate_ats(s),
+                all_jobs,
+                source_stats,
+            )
+
+
+    # CP2.9) Public Brazilian internship / early-career aggregators.
+    # Profiles/courses NEVER limit this collection.
+    early_sources = [s for s in EARLY_CAREER_SOURCES if s.get("enabled", True)]
+    if early_sources:
+        print("\nFontes brasileiras especializadas em início de carreira.")
+        for source in early_sources:
+            runtime = dict(source)
+            known = set() if full_refresh else store.known_ids(source["id"])
+            runtime["known_source_job_ids"] = known
+            runtime["skip_known_details"] = not full_refresh
+            runtime["show_incremental_stats"] = True
+            _run(
+                f'{runtime["name"]} [public early-career]',
+                lambda s=runtime: collect_early_career_source(s),
                 all_jobs,
                 source_stats,
             )
@@ -245,7 +331,7 @@ def main():
 
     cfg = PUBLIC_SOURCES["jobs99"]
     if cfg.get("enabled"):
-        known_99jobs = set() if full_refresh else store.known_ids("99jobs")
+        known_99jobs = set() if (full_refresh or full_discovery) else store.known_ids("99jobs")
         _run(
             "99jobs [public_page]",
             lambda: collect_99jobs(

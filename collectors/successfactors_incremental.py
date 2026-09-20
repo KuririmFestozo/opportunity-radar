@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from urllib.parse import urlencode
 
 from collectors.common import get_text
 from collectors.corporate_ats import (
+    _is_priority_ref,
     _post_successfactors_json,
     _successfactors_csb_base,
     discover_successfactors_locales,
@@ -24,6 +25,20 @@ class SuccessFactorsProbe:
     seen_native_ids: set[str]
     new_native_ids: set[str]
     reason: str = ""
+    relevant_new_native_ids: set[str] = field(default_factory=set)
+    uncertain_new_native_ids: set[str] = field(default_factory=set)
+
+    @property
+    def catalog_new_native_ids(self):
+        # Historical new_native_ids always meant new in the broad catalog.
+        return self.new_native_ids
+
+    def summary(self, company):
+        return (f"[FAST] {company}: {self.method} | {self.pages} requests | "
+                f"{len(self.seen_native_ids)} IDs verificados | "
+                f"{len(self.catalog_new_native_ids)} novos catálogo | "
+                f"{len(self.relevant_new_native_ids)} novos early-career | "
+                f"{len(self.uncertain_new_native_ids)} sem título suficiente")
 
 
 def _native_known(portal_id: str, source_ids) -> set[str]:
@@ -56,7 +71,7 @@ def probe_successfactors_recent(
     needed = max(1, int(consecutive_known_pages or 2))
 
     if bool(config.get("try_tile_search", False)):
-        result = _probe_tiles(base, known, needed)
+        result = _probe_tiles(base, known, needed, targeted=config.get("targeted_early_career", True))
         if result.supported:
             return result
 
@@ -71,137 +86,84 @@ def probe_successfactors_recent(
     )
 
 
-def _probe_tiles(base: str, known: set[str], needed: int) -> SuccessFactorsProbe:
-    seen: set[str] = set()
-    new: set[str] = set()
-    pages = 0
-    known_streak = 0
-    startrow = 0
-    previous: set[str] = set()
+class _ProbePages:
+    """Shared targeted policy for tiles and CSB, including incomplete titles."""
 
-    for _ in range(max(needed + 1, 3)):
+    def __init__(self, known, needed, targeted=True):
+        self.known, self.needed, self.targeted = known, needed, targeted
+        self.seen, self.catalog, self.relevant, self.uncertain = set(), set(), set(), set()
+        self.signatures = set()
+        self.streak = 0
+
+    def observe(self, refs):
+        ids = {ref.native_job_id for ref in refs if ref.native_job_id}
+        if not ids:
+            return bool(self.seen), "fim do catálogo" if self.seen else "página vazia sem evidência"
+        signature = frozenset(ids)
+        if signature in self.signatures:
+            return False, "página repetida; cobertura inconclusiva"
+        self.signatures.add(signature)
+        self.seen |= ids
+        self.catalog |= ids - self.known
+        for ref in refs:
+            if ref.native_job_id in self.known:
+                continue
+            title = ref.title.strip()
+            if not self.targeted or _is_priority_ref(ref):
+                self.relevant.add(ref.native_job_id)
+            elif not title or title.casefold() in {"job", "vaga", "position", "opportunity"} or not any(c.isalpha() for c in title):
+                self.uncertain.add(ref.native_job_id)
+        if self.relevant or self.uncertain:
+            return False, "novidade early-career ou título insuficiente"
+        self.streak += 1
+        if self.streak >= self.needed:
+            return True, f"{self.streak} páginas sem novidade no escopo"
+        return None, "continuar"
+
+    def result(self, method, pages, safe, reason, supported=True):
+        return SuccessFactorsProbe(supported, safe, method, pages, self.seen,
+                                   self.catalog, reason, self.relevant, self.uncertain)
+
+
+def _probe_tiles(base, known, needed, *, targeted=True):
+    state = _ProbePages(known, needed, targeted)
+    startrow = 0
+    for page in range(max(needed + 1, 3)):
         url = f"{base.rstrip('/')}/tile-search-results/?" + urlencode({"startrow": startrow})
         try:
-            html = get_text(url)
+            refs = parse_successfactors_tiles(get_text(url), url, include_untitled=True)
         except Exception as exc:
-            return SuccessFactorsProbe(
-                False, False, "tile", pages, seen, new,
-                f"{type(exc).__name__}: {exc}",
-            )
-
-        pages += 1
-        refs = parse_successfactors_tiles(html, url)
-        ids = {ref.native_job_id for ref in refs if ref.native_job_id}
-
-        if not ids:
-            if seen and not new and known_streak >= 1:
-                return SuccessFactorsProbe(
-                    True, True, "tile", pages, seen, new,
-                    "fim do catálogo recente",
-                )
-            return SuccessFactorsProbe(
-                False, False, "tile", pages, seen, new, "tile vazio",
-            )
-
-        if ids == previous:
-            unknown = ids - known
-            if unknown:
-                return SuccessFactorsProbe(
-                    True, False, "tile", pages, seen | ids, unknown,
-                    "página repetida com ID novo",
-                )
-            return SuccessFactorsProbe(
-                True, True, "tile", pages, seen | ids, new,
-                "página repetida e conhecida",
-            )
-
-        previous = ids
-        seen |= ids
-        unknown = ids - known
-        if unknown:
-            new |= unknown
-            return SuccessFactorsProbe(
-                True, False, "tile", pages, seen, new, "ID novo encontrado",
-            )
-
-        known_streak += 1
-        if known_streak >= needed:
-            return SuccessFactorsProbe(
-                True, True, "tile", pages, seen, new,
-                f"{known_streak} páginas só conhecidas",
-            )
-
-        startrow += len(ids)
-
-    return SuccessFactorsProbe(
-        True, False, "tile", pages, seen, new, "probe inconclusivo",
-    )
+            return state.result("tile", page, False, type(exc).__name__, supported=False)
+        decision, reason = state.observe(refs)
+        if decision is not None:
+            return state.result("tile", page + 1, decision, reason, supported=bool(state.seen))
+        startrow += len({ref.native_job_id for ref in refs})
+    return state.result("tile", page + 1, False, "probe inconclusivo")
 
 
-def _probe_csb_json(base: str, config: dict, known: set[str], needed: int) -> SuccessFactorsProbe:
+def _probe_csb_json(base, config, known, needed):
     locales = discover_successfactors_locales("", config)
     max_locales = max(1, min(int(config.get("fast_probe_max_locales", 3)), 5))
     api = f"{base.rstrip('/')}/services/recruiting/v1/jobs"
-
-    total_seen: set[str] = set()
-    total_new: set[str] = set()
     requests = 0
-    any_supported = False
-
     for locale in locales[:max_locales]:
-        known_streak = 0
-        locale_seen = False
-
-        for page in range(max(needed, 2)):
+        state = _ProbePages(known, needed, config.get("targeted_early_career", True))
+        for page in range(max(needed + 1, 3)):
             try:
-                payload = _post_successfactors_json(
-                    api,
-                    {
-                        "keywords": "",
-                        "locale": locale,
-                        "location": "",
-                        "pageNumber": page,
-                        "sortBy": "recent",
-                    },
-                )
+                payload = _post_successfactors_json(api, {
+                    "keywords": "", "locale": locale, "location": "",
+                    "pageNumber": page, "sortBy": "recent",
+                })
+                requests += 1
+                refs, _ = parse_successfactors_csb_json(payload, base, locale, include_untitled=True)
             except Exception:
+                # A partial response followed by an error must not imply completeness.
+                if state.seen:
+                    return state.result("csb_json", requests, False, "falha após resposta parcial")
                 break
-
-            requests += 1
-            refs, _ = parse_successfactors_csb_json(payload, base, locale)
-            ids = {ref.native_job_id for ref in refs if ref.native_job_id}
-            if not ids:
-                break
-
-            any_supported = True
-            locale_seen = True
-            total_seen |= ids
-            unknown = ids - known
-            if unknown:
-                total_new |= unknown
-                return SuccessFactorsProbe(
-                    True, False, "csb_json", requests,
-                    total_seen, total_new, f"ID novo em {locale}",
-                )
-
-            known_streak += 1
-            if known_streak >= needed:
-                return SuccessFactorsProbe(
-                    True, True, "csb_json", requests,
-                    total_seen, total_new,
-                    f"{known_streak} páginas só conhecidas em {locale}",
-                )
-
-        if locale_seen and not total_new:
-            configured = list(config.get("csb_locales") or [])
-            if len(configured) == 1:
-                return SuccessFactorsProbe(
-                    True, True, "csb_json", requests,
-                    total_seen, total_new,
-                    f"locale único {locale} completamente conhecido",
-                )
-
-    return SuccessFactorsProbe(
-        any_supported, False, "csb_json", requests,
-        total_seen, total_new, "probe CSB inconclusivo",
-    )
+            decision, reason = state.observe(refs)
+            if decision is not None:
+                if not state.seen:
+                    break
+                return state.result("csb_json", requests, decision, reason)
+    return SuccessFactorsProbe(False, False, "csb_json", requests, set(), set(), "probe CSB inconclusivo")

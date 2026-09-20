@@ -406,3 +406,38 @@ Endpoints locais:
 - `GET /api/stats`
 
 > O endpoint público do portal da Gupy é tratado como uma integração defensiva e pode mudar. A busca regional mantém a mesma separação da v3.4 entre o portal público e a API oficial autenticada.
+
+## ATS adicionais
+
+Além de Gupy, Lever, Greenhouse, Ashby, 99jobs, Vagas.com, CIEE e
+SuccessFactors, o radar possui coletores públicos/configuráveis para:
+
+- InHire (tenant inicial: EloGroup);
+- IziRH (tenants iniciais: Embraer e Programas Embraer);
+- Workday CXS (board inicial: Hitachi);
+- SmartRecruiters Posting API (boards iniciais: Bosch Group e Aumovio).
+
+Essas integrações não usam perfis/cursos para decidir o que coletar.
+Boards potencialmente enormes (como Hitachi/Workday) usam consultas
+early-career configuráveis para manter o custo de rede controlado.
+CPFL Energia é tratada pelo coletor SuccessFactors já existente.
+
+
+### Checkpoint 2.7: ATS e prioridade regional
+
+Cadastros expandidos para InHire, IziRH, Workday e SmartRecruiters, incluindo
+Serasa Experian; Citrosuco e Volkswagen Group reutilizam SuccessFactors.
+TOTVS (Xmobots) e Teamtailor (Tecumseh) usam páginas públicas. O incremental
+reutiliza o JobStore por fonte/tenant; `FULL_REFRESH=1` também atualiza detalhes
+conhecidos. Consulte [evidências, limites e diagnóstico Gupy regional](docs/checkpoint-2.7.md).
+
+
+### Checkpoint 2.9: fontes brasileiras de estágio
+
+Integrações públicas para WallJobs, Companhia de Estágios, Nube e IEL. Collectors defensivos também foram preparados para Cia de Talentos e Super Estágios, mas ficam desativados até existir contrato público estável e identidade confiável. Veja `docs/checkpoint-2.9.md`.
+
+
+### Fechamento do bloco 2.x
+
+Workday, SmartRecruiters e SuccessFactors targeted não usam mais tetos de produto arbitrários.
+`FULL_DISCOVERY=1` executa um baseline exaustivo; runs normais usam early-stop conservador por query no SuccessFactors. Veja `docs/checkpoint-2x-finalization.md`.
