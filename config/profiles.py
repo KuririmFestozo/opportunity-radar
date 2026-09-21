@@ -96,3 +96,35 @@ PROFILES = {
     ),
 
 }
+
+PROFILES.update({
+    "chemical_engineering_internship_br": SearchProfile(
+        id="chemical_engineering_internship_br",
+        name="Engenharia Química — Estágio no Brasil",
+        course_ids=["chemical_engineering"],
+        intent_ids=["internship"],
+        preferred_workplace_types=["remote", "hybrid", "onsite"],
+        preferred_countries=["BR"],
+        home_city="São Carlos - SP",
+        max_distance_km=None,
+        allow_unknown_distance=True,
+        minimum_score=45,
+    ),
+    "ufscar_engineering_internship_br": SearchProfile(
+        id="ufscar_engineering_internship_br",
+        name="Engenharias UFSCar — Estágio no Brasil",
+        course_ids=[
+            "electrical_engineering", "mechanical_engineering", "civil_engineering",
+            "production_engineering", "chemical_engineering", "materials_engineering",
+            "computer_engineering", "physics_engineering", "agronomic_engineering",
+            "environmental_engineering", "food_engineering", "forestry_engineering",
+        ],
+        intent_ids=["internship"],
+        preferred_workplace_types=["remote", "hybrid", "onsite"],
+        preferred_countries=["BR"],
+        home_city="São Carlos - SP",
+        max_distance_km=None,
+        allow_unknown_distance=True,
+        minimum_score=45,
+    ),
+})

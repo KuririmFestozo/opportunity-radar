@@ -122,3 +122,10 @@ CORPORATE_ATS_SOURCES = [
         "max_details": 30,
     },
 ]
+
+PUBLIC_SOURCES["cargill"] = {
+    "enabled": True,
+    "list_url": "https://careers.cargill.com/en/search-jobs?acm=ALL&alrpm=ALL&ascf=%5B%7B%22key%22:%22job_type%22,%22value%22:%22Campus%22%7D,%7B%22key%22:%22job_type%22,%22value%22:%22University%22%7D%5D",
+    "max_pages": 10,
+    "max_jobs": 0,
+}

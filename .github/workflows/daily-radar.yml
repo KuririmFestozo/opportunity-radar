@@ -24,11 +24,46 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
-      - name: Run radar
+      - name: Restore incremental database
+        uses: actions/cache/restore@v4
+        with:
+          path: data/opportunity_radar.db
+          key: opportunity-radar-db-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            opportunity-radar-db-${{ runner.os }}-${{ github.ref_name }}-
+            opportunity-radar-db-${{ runner.os }}-main-
+
+      - name: Run daily full audit
         env:
           GUPY_TOKEN: ${{ secrets.GUPY_TOKEN }}
-          ACTIVE_PROFILES: electrical_internship_br,computer_science_internship_br
-        run: python main.py
+          ACTIVE_PROFILES: electrical_internship_br,computer_science_internship_br,chemical_engineering_internship_br,ufscar_engineering_internship_br
+          DAILY_AUDIT: "1"
+          UNBOUNDED_COLLECTION: "1"
+          REQUEST_CONNECT_TIMEOUT: "8"
+          REQUEST_READ_TIMEOUT: "20"
+          REQUEST_TOTAL_TIMEOUT: "45"
+          REQUEST_RETRIES: "3"
+          RETRY_BACKOFF_SECONDS: "1.2"
+        run: python -u main.py
+
+      - name: Checkpoint SQLite WAL
+        if: success()
+        run: python -c "import sqlite3; c=sqlite3.connect('data/opportunity_radar.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.close()"
+
+      - name: Save incremental database
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: data/opportunity_radar.db
+          key: opportunity-radar-db-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Upload incremental database snapshot
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opportunity-radar-state
+          path: data/opportunity_radar.db
+          retention-days: 7
 
       - name: Upload generated dashboard
         uses: actions/upload-artifact@v4

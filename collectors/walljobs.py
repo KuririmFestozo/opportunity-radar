@@ -60,8 +60,10 @@ def collect_walljobs(config: dict) -> list[Job]:
             out.setdefault(job.source_job_id, job)
         if out:
             break
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 5000))
-    jobs = list(out.values())[:max_jobs]
+    configured = int(config.get("max_jobs", 0) or 0)
+    jobs = list(out.values())
+    if configured > 0:
+        jobs = jobs[:configured]
     if config.get("show_incremental_stats", True):
         known = set(config.get("known_source_job_ids") or ())
         ids = {j.source_job_id for j in jobs}

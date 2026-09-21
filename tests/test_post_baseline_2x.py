@@ -2,16 +2,17 @@ from pathlib import Path
 import ast
 
 
-def test_full_discovery_disables_gupy_and_99jobs_known_page_stop():
+def test_full_discovery_and_daily_audit_disable_gupy_and_99jobs_known_page_stop():
     text = Path("main.py").read_text(encoding="utf-8")
-    assert (
-        'known_gupy = set() if (full_refresh or full_discovery) '
-        'else store.known_ids("gupy_global")'
-    ) in text
-    assert (
-        'known_99jobs = set() if (full_refresh or full_discovery) '
-        'else store.known_ids("99jobs")'
-    ) in text
+
+    # Known discovery IDs are retained so cached/source state is reusable.
+    assert 'known_discovery_ids(store, "gupy_global")' in text
+    assert 'known_discovery_ids(store, "99jobs")' in text
+
+    # Both FULL_DISCOVERY and DAILY_AUDIT disable known-page early-stop.
+    assert '0 if (full_discovery or daily_audit) else 2' in text
+    assert 'full_discovery or daily_audit' in text
+    assert 'else (3 if known_99jobs else 0)' in text
 
 
 def test_successfactors_html_query_is_not_trusted_by_default():

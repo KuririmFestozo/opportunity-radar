@@ -28,6 +28,12 @@ _STORE_METADATA_KEYS = {
     "store_last_seen_at",
     "store_last_changed_at",
     "store_is_active",
+    "store_last_checked_at",
+    "store_missing_since",
+    "store_inactive_at",
+    "store_miss_count",
+    "store_seen_count",
+    "store_lifecycle_state",
 }
 
 
@@ -380,5 +386,19 @@ class JobStore:
         metadata["store_last_seen_at"] = row["last_seen_at"]
         metadata["store_last_changed_at"] = row["last_changed_at"]
         metadata["store_is_active"] = bool(row["is_active"])
+        keys = set(row.keys())
+        if "last_checked_at" in keys:
+            metadata["store_last_checked_at"] = row["last_checked_at"]
+            metadata["store_missing_since"] = row["missing_since"]
+            metadata["store_inactive_at"] = row["inactive_at"]
+            metadata["store_miss_count"] = int(row["miss_count"] or 0)
+            metadata["store_seen_count"] = int(row["seen_count"] or 0)
+            if not bool(row["is_active"]):
+                lifecycle_state = "inactive"
+            elif int(row["miss_count"] or 0) > 0:
+                lifecycle_state = "missing"
+            else:
+                lifecycle_state = "active"
+            metadata["store_lifecycle_state"] = lifecycle_state
         job.metadata = metadata
         return job

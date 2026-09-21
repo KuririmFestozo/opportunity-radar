@@ -77,7 +77,8 @@ def collect_inhire(config: dict) -> list[Job]:
 
     payload = get_json(API_URL, headers={"X-Tenant": tenant})
     items = _jobs_payload(payload)
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 5000))
+    jobs_cfg = int(config.get("max_jobs", 500) or 0)
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
 
     jobs: list[Job] = []
     seen: set[str] = set()
@@ -122,6 +123,12 @@ def collect_inhire(config: dict) -> list[Job]:
         )
         if len(jobs) >= max_jobs:
             break
+    config["_run_seen_ids"] = {job.source_job_id for job in jobs}
+    config["_run_coverage"] = (
+        "partial"
+        if len(items) > max_jobs and len(jobs) >= max_jobs
+        else "complete"
+    )
     report_incremental(config, jobs, 1)
     if (config.get("show_incremental_stats") and jobs
             and {job.source_job_id for job in jobs} <= set(config.get("known_source_job_ids") or ())):

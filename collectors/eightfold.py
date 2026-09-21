@@ -15,9 +15,12 @@ def collect_eightfold(config: dict) -> list[Job]:
     if urlsplit(base).scheme != "https" or not domain or not config.get("id"):
         raise ValueError("Eightfold requer career_url HTTPS, domain e id.")
     known = set(config.get("known_source_job_ids") or ())
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 3000))
-    max_pages = max(1, min(int(config.get("max_pages", 30)), 100))
-    max_details = max(0, min(int(config.get("max_details", 100)), 500))
+    jobs_cfg = int(config.get("max_jobs", 500) or 0)
+    pages_cfg = int(config.get("max_pages", 30) or 0)
+    details_cfg = int(config.get("max_details", 100) or 0)
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
+    max_pages = pages_cfg if pages_cfg > 0 else 1000
+    max_details = max(0, min(details_cfg, 100000))
     jobs, signatures = {}, set()
     requests = details = offset = 0
     total = None
@@ -82,6 +85,8 @@ def collect_eightfold(config: dict) -> list[Job]:
             break
         if len(jobs) >= max_jobs:
             break
+    config["_run_seen_ids"] = set(jobs)
+    config["_run_coverage"] = "complete" if exhausted else "partial"
     report_incremental(config, jobs.values(), requests)
     if not exhausted:
         remaining = max(0, total - len(jobs)) if total is not None else "indeterminado"

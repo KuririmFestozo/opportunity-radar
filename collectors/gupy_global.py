@@ -72,8 +72,10 @@ def collect_gupy_global(config: dict | None = None) -> list[Job]:
     """
     cfg = config or {}
     page_size = max(10, min(int(cfg.get("page_size", 100)), 100))
-    native_pages = max(1, int(cfg.get("max_pages_per_native_type", 8)))
-    keyword_pages = max(1, int(cfg.get("max_pages_per_keyword", 2)))
+    native_cfg = int(cfg.get("max_pages_per_native_type", 8) or 0)
+    keyword_cfg = int(cfg.get("max_pages_per_keyword", 2) or 0)
+    native_pages = native_cfg if native_cfg > 0 else 500
+    keyword_pages = keyword_cfg if keyword_cfg > 0 else 500
     native_types = list(cfg.get("native_job_types") or DEFAULT_NATIVE_JOB_TYPES)
     keyword_queries = list(cfg.get("keyword_queries") or DEFAULT_KEYWORD_QUERIES)
     known_source_job_ids = {str(x) for x in (cfg.get("known_source_job_ids") or set())}

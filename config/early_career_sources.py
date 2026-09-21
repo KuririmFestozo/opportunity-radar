@@ -23,8 +23,27 @@ EARLY_CAREER_SOURCES = [
         "disabled_reason": "Painel público dinâmico; contrato público estável de catálogo ainda não confirmado sem autenticação.",
     },
     {
-        "id": "superestagios", "name": "Super Estágios", "collector": "superestagios", "enabled": False,
-        "list_pages": [], "max_jobs": 500,
-        "disabled_reason": "Páginas SEO públicas existem, mas o catálogo nacional não expõe identificador/rota estável suficiente para ativação segura.",
+        "id": "superestagios", "name": "Super Estágios", "collector": "superestagios", "enabled": True,
+        "list_pages": [{"url": "https://www.superestagios.com.br/vagas/engenharia", "city": ""}],
+        "max_jobs": 0, "coverage": "public_national_engineering",
     },
 ]
+
+EARLY_CAREER_SOURCES.extend([
+    {
+        "id": "taqe", "name": "TAQE", "collector": "taqe", "enabled": True,
+        "list_url": "https://vagas.taqe.com.br/", "max_jobs": 0,
+    },
+    {
+        "id": "bettha", "name": "Bettha", "collector": "bettha", "enabled": True,
+        "list_url": "https://www.bettha.com/vagas", "max_jobs": 0,
+    },
+    {
+        "id": "matchbox", "name": "Matchbox Brasil", "collector": "matchbox", "enabled": True,
+        "list_url": "https://matchboxbrasil.com/talentos/", "max_jobs": 0,
+    },
+])
+
+for _source in EARLY_CAREER_SOURCES:
+    if _source.get("enabled", True):
+        _source["max_jobs"] = 0

@@ -45,8 +45,10 @@ DISCOVERY_TERMS = SUMMER_INTERNSHIP_TERMS + SEASONAL_TERMS
 def collect_gupy_summer_br(config: dict | None = None) -> list[Job]:
     cfg = config or {}
     page_size = max(10, min(int(cfg.get("page_size", 100)), 100))
-    native_pages = max(1, min(int(cfg.get("summer_native_pages", 8)), 20))
-    keyword_pages = max(1, min(int(cfg.get("summer_keyword_pages", 3)), 8))
+    native_cfg = int(cfg.get("summer_native_pages", 8) or 0)
+    keyword_cfg = int(cfg.get("summer_keyword_pages", 3) or 0)
+    native_pages = native_cfg if native_cfg > 0 else 500
+    keyword_pages = keyword_cfg if keyword_cfg > 0 else 500
     terms = tuple(cfg.get("summer_terms") or DISCOVERY_TERMS)
 
     found: list[Job] = []
@@ -82,8 +84,10 @@ def collect_gupy_summer_br(config: dict | None = None) -> list[Job]:
 
 def collect_99jobs_summer_br(config: dict | None = None) -> list[Job]:
     cfg = config or {}
-    max_pages = max(1, min(int(cfg.get("jobs99_pages_per_term", 4)), 10))
-    max_jobs = max(20, min(int(cfg.get("jobs99_max_jobs", 700)), 2500))
+    pages_cfg = int(cfg.get("jobs99_pages_per_term", 4) or 0)
+    jobs_cfg = int(cfg.get("jobs99_max_jobs", 700) or 0)
+    max_pages = pages_cfg if pages_cfg > 0 else 1000
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
     terms = tuple(cfg.get("summer_terms") or DISCOVERY_TERMS)
     found: dict[str, Job] = {}
 
@@ -107,7 +111,7 @@ def collect_99jobs_summer_br(config: dict | None = None) -> list[Job]:
 
 def collect_vagas_summer_br(config: dict | None = None) -> list[Job]:
     cfg = config or {}
-    max_per_query = max(10, min(int(cfg.get("vagas_max_jobs_per_query", 80)), 100))
+    max_per_query = int(cfg.get("vagas_max_jobs_per_query", 80) or 0)
     terms = tuple(cfg.get("summer_terms") or DISCOVERY_TERMS)
     found: dict[str, Job] = {}
 

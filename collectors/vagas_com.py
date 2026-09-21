@@ -11,6 +11,7 @@ BASE = "https://www.vagas.com.br"
 
 
 def collect_vagas_com(query: str, max_jobs: int = 40) -> list[Job]:
+    configured_max_jobs = int(max_jobs or 0)
     slug = _slugify(query)
     url = f"{BASE}/vagas-de-{slug}"
     html = get_text(url)
@@ -53,7 +54,7 @@ def collect_vagas_com(query: str, max_jobs: int = 40) -> list[Job]:
             )
         )
 
-        if len(jobs) >= max_jobs:
+        if configured_max_jobs > 0 and len(jobs) >= configured_max_jobs:
             break
 
     return jobs

@@ -101,6 +101,31 @@ IZIRH_TENANTS.append({"id": "ems", "name": "EMS", "subdomain": "ems.izirh.io", "
 
 IZIRH_TENANTS.append({"id": "cellerafarma", "name": "Cellera Farma", "subdomain": "cellerafarma.izirh.io", "enabled": True, "max_jobs": 500})
 
+
+# CP3 source expansion — public career pages / recent public vacancy evidence
+# verified in September 2026. Collection remains profile-independent.
+INHIRE_TENANTS.extend([
+    {"id": "v360", "name": "V360", "tenant": "v360", "enabled": True, "max_jobs": 1000},
+    {"id": "bridge", "name": "Bridge&Co", "tenant": "bridge", "enabled": True, "max_jobs": 1000},
+    {"id": "cielo", "name": "Cielo", "tenant": "cielo", "enabled": True, "max_jobs": 1000},
+    {"id": "db1", "name": "DB1 Group", "tenant": "db1", "enabled": True, "max_jobs": 1000},
+    {"id": "gx2", "name": "GX2", "tenant": "gx2", "enabled": True, "max_jobs": 1000},
+    # Public InHire endpoint returned 404 on 2026-09-21; disabled until
+    # a valid current tenant identifier is re-confirmed.
+    {"id": "aldaktecnologia", "name": "Aldak Tecnologia", "tenant": "aldaktecnologia", "enabled": False, "max_jobs": 1000},
+    {"id": "jassy", "name": "J.Assy", "tenant": "jassy", "enabled": True, "max_jobs": 1000},
+    {"id": "dati", "name": "Dati", "tenant": "dati", "enabled": True, "max_jobs": 1000},
+    {"id": "isystems", "name": "iSystems", "tenant": "isystems", "enabled": True, "max_jobs": 1000},
+    {"id": "yandeh", "name": "Yandeh", "tenant": "yandeh", "enabled": True, "max_jobs": 1000},
+    {"id": "iconit", "name": "ICON IT", "tenant": "iconit", "enabled": True, "max_jobs": 1000},
+])
+
+IZIRH_TENANTS.extend([
+    {"id": "levva", "name": "levva", "subdomain": "levva.izirh.io", "enabled": True, "max_jobs": 1000},
+    {"id": "advice", "name": "Advice", "subdomain": "advice.izirh.io", "enabled": True, "max_jobs": 1000},
+    {"id": "sertec", "name": "Grupo Sertec", "subdomain": "sertec.izirh.io", "enabled": True, "max_jobs": 1000},
+])
+
 WORKDAY_BOARDS.append({
     "id": "mastercard", "name": "Mastercard Campus",
     "board_url": "https://mastercard.wd1.myworkdayjobs.com/en-US/Campus",
@@ -237,3 +262,51 @@ for _board in WORKDAY_BOARDS:
 for _board in SMARTRECRUITERS_BOARDS:
     _board["max_pages_per_query"] = 0
     _board["max_jobs"] = 0
+
+WORKDAY_BOARDS.extend([
+    {
+        "id": "dow", "name": "Dow",
+        "board_url": "https://dow.wd1.myworkdayjobs.com/en-US/ExternalCareers",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+    {
+        "id": "airliquide", "name": "Air Liquide",
+        "board_url": "https://airliquidehr.wd3.myworkdayjobs.com/en-US/AirLiquideExternalCareer",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+    {
+        "id": "jj", "name": "Johnson & Johnson",
+        "board_url": "https://jj.wd5.myworkdayjobs.com/en-US/JJ",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+    {
+        "id": "bakerhughes", "name": "Baker Hughes",
+        "board_url": "https://bakerhughes.wd5.myworkdayjobs.com/en-US/BakerHughes",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+])
+
+SMARTRECRUITERS_BOARDS.extend([
+    {
+        "id": "syngenta", "name": "Syngenta Group",
+        "company_identifier": "SyngentaGroup",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+    {
+        "id": "sgs", "name": "SGS",
+        "company_identifier": "SGS",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+    {
+        "id": "wabtec", "name": "Wabtec",
+        "company_identifier": "Wabtec",
+        "enabled": True, "queries": EARLY_CAREER_QUERIES,
+        "early_career_only": True, "max_pages_per_query": 0, "max_jobs": 0,
+    },
+])
