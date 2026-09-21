@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 10 * * *"  # 07:00 BRT
 
+concurrency:
+  group: opportunity-radar-state-${{ github.ref_name }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
