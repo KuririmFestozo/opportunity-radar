@@ -33,7 +33,7 @@ BROAD_QUERIES_PT = [
 ]
 
 
-def build_collection_queries(max_queries: int = 60) -> list[str]:
+def build_collection_queries(max_queries: int | None = 60) -> list[str]:
     """
     Builds a broad search universe without looking at any user's profile.
 
@@ -70,7 +70,10 @@ def build_collection_queries(max_queries: int = 60) -> list[str]:
                 f"estagio de ferias {secondary}",
             ])
 
-    return _unique(queries)[:max_queries]
+    result = _unique(queries)
+    if max_queries is None or int(max_queries or 0) <= 0:
+        return result
+    return result[:int(max_queries)]
 
 
 def _unique(values):

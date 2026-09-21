@@ -19,3 +19,6 @@ data/*.db-*
 
 baseline_stdout.log
 baseline_stderr.log
+
+# Local checkpoint patch backups
+.checkpoint*-backup/

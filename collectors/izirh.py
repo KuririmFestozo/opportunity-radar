@@ -143,10 +143,12 @@ def collect_izirh(config: dict) -> list[Job]:
         raise RuntimeError(f"IziRH {subdomain}: configuração pública sem tenantId.")
 
     page_size = max(10, min(int(config.get("page_size", 100)), 200))
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 5000))
+    jobs_cfg = int(config.get("max_jobs", 500) or 0)
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
     stopper = KnownPageStopper(config.get("known_source_job_ids"), config.get("early_stop_known_pages", 2))
     requests = 1  # Public tenant configuration.
     stopped = False
+    inconclusive = False
     offset = 0
     seen: set[str] = set()
     jobs: list[Job] = []
@@ -205,7 +207,14 @@ def collect_izirh(config: dict) -> list[Job]:
         if total is None and len(page) < limit:
             break
         if added == 0 and len(page) > 0:
+            inconclusive = True
             break
 
+    config["_run_seen_ids"] = {job.source_job_id for job in jobs}
+    config["_run_coverage"] = (
+        "partial"
+        if stopped or inconclusive or len(jobs) >= max_jobs
+        else "complete"
+    )
     report_incremental(config, jobs, requests, stopped=stopped)
     return jobs

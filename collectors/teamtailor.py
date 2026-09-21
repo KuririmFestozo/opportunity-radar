@@ -16,14 +16,19 @@ def collect_teamtailor(config: dict) -> list[Job]:
     if urlsplit(base).scheme != "https" or not urlsplit(base).netloc or not config.get("name"):
         raise ValueError("Teamtailor requer name e career_url HTTPS.")
     known = set(config.get("known_source_job_ids") or ())
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 5000))
-    max_details = max(0, min(int(config.get("max_details", 100)), 500))
+    jobs_cfg = int(config.get("max_jobs", 500) or 0)
+    details_cfg = int(config.get("max_details", 100) or 0)
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
+    max_details = max(0, min(details_cfg, 100000))
     jobs = {}
     visited = set()
     signatures = set()
     requests = details = 0
+    complete = False
     url = f"{base}/jobs"
-    for _ in range(max(1, min(int(config.get("max_pages", 10)), 100))):
+    pages_cfg = int(config.get("max_pages", 10) or 0)
+    max_pages = pages_cfg if pages_cfg > 0 else 1000
+    for _ in range(max_pages):
         if url in visited:
             break
         visited.add(url)
@@ -67,10 +72,17 @@ def collect_teamtailor(config: dict) -> list[Job]:
             break
         next_link = soup.select_one('a[href*="/jobs/show_more?"]')
         if not next_link:
+            complete = True
             break
         url = urljoin(base, next_link["href"])
         if urlsplit(url).netloc != urlsplit(base).netloc:
             break
+    config["_run_seen_ids"] = set(jobs)
+    config["_run_coverage"] = (
+        "complete"
+        if complete and len(jobs) < max_jobs
+        else "partial"
+    )
     report_incremental(config, jobs.values(), requests)
     if config.get("show_incremental_stats"):
         print(f"[REQUESTS] {config['name']}: {requests - details} listagens | {details} detalhes")

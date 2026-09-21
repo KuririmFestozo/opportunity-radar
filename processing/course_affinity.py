@@ -26,6 +26,7 @@ ROLE_TOKENS = frozenset({
 
 EDUCATION_TERMS = (
     "degree", "bachelor", "bachelors", "major", "student", "students", "undergraduate",
+    "pursuing", "currently pursuing", "studying", "enrolled",
     "graduacao", "graduando", "graduanda", "cursando", "matriculado", "matriculada",
     "matriculados", "matriculadas", "formacao", "ensino superior",
     "universidade", "university", "college", "academic", "curso", "cursos", "curso superior",
@@ -170,6 +171,80 @@ RULES: dict[str, CourseRule] = {
         weak_body=("sql", "statistics", "estatistica", "analytics"),
     ),
 }
+
+RULES.update({
+    "chemical_engineering": CourseRule(
+        label="Engenharia Química",
+        direct=(
+            "engenharia quimica", "engenheiro quimico", "engenheira quimica",
+            "chemical engineering", "chemical engineer",
+        ),
+        discipline_tokens=frozenset({"chemical", "quimica", "quimico"}),
+        strong=(
+            "process engineering", "engenharia de processos", "chemical process",
+            "process safety", "petrochemical", "petroquimica", "unit operations",
+            "reactor", "separation process", "formulation",
+        ),
+        weak=("chemistry", "quimica", "laboratory", "laboratorio", "polymers", "polimeros"),
+        course_terms=("engenharia quimica", "chemical engineering"),
+        profession_terms=("engenheiro quimico", "engenheira quimica", "chemical engineer"),
+        weak_body=("chemistry", "quimica", "laboratory", "laboratorio"),
+    ),
+    "materials_engineering": CourseRule(
+        label="Engenharia de Materiais",
+        direct=("engenharia de materiais", "materials engineering", "materials engineer"),
+        strong=("materials science", "metallurgy", "metalurgia", "ceramics", "ceramica", "composites", "corrosion", "corrosao"),
+        weak=("polymers", "polimeros", "materials", "materiais"),
+        course_terms=("engenharia de materiais", "materials engineering"),
+        profession_terms=("materials engineer",),
+    ),
+    "computer_engineering": CourseRule(
+        label="Engenharia de Computação",
+        direct=("engenharia de computacao", "engenharia da computacao", "computer engineering", "computer engineer"),
+        strong=("embedded", "firmware", "hardware", "fpga", "asic", "microcontroller", "computer architecture", "digital design"),
+        weak=("electronics", "eletronica", "software", "c++"),
+        course_terms=("engenharia de computacao", "engenharia da computacao", "computer engineering"),
+        profession_terms=("computer engineer",),
+    ),
+    "physics_engineering": CourseRule(
+        label="Engenharia Física",
+        direct=("engenharia fisica", "engineering physics"),
+        strong=("photonics", "fotonica", "optics", "optica", "semiconductor", "instrumentation", "instrumentacao"),
+        weak=("physics", "fisica", "modeling", "simulacao"),
+        course_terms=("engenharia fisica", "engineering physics"),
+    ),
+    "agronomic_engineering": CourseRule(
+        label="Engenharia Agronômica",
+        direct=("engenharia agronomica", "agronomic engineering", "agronomy", "agronomia"),
+        strong=("agriculture", "agricultura", "crop science", "soil science", "seed production", "sementes"),
+        weak=("crop", "soil", "solo", "agro"),
+        course_terms=("engenharia agronomica", "agronomic engineering", "agronomia"),
+    ),
+    "environmental_engineering": CourseRule(
+        label="Engenharia Ambiental",
+        direct=("engenharia ambiental", "environmental engineering", "environmental engineer"),
+        strong=("wastewater", "efluentes", "water treatment", "environmental management", "gestao ambiental"),
+        weak=("sustainability", "sustentabilidade", "environment", "meio ambiente", "ehs", "hse"),
+        course_terms=("engenharia ambiental", "environmental engineering"),
+        profession_terms=("environmental engineer",),
+    ),
+    "food_engineering": CourseRule(
+        label="Engenharia de Alimentos",
+        direct=("engenharia de alimentos", "food engineering", "food engineer"),
+        strong=("food science", "food processing", "processamento de alimentos", "food safety", "seguranca dos alimentos", "haccp"),
+        weak=("quality", "qualidade", "food", "alimentos"),
+        course_terms=("engenharia de alimentos", "food engineering"),
+        profession_terms=("food engineer",),
+    ),
+    "forestry_engineering": CourseRule(
+        label="Engenharia Florestal",
+        direct=("engenharia florestal", "forestry engineering", "forest engineer"),
+        strong=("forestry", "forest management", "manejo florestal", "silviculture", "silvicultura"),
+        weak=("forest", "florestal", "pulp", "celulose"),
+        course_terms=("engenharia florestal", "forestry engineering"),
+        profession_terms=("forest engineer",),
+    ),
+})
 
 def _canon_term(value: str) -> str:
     value = normalize(value)

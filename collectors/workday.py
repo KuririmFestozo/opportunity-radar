@@ -102,13 +102,13 @@ def collect_workday(config: dict) -> list[Job]:
     max_pages = (
         max(1, min(configured_max_pages, 200))
         if configured_max_pages > 0
-        else 200
+        else 1000
     )
     configured_max_jobs = int(config.get("max_jobs", 0) or 0)
     max_jobs = (
         max(1, min(configured_max_jobs, 10000))
         if configured_max_jobs > 0
-        else 10000
+        else 100000
     )
     limit = max(10, min(int(config.get("page_size", 20)), 20))
 
@@ -172,5 +172,11 @@ def collect_workday(config: dict) -> list[Job]:
                 stats.bounded.add(query)
             break
 
+    config["_run_seen_ids"] = set(jobs)
+    config["_run_coverage"] = (
+        "partial"
+        if stats.bounded or stats.repeated or len(jobs) >= max_jobs
+        else "complete"
+    )
     stats.report(jobs.values(), requests)
     return list(jobs.values())

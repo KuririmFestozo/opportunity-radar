@@ -14,33 +14,71 @@ def _parse_city_page(html: str, url: str, city: str = "") -> list[Job]:
     text = (doc.find("main") or doc).get_text("\n", strip=True)
     lines = [clean(x) for x in text.splitlines() if clean(x)]
     jobs = {}
-    for i, line in enumerate(lines):
-        if not re.fullmatch(r"(?:Superior|Técnico|Tecnico|Médio|Medio|Pós-Graduação|Pos-Graduacao)", line, re.I):
+
+    level_re = re.compile(
+        r"(?:Superior|Técnico|Tecnico|Médio|Medio|Pós-Graduação|Pos-Graduacao)",
+        re.I,
+    )
+    hours_re = re.compile(r"^\d+\s+horas?$", re.I)
+
+    for i, level in enumerate(lines):
+        if not level_re.fullmatch(level):
             continue
-        window = lines[max(0, i - 4): i + 1]
-        joined = " | ".join(window)
-        salary = salary_from_text(joined)
-        if not salary:
+
+        salary_idx = None
+        salary = None
+        for j in range(i - 1, max(-1, i - 4), -1):
+            candidate = salary_from_text(lines[j])
+            if candidate:
+                salary_idx = j
+                salary = candidate
+                break
+        if salary_idx is None or not salary:
             continue
-        title = window[-3] if len(window) >= 3 else ""
-        company = window[-4] if len(window) >= 4 else "Confidencial"
-        if not title or re.search(r"R\$", title):
+
+        hours_idx = None
+        for j in range(salary_idx - 1, max(-1, salary_idx - 4), -1):
+            if hours_re.fullmatch(lines[j]):
+                hours_idx = j
+                break
+        if hours_idx is None or hours_idx < 3:
             continue
-        raw = normalize(f"{company}|{title}|{city}|{salary}|{line}")
+
+        location = city or lines[hours_idx - 1]
+        title = lines[hours_idx - 2]
+        company = lines[hours_idx - 3]
+
+        if (
+            not title
+            or hours_re.fullmatch(title)
+            or salary_from_text(title)
+            or level_re.fullmatch(title)
+        ):
+            continue
+
+        raw = normalize(f"{company}|{title}|{location}|{salary}|{level}")
         native = hashlib.sha1(raw.encode()).hexdigest()[:18]
+
         job = Job(
             source="superestagios",
             source_job_id=f"superestagios:{native}",
-            company=company,
+            company=company or "Confidencial",
             title=title,
-            location=city,
+            location=location,
             url=url,
             employment_type="internship",
             source_type="public_html",
             salary=salary,
-            metadata={"platform": "superestagios", "coverage": "partial_public_seo", "id_strategy": "sha1(public_card)", "education_level": line},
+            metadata={
+                "platform": "superestagios",
+                "coverage": "partial_public_seo",
+                "id_strategy": "sha1(public_card)",
+                "education_level": level,
+                "workload": lines[hours_idx],
+            },
         )
         jobs.setdefault(job.source_job_id, job)
+
     return list(jobs.values())
 
 
@@ -55,4 +93,6 @@ def collect_superestagios(config: dict) -> list[Job]:
         city = page.get("city", "") if isinstance(page, dict) else ""
         for job in _parse_city_page(get_text(url), url, city):
             jobs.setdefault(job.source_job_id, job)
-    return list(jobs.values())[: max(1, min(int(config.get("max_jobs", 500)), 5000))]
+    out = list(jobs.values())
+    configured = int(config.get("max_jobs", 0) or 0)
+    return out[:configured] if configured > 0 else out

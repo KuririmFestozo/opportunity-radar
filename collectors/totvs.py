@@ -51,8 +51,10 @@ def collect_totvs(config: dict) -> list[Job]:
     jobs = {}
     requests = 1
     details = 0
-    max_jobs = max(1, min(int(config.get("max_jobs", 500)), 5000))
-    max_details = max(0, min(int(config.get("max_details", 100)), 500))
+    jobs_cfg = int(config.get("max_jobs", 500) or 0)
+    details_cfg = int(config.get("max_details", 100) or 0)
+    max_jobs = jobs_cfg if jobs_cfg > 0 else 100000
+    max_details = max(0, min(details_cfg, 100000))
     for row in soup.select("[data-id][data-page-url][data-title]"):
         native_id = row.get("data-id", "").strip()
         title = row.get("data-title", "").strip()
@@ -82,6 +84,8 @@ def collect_totvs(config: dict) -> list[Job]:
         jobs[source_id] = job
         if len(jobs) >= max_jobs:
             break
+    config["_run_seen_ids"] = set(jobs)
+    config["_run_coverage"] = "partial" if len(jobs) >= max_jobs else "complete"
     report_incremental(config, jobs.values(), requests)
     if config.get("show_incremental_stats"):
         print(f"[REQUESTS] {config['name']}: {requests - details} listagens | {details} detalhes")

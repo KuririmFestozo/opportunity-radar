@@ -85,8 +85,9 @@ def collect_nube(config: dict) -> list[Job]:
     url = config.get("list_url") or DEFAULT_URL
     jobs = _parse(get_text(url), url)
 
-    max_jobs = max(1, min(int(config.get("max_jobs", 1500)), 10000))
-    jobs = jobs[:max_jobs]
+    configured = int(config.get("max_jobs", 0) or 0)
+    if configured > 0:
+        jobs = jobs[:configured]
 
     if config.get("show_incremental_stats", True):
         known = set(config.get("known_source_job_ids") or ())

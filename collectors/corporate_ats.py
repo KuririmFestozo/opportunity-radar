@@ -124,8 +124,22 @@ def collect_corporate_ats(config: dict) -> list[Job]:
 
 
 def collect_successfactors(config: dict) -> list[Job]:
-    """Collect one public SAP SuccessFactors tenant and return deduplicated jobs."""
-    return collect_successfactors_with_stats(config).jobs
+    # Expose conservative completeness metadata for lifecycle reconciliation.
+    result = collect_successfactors_with_stats(config)
+    stats = result.stats
+    method_counts = stats.get("method_counts") or {}
+    complete = (
+        not stats.get("errors")
+        and not stats.get("bounded_queries")
+        and not stats.get("safety_job_ceiling_hit")
+        and not stats.get("early_stop_hits")
+        and not method_counts.get("tile_fallback")
+    )
+    config["_run_seen_ids"] = {
+        job.source_job_id for job in result.jobs
+    }
+    config["_run_coverage"] = "complete" if complete else "partial"
+    return result.jobs
 
 
 def collect_successfactors_with_stats(config: dict) -> DiscoveryResult:
@@ -502,7 +516,8 @@ def _targeted_successfactors_queries(config: dict) -> list[str]:
     # Portal-specific terms stay first; shared product-scope terms fill gaps.
     values.extend(_DEFAULT_TARGETED_QUERIES)
 
-    limit = max(1, min(int(config.get("targeted_max_queries", 16)), 32))
+    queries_cfg = int(config.get("targeted_max_queries", 16) or 0)
+    limit = queries_cfg if queries_cfg > 0 else 128
     out: list[str] = []
     seen: set[str] = set()
     for value in values:

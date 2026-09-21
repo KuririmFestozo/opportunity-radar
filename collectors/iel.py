@@ -213,7 +213,8 @@ def collect_iel(config: dict) -> list[Job]:
         {"state": "", "url": config.get("list_url") or DEFAULT_URL}
     ]
 
-    max_jobs = max(1, min(int(config.get("max_jobs", 2000)), 10000))
+    configured_max_jobs = int(config.get("max_jobs", 2000) or 0)
+    max_jobs = configured_max_jobs if configured_max_jobs > 0 else 100000
     max_details = max(0, min(int(config.get("max_details", 25)), 250))
     known = set(config.get("known_source_job_ids") or ())
     skip_known_details = bool(config.get("skip_known_details", False))

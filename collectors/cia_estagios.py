@@ -119,8 +119,9 @@ def collect_cia_estagios(config: dict) -> list[Job]:
     url = config.get("list_url") or DEFAULT_URL
     jobs = _parse(get_text(url), url)
 
-    max_jobs = max(1, min(int(config.get("max_jobs", 200)), 1000))
-    jobs = jobs[:max_jobs]
+    configured = int(config.get("max_jobs", 0) or 0)
+    if configured > 0:
+        jobs = jobs[:configured]
 
     if config.get("show_incremental_stats", True):
         print(

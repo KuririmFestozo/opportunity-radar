@@ -218,3 +218,75 @@ NEGATIVE_SENIORITY = [
     "lead ", "líder", "lider", "head of",
     "vice president", "vp ", "especialista",
 ]
+
+COURSES.update({
+    "chemical_engineering": {
+        "label": "Engenharia Química",
+        "core_terms": [
+            "engenharia química", "engenharia quimica", "chemical engineering",
+            "chemical engineer", "engenheiro químico", "engenheiro quimico",
+        ],
+        "related_terms": [
+            "process engineering", "engenharia de processos", "chemical process",
+            "process safety", "petrochemical", "petroquímica", "polymers",
+            "formulation", "reactor", "separation",
+        ],
+        "search_terms_pt": [
+            "engenharia química", "processos químicos",
+            "processos industriais", "química industrial",
+        ],
+        "search_terms_en": [
+            "chemical engineering", "process engineering",
+            "chemical process", "process safety",
+        ],
+    },
+    "materials_engineering": {
+        "label": "Engenharia de Materiais",
+        "core_terms": ["engenharia de materiais", "materials engineering", "materials engineer"],
+        "related_terms": ["materials science", "metallurgy", "metalurgia", "ceramics", "cerâmica", "polymers", "composites", "corrosion"],
+        "search_terms_pt": ["engenharia de materiais", "materiais", "metalurgia", "polímeros"],
+        "search_terms_en": ["materials engineering", "materials science", "metallurgy", "polymers"],
+    },
+    "computer_engineering": {
+        "label": "Engenharia de Computação",
+        "core_terms": ["engenharia de computação", "engenharia da computação", "computer engineering", "computer engineer"],
+        "related_terms": ["embedded", "firmware", "hardware", "fpga", "asic", "microcontroller", "computer architecture"],
+        "search_terms_pt": ["engenharia de computação", "sistemas embarcados", "hardware", "firmware"],
+        "search_terms_en": ["computer engineering", "embedded systems", "hardware engineering", "firmware"],
+    },
+    "physics_engineering": {
+        "label": "Engenharia Física",
+        "core_terms": ["engenharia física", "engenharia fisica", "engineering physics"],
+        "related_terms": ["photonics", "fotônica", "optics", "óptica", "semiconductor", "instrumentation", "modeling"],
+        "search_terms_pt": ["engenharia física", "fotônica", "instrumentação", "semicondutores"],
+        "search_terms_en": ["engineering physics", "photonics", "instrumentation", "semiconductor"],
+    },
+    "agronomic_engineering": {
+        "label": "Engenharia Agronômica",
+        "core_terms": ["engenharia agronômica", "engenharia agronomica", "agronomic engineering", "agronomy"],
+        "related_terms": ["agriculture", "agricultura", "crop", "soil", "seeds", "sementes", "agro", "agronomia"],
+        "search_terms_pt": ["engenharia agronômica", "agronomia", "agricultura", "sementes"],
+        "search_terms_en": ["agronomy", "agronomic engineering", "agriculture", "crop science"],
+    },
+    "environmental_engineering": {
+        "label": "Engenharia Ambiental",
+        "core_terms": ["engenharia ambiental", "environmental engineering", "environmental engineer"],
+        "related_terms": ["environment", "meio ambiente", "sustainability", "wastewater", "efluentes", "water treatment", "environmental management", "ehs", "hse"],
+        "search_terms_pt": ["engenharia ambiental", "meio ambiente", "sustentabilidade", "tratamento de água"],
+        "search_terms_en": ["environmental engineering", "sustainability", "wastewater", "environmental management"],
+    },
+    "food_engineering": {
+        "label": "Engenharia de Alimentos",
+        "core_terms": ["engenharia de alimentos", "food engineering", "food engineer"],
+        "related_terms": ["food science", "food process", "processamento de alimentos", "food safety", "haccp", "quality"],
+        "search_terms_pt": ["engenharia de alimentos", "alimentos", "qualidade de alimentos", "processamento de alimentos"],
+        "search_terms_en": ["food engineering", "food science", "food processing", "food safety"],
+    },
+    "forestry_engineering": {
+        "label": "Engenharia Florestal",
+        "core_terms": ["engenharia florestal", "forestry engineering", "forest engineer"],
+        "related_terms": ["forestry", "florestal", "forest management", "manejo florestal", "silviculture", "silvicultura", "pulp", "celulose"],
+        "search_terms_pt": ["engenharia florestal", "manejo florestal", "silvicultura", "celulose"],
+        "search_terms_en": ["forestry engineering", "forestry", "forest management", "silviculture"],
+    },
+})

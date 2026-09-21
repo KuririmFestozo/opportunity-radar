@@ -441,3 +441,39 @@ Integrações públicas para WallJobs, Companhia de Estágios, Nube e IEL. Colle
 
 Workday, SmartRecruiters e SuccessFactors targeted não usam mais tetos de produto arbitrários.
 `FULL_DISCOVERY=1` executa um baseline exaustivo; runs normais usam early-stop conservador por query no SuccessFactors. Veja `docs/checkpoint-2x-finalization.md`.
+
+
+## Incremental integrity (Checkpoint 3)
+
+The local SQLite store now separates source discovery state from the active job
+catalog. IDs that are observed but outside the configured early-career scope
+can be remembered without becoming jobs. Vacancy closure is conservative:
+partial/early-stopped scans never count as misses; complete scans move jobs
+through active → missing → inactive, and a later sighting reopens them.
+
+Additional ATS scopes receive periodic full audits so incremental early-stop
+does not prevent eventual vacancy retirement. See `docs/checkpoint-3.md`.
+
+### Daily audit versus local incremental mode
+
+Normal local execution (`python main.py`) remains incremental. The scheduled
+GitHub Actions workflow runs with `DAILY_AUDIT=1`, restores the previous SQLite
+state from Actions cache, traverses configured listings without early-stop, and
+saves the updated state only after a successful run. Known detail pages are
+still reused during the audit; this is intentionally lighter than
+`FULL_REFRESH=1`.
+
+### Engineering and Brazilian-source expansion
+
+Checkpoint 3.1 adds first-class affinity for Chemical, Materials, Computer,
+Physics, Agronomic, Environmental, Food and Forestry Engineering.
+
+New Brazilian public sources include TAQE, Bettha, Matchbox Brasil and the
+national Super Estágios engineering listing. Corporate coverage also adds Dow,
+Air Liquide, Johnson & Johnson, Baker Hughes, Syngenta Group, SGS and Wabtec.
+
+Cargill is collected directly from its official careers catalog by following
+the site's own pagination links.
+
+The collect-first/filter-later rule remains unchanged: collectors do not inspect
+the active profile to decide what to collect.

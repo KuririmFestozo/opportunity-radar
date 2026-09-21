@@ -82,6 +82,8 @@ def collect_99jobs(
     known_source_job_ids: set[str] | None = None,
     early_stop_known_pages: int = 0,
     show_incremental_stats: bool = False,
+    max_pages_per_search: int | None = None,
+    max_global_pages: int | None = None,
 ) -> list[Job]:
     """Collect a broad public sample of current 99jobs opportunities.
 
@@ -94,6 +96,19 @@ def collect_99jobs(
     site-side pagination change does not create an endless request loop. Course,
     intent and location filtering remains local (collect first, filter later).
     """
+    configured_max_jobs = int(max_jobs or 0)
+    max_jobs = configured_max_jobs if configured_max_jobs > 0 else 100000
+    search_pages = (
+        MAX_PAGES_PER_SEARCH
+        if max_pages_per_search is None
+        else max(0, int(max_pages_per_search))
+    )
+    global_pages = (
+        MAX_GLOBAL_PAGES
+        if max_global_pages is None
+        else max(0, int(max_global_pages))
+    )
+
     found: dict[str, Job] = {}
     known_source_job_ids = {str(x) for x in (known_source_job_ids or set())}
     incremental_stats = {"pages": 0, "early_stops": 0}
@@ -111,7 +126,7 @@ def collect_99jobs(
         _collect_pages(
             found,
             lambda page, term=term: _search_page_url(term, page),
-            MAX_PAGES_PER_SEARCH,
+            search_pages,
             max_jobs,
             known_source_job_ids=known_source_job_ids,
             early_stop_known_pages=early_stop_known_pages,
@@ -124,7 +139,7 @@ def collect_99jobs(
         _collect_pages(
             found,
             _global_page_url,
-            MAX_GLOBAL_PAGES,
+            global_pages,
             max_jobs,
             known_source_job_ids=known_source_job_ids,
             early_stop_known_pages=early_stop_known_pages,

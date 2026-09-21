@@ -5,6 +5,9 @@ from collectors.cia_talentos import collect_cia_talentos
 from collectors.nube import collect_nube
 from collectors.iel import collect_iel
 from collectors.superestagios import collect_superestagios
+from collectors.taqe import collect_taqe
+from collectors.bettha import collect_bettha
+from collectors.matchbox import collect_matchbox
 
 COLLECTORS = {
     "walljobs": collect_walljobs,
@@ -13,6 +16,9 @@ COLLECTORS = {
     "nube": collect_nube,
     "iel": collect_iel,
     "superestagios": collect_superestagios,
+    "taqe": collect_taqe,
+    "bettha": collect_bettha,
+    "matchbox": collect_matchbox,
 }
 
 
