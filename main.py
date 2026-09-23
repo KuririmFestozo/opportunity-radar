@@ -48,17 +48,11 @@ from processing.deduplicate import deduplicate_jobs
 from processing.export import export_all
 from processing.geolocation import enrich_job_location
 from processing.matching import match_job
-from storage.job_store import JobStore, deduplicate_source_jobs
+from processing.deduplicate import deduplicate_source_jobs
+from storage.sqlite_repository import SQLiteOpportunityRepository
 from storage.incremental_state import (
-    ensure_incremental_schema,
-    finish_scope_run,
     known_discovery_ids,
-    lifecycle_stats,
-    mark_seen_ids,
-    mark_seen_jobs,
     needs_full_audit,
-    reconcile_scope,
-    record_discoveries,
 )
 
 
@@ -101,16 +95,22 @@ def additional_ats_runtime(
     runtime = dict(source)
     prefix = f"{source['id']}:"
     scope_key = prefix
-    periodic_full = (
-        needs_full_audit(
+    if hasattr(store, "needs_full_audit"):
+        periodic_full = store.needs_full_audit(
+            source_name,
+            scope_key,
+            every_runs=int(source.get("full_audit_every_runs", 7)),
+        )
+    elif hasattr(store, "conn"):
+        # Backward compatibility for JobStore-based tests during CP4.
+        periodic_full = needs_full_audit(
             store,
             source_name,
             scope_key,
             every_runs=int(source.get("full_audit_every_runs", 7)),
         )
-        if hasattr(store, "conn")
-        else False
-    )
+    else:
+        periodic_full = False
     force_full_scan = bool(
         full_refresh or full_discovery or daily_audit or periodic_full
     )
@@ -120,9 +120,19 @@ def additional_ats_runtime(
     runtime["_periodic_full_audit"] = periodic_full
     if full_refresh:
         runtime["known_source_job_ids"] = set()
+    elif hasattr(store, "known_discovery_ids"):
+        runtime["known_source_job_ids"] = store.known_discovery_ids(
+            source_name, prefix=prefix
+        )
     elif hasattr(store, "conn"):
+        # Backward compatibility for JobStore-based tests during CP4.
         runtime["known_source_job_ids"] = known_discovery_ids(
             store, source_name, prefix=prefix
+        )
+    elif hasattr(store, "known_posting_ids"):
+        # Repository contract.
+        runtime["known_source_job_ids"] = store.known_posting_ids(
+            source_name, prefix=prefix
         )
     else:
         # Backward-compatible fallback for lightweight tests/adapters.
@@ -147,8 +157,7 @@ def main():
     profiles = active_profiles()
     all_jobs = []
     source_stats = Counter()
-    store = JobStore()
-    ensure_incremental_schema(store)
+    store = SQLiteOpportunityRepository()
     bootstrap = store.bootstrap_from_json(Path("output/jobs.json"))
     full_refresh = os.getenv("FULL_REFRESH", "").strip().lower() in {"1", "true", "yes", "on"}
     full_discovery = os.getenv("FULL_DISCOVERY", "").strip().lower() in {"1", "true", "yes", "on"}
@@ -166,7 +175,7 @@ def main():
     if bootstrap["imported"]:
         print(f"Banco incremental criado do jobs.json: {bootstrap['imported']} vagas preservadas.")
     else:
-        print(f"Banco incremental: {store.count()} registros armazenados.")
+        print(f"Banco incremental: {store.count_postings()} registros armazenados.")
     if full_refresh:
         print("Modo FULL_REFRESH: early-stop e cache de detalhes desativados nesta execução.")
     else:
@@ -232,8 +241,7 @@ def main():
                     or {job.source_job_id for job in collected}
                 )
                 coverage = str(runtime.get("_run_coverage") or "partial")
-                life = reconcile_scope(
-                    store,
+                life = store.reconcile_scope(
                     source_name,
                     seen_ids,
                     prefix=runtime["_scope_prefix"],
@@ -242,8 +250,7 @@ def main():
                         source.get("missing_grace_complete_runs", 2)
                     ),
                 )
-                finish_scope_run(
-                    store,
+                store.finish_scope_run(
                     source_name,
                     runtime["_scope_key"],
                     coverage=coverage,
@@ -268,7 +275,7 @@ def main():
         known_gupy = (
             set()
             if full_refresh
-            else known_discovery_ids(store, "gupy_global")
+            else store.known_discovery_ids( "gupy_global")
         )
         if known_gupy:
             gupy_runtime_cfg["known_source_job_ids"] = known_gupy
@@ -340,15 +347,14 @@ def main():
                     runtime_source["max_details"] = 2500
                 
                 tenant_prefix = f'{runtime_source["id"]}:'
-                catalog_known = store.known_ids(
+                catalog_known = store.known_posting_ids(
                     "successfactors",
                     prefix=tenant_prefix,
                 )
                 known = (
                     set()
                     if full_refresh
-                    else known_discovery_ids(
-                        store,
+                    else store.known_discovery_ids(
                         "successfactors",
                         prefix=tenant_prefix,
                     )
@@ -428,8 +434,7 @@ def main():
                             - unresolved
                         )
                         if out_of_scope:
-                            record_discoveries(
-                                store,
+                            store.record_discoveries(
                                 "successfactors",
                                 {
                                     f'{runtime_source["id"]}:{native_id}'
@@ -438,8 +443,7 @@ def main():
                                 scope_status="out_of_scope",
                             )
                         if seen_catalog_native:
-                            mark_seen_ids(
-                                store,
+                            store.mark_seen_ids(
                                 "successfactors",
                                 {
                                     f'{runtime_source["id"]}:{native_id}'
@@ -475,8 +479,7 @@ def main():
                 coverage = str(
                     runtime_source.get("_run_coverage") or "partial"
                 )
-                life = reconcile_scope(
-                    store,
+                life = store.reconcile_scope(
                     "successfactors",
                     runtime_source.get("_run_seen_ids")
                     or {job.source_job_id for job in collected},
@@ -488,8 +491,7 @@ def main():
                         )
                     ),
                 )
-                finish_scope_run(
-                    store,
+                store.finish_scope_run(
                     "successfactors",
                     f'{runtime_source["id"]}:',
                     coverage=coverage,
@@ -524,7 +526,7 @@ def main():
         print("\nFontes brasileiras especializadas em início de carreira.")
         for source in early_sources:
             runtime = dict(source)
-            known = set() if full_refresh else store.known_ids(source["id"])
+            known = set() if full_refresh else store.known_posting_ids(source["id"])
             runtime["known_source_job_ids"] = known
             runtime["skip_known_details"] = not full_refresh
             runtime["show_incremental_stats"] = True
@@ -568,7 +570,7 @@ def main():
         known_99jobs = (
             set()
             if full_refresh
-            else known_discovery_ids(store, "99jobs")
+            else store.known_discovery_ids( "99jobs")
         )
         _run(
             "99jobs [public_page]",
@@ -632,20 +634,24 @@ def main():
 
     incremental = Counter()
     for incoming in source_unique:
-        job, status, needs_processing = store.prepare(incoming)
+        job, status, needs_processing = store.prepare_posting(incoming)
         incremental[status] += 1
         if needs_processing:
             classify_job(job)
             enrich_job_location(job)
-            store.upsert(job, commit=False)
+            store.upsert_posting(job, commit=False)
         else:
-            store.touch(job.source, job.source_job_id, commit=False)
+            store.touch_posting(job.source, job.source_job_id, commit=False)
 
-    seen_state = mark_seen_jobs(store, source_unique)
+    seen_state = store.mark_seen_postings(source_unique)
     store.commit()
 
-    stored_jobs = store.load_jobs(active_only=True)
-    unique = deduplicate_jobs(stored_jobs)
+    # CP4-A shadow migration: legacy jobs remain authoritative for now.
+    # The relational schema is synchronized only after a successful batch.
+    unified_state = store.sync_unified_schema()
+
+    # CP4-E: read the user-facing catalog from relational opportunities.
+    unique = store.load_opportunities(active_only=True)
 
     print(
         "Incremental: "
@@ -654,9 +660,17 @@ def main():
         f"{incremental['reprocess']} reprocessadas | "
         f"{incremental['unchanged']} reaproveitadas"
     )
-    life_stats = lifecycle_stats(store)
-    print(f"Banco persistente ativo: {len(stored_jobs)} registros por fonte/ID")
+    life_stats = store.lifecycle_stats()
+    print(f"Banco persistente ativo: {life_stats['active']} registros por fonte/ID")
     print(f"Vagas únicas no catálogo: {len(unique)}")
+    print(
+        "Persistência CP4-C: "
+        f"{unified_state['source_postings']} postings | "
+        f"{unified_state['opportunities']} opportunities | "
+        f"{unified_state['active_opportunities']} ativas | "
+        f"{unified_state['cross_source_opportunities']} cross-source | "
+        f"schema v{unified_state['schema_version']}"
+    )
     print(
         "Lifecycle: "
         f"{life_stats['active']} ativas | "

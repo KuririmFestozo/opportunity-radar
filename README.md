@@ -1,63 +1,356 @@
-# 🎯 Opportunity Radar v3.4
+# 🎯 Opportunity Radar
 
-O projeto agora é um **motor genérico de oportunidades**, não um radar fixo de Engenharia Elétrica.
+O **Opportunity Radar** é um agregador inteligente de oportunidades de início de carreira.
 
-## A mudança mais importante
+A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
 
-A vaga é coletada uma vez e classificada independentemente por curso e tipo de oportunidade.
-Depois, cada **perfil de busca** decide se aquela vaga faz sentido para aquele usuário.
+> **Estado atual:** Checkpoints 3 e 3.1 concluídos.
+> **Próximo passo:** Checkpoint 4 — persistência unificada.
+
+---
+
+## Por que este projeto existe?
+
+Vagas de estágio, trainee, júnior, pesquisa e programas universitários ficam espalhadas entre dezenas de plataformas e páginas corporativas.
+
+Além disso:
+
+- empresas publicam a mesma oportunidade em lugares diferentes;
+- títulos de vaga nem sempre deixam claro quais cursos são aceitos;
+- alguns portais removem vagas sem indicar explicitamente que foram encerradas;
+- buscas por palavras-chave podem esconder oportunidades relevantes;
+- cada plataforma usa formatos, identificadores e estruturas diferentes.
+
+O Opportunity Radar tenta resolver isso criando **um catálogo único e pesquisável**, sem depender de um único portal.
+
+---
+
+## A proposta
+
+O princípio central é simples:
+
+> **Collect first, filter later.**
+
+Os coletores tentam formar uma base ampla de oportunidades.
+Curso, localização, intenção e perfil do usuário só entram **depois da coleta**.
+
+Fluxo geral:
+
+```mermaid
+flowchart TD
+    A[Fontes de vagas] --> B[Collectors]
+    B --> C[Normalização]
+    C --> D[Identidade e deduplicação]
+    D --> E[Classificação]
+    E --> F[Persistência incremental]
+    F --> G[Perfis e filtros]
+    G --> H[Dashboard / API]
+```
+
+Uma vaga é coletada uma vez e pode ser relevante para vários cursos ao mesmo tempo.
 
 Exemplo:
 
 ```text
 Hardware Intern
 
-Engenharia Elétrica: 92%
-Ciência da Computação: 61%
-Engenharia Mecânica: 17%
+Engenharia Elétrica       92%
+Engenharia de Computação  88%
+Ciência da Computação     61%
+Engenharia Mecânica       17%
 ```
 
-A mesma vaga pode, portanto, aparecer para pessoas diferentes com scores diferentes.
+---
 
-## Filtros já preparados
+## Princípios do projeto
 
-O dashboard da v3 permite filtrar por:
+### 1. Collect first, filter later
 
-- perfil de busca;
-- curso/área;
-- estágio, summer internship, co-op, trainee, pesquisa etc.;
-- fonte;
-- remoto, híbrido ou presencial;
-- score mínimo;
-- distância máxima em km;
-- localização atual do dispositivo;
-- texto livre: empresa, cargo, cidade etc.
+Perfis não controlam o que os collectors coletam.
 
-## Localização e distância
+Isso evita perder uma oportunidade apenas porque o perfil ativo naquele momento não incluía determinado curso, cidade ou tipo de vaga.
 
-As localidades textuais das vagas são resolvidas localmente com `geonamescache`.
-Isso dá coordenadas aproximadas do **centro da cidade**, suficientes para filtros do tipo:
+### 2. Identidade por fonte
+
+A identidade primária de um anúncio é:
 
 ```text
-até 25 km
-até 50 km
-até 100 km
-até 250 km
+(source, source_job_id)
 ```
 
-Não é uma estimativa porta a porta nem de tempo de trânsito.
+Duas fontes diferentes não são tratadas como a mesma vaga sem evidência suficiente.
 
-No dashboard, você também pode clicar em:
+### 3. Deduplicação conservadora
+
+Quando anúncios parecem representar a mesma oportunidade, o catálogo pode consolidá-los.
+
+Mas, quando há dúvida, o sistema prefere manter duas entradas a esconder uma vaga legítima.
+
+### 4. Lifecycle conservador
+
+Uma vaga não é considerada encerrada só porque deixou de aparecer em uma execução parcial.
+
+O ciclo atual é:
 
 ```text
-📍 Usar minha localização
+active
+  ↓  1ª ausência em varredura completa
+missing
+  ↓  2ª ausência consecutiva em varredura completa
+inactive
 ```
 
-Na v3.5, sua posição pode ser enviada para o **servidor local** do radar em `localhost` quando você usa a busca regional ao vivo. As fontes externas recebem consultas por cidade; o radar não precisa enviar suas coordenadas exatas para a Gupy/Vagas.com.
+Se a vaga reaparecer:
 
-Para habilitar geolocalização e a busca sob demanda, rode o app local:
+```text
+inactive / missing → active
+```
+
+### 5. Automação reprodutível
+
+Execuções locais são rápidas e incrementais.
+
+O GitHub Actions executa auditorias mais pesadas, persiste o SQLite entre runs e mantém snapshots temporários para recuperação.
+
+---
+
+## O que o Opportunity Radar já faz
+
+| Área | Estado |
+|---|---|
+| Coleta multi-fonte | ✅ |
+| Normalização de vagas | ✅ |
+| Classificação por curso | ✅ |
+| Classificação por tipo de oportunidade | ✅ |
+| Deduplicação conservadora | ✅ |
+| Geocodificação aproximada por cidade | ✅ |
+| Busca por distância | ✅ |
+| Perfis de busca | ✅ |
+| Dashboard local | ✅ |
+| Busca regional sob demanda | ✅ |
+| Persistência incremental em SQLite | ✅ |
+| Lifecycle active / missing / inactive | ✅ |
+| Auditoria diária no GitHub Actions | ✅ |
+| Persistência relacional unificada | 🚧 Checkpoint 4 |
+| PostgreSQL / Supabase / PostGIS | ⏳ |
+| Usuários e perfis persistentes | ⏳ |
+| Favoritos e candidaturas | ⏳ |
+| Aplicativo mobile | ⏳ |
+
+---
+
+## Fontes
+
+O projeto usa apenas integrações públicas ou configuráveis e mantém cada integração isolada em seu próprio collector.
+
+### ATS e portais corporativos
+
+Entre as integrações existentes estão:
+
+- Gupy;
+- Lever;
+- Greenhouse;
+- Ashby;
+- SuccessFactors / SAP Career Site Builder;
+- Workday;
+- SmartRecruiters;
+- Eightfold;
+- InHire;
+- IziRH;
+- TOTVS Atração de Talentos;
+- Teamtailor.
+
+Há também boards e páginas corporativas específicas, como o catálogo universitário da Cargill.
+
+### Fontes brasileiras de início de carreira
+
+Atualmente há collectors ativos para:
+
+- Vagas.com;
+- 99jobs;
+- WallJobs;
+- Companhia de Estágios;
+- Nube;
+- IEL Carreiras;
+- Super Estágios;
+- TAQE;
+- Bettha;
+- Matchbox Brasil.
+
+Algumas integrações podem ficar desabilitadas quando o portal não oferece uma rota pública suficientemente estável.
+
+---
+
+## Cursos e áreas
+
+O sistema não foi projetado para um único curso.
+
+Entre os cursos já modelados estão:
+
+- Engenharia Elétrica;
+- Engenharia Mecânica;
+- Engenharia Civil;
+- Engenharia de Produção;
+- Engenharia Química;
+- Engenharia de Materiais;
+- Engenharia de Computação;
+- Engenharia Física;
+- Engenharia Agronômica;
+- Engenharia Ambiental;
+- Engenharia de Alimentos;
+- Engenharia Florestal;
+- Ciência da Computação;
+- Ciência de Dados;
+- Administração.
+
+Os catálogos ficam em:
+
+```text
+config/catalogs.py
+```
+
+Adicionar um curso novo deve ser principalmente uma alteração de configuração e regras de afinidade — não a criação de um novo collector.
+
+---
+
+## Tipos de oportunidade
+
+O radar reconhece diferentes intenções, incluindo:
+
+- estágio;
+- programa de estágio;
+- summer internship;
+- estágio de férias / verão;
+- co-op;
+- trainee / graduate program;
+- júnior / entry level;
+- aprendiz / jovem aprendiz;
+- pesquisa / iniciação científica;
+- oportunidades sazonais.
+
+---
+
+## Perfis de busca
+
+Perfis são presets de filtro e matching.
+
+Eles ficam em:
+
+```text
+config/profiles.py
+```
+
+Exemplos atuais incluem:
+
+- Engenharia Elétrica — Estágio no Brasil;
+- Ciência da Computação — Estágio no Brasil;
+- Engenharia Química — Estágio no Brasil;
+- Engenharias UFSCar — Estágio no Brasil;
+- perfis internacionais para summer internship / co-op.
+
+Um perfil pode combinar:
+
+- um ou mais cursos;
+- tipos de oportunidade;
+- palavras incluídas ou excluídas;
+- modalidade de trabalho;
+- países;
+- cidade de referência;
+- distância máxima;
+- score mínimo.
+
+Perfis **não limitam a coleta**.
+
+---
+
+## Arquitetura atual
+
+```mermaid
+flowchart LR
+    A[Collectors] --> B[Job normalizado]
+    B --> C[Classificação]
+    C --> D[SQLite]
+    D --> E[Deduplicação de catálogo]
+    E --> F[JSON / CSV]
+    E --> G[Dashboard]
+    D --> H[API local]
+```
+
+Hoje o SQLite mantém:
+
+- anúncios coletados;
+- hashes para processamento incremental;
+- timestamps de primeira e última visualização;
+- lifecycle;
+- memória de discovery;
+- estado das auditorias por source/scope.
+
+O **Checkpoint 4** reorganiza essa persistência para separar explicitamente a oportunidade consolidada dos anúncios de origem.
+
+---
+
+## Modos de execução
+
+### Execução local normal
 
 ```powershell
+python main.py
+```
+
+Modo incremental e mais rápido.
+
+Reutiliza IDs e detalhes conhecidos sempre que possível.
+
+### Descoberta completa
+
+```powershell
+$env:FULL_DISCOVERY="1"
+python main.py
+```
+
+Desabilita early-stops de discovery para reconstruir uma visão completa dos escopos configurados.
+
+### Full refresh
+
+```powershell
+$env:FULL_REFRESH="1"
+python main.py
+```
+
+Além da descoberta completa, força atualização de detalhes conhecidos.
+
+É o modo mais pesado e deve ser usado principalmente para rebuild/debug.
+
+### Auditoria diária
+
+O GitHub Actions roda automaticamente com:
+
+```text
+DAILY_AUDIT=1
+UNBOUNDED_COLLECTION=1
+```
+
+Nesse modo:
+
+- restaura o SQLite do run anterior;
+- percorre os escopos configurados sem early-stop;
+- mantém guard rails técnicos contra paginação quebrada;
+- reconcilia lifecycle apenas quando a cobertura pode ser provada como completa;
+- salva o SQLite atualizado somente após sucesso;
+- publica snapshots temporários como artifacts.
+
+---
+
+## Como rodar localmente
+
+### Windows / PowerShell
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+python main.py
 python server.py
 ```
 
@@ -67,147 +360,69 @@ Depois abra:
 http://localhost:8000
 ```
 
-## Cursos iniciais
+O `main.py` atualiza a base.
 
-- Engenharia Elétrica
-- Ciência da Computação
-- Engenharia Mecânica
-- Engenharia Civil
-- Engenharia de Produção
-- Administração
-- Ciência de Dados
+O `server.py` inicia a API/dashboard local e habilita a busca regional sob demanda.
 
-Eles ficam em:
+---
 
-```text
-config/catalogs.py
-```
+## Dashboard e localização
 
-Adicionar um curso novo é configuração, não exige um novo coletor.
+O dashboard permite filtrar por:
 
-## Intenções iniciais
+- perfil;
+- curso;
+- intenção;
+- fonte;
+- modalidade;
+- score mínimo;
+- distância;
+- texto livre.
 
-- Estágio
-- Summer Internship
-- Co-op
-- Trainee
-- Júnior / Entry Level
-- Pesquisa / Research
-- Aprendiz
+A geolocalização das vagas é aproximada pelo centro da cidade.
 
-## Perfis de busca
-
-Ficam em:
+Ela é suficiente para filtros como:
 
 ```text
-config/profiles.py
+25 km
+50 km
+100 km
+250 km
 ```
 
-Exemplo:
+Não representa distância porta a porta nem tempo de deslocamento.
 
-```python
-SearchProfile(
-    id="mechanical_nearby",
-    name="Mecânica até 50 km",
-    course_ids=["mechanical_engineering"],
-    intent_ids=["internship"],
-    include_keywords=["automotivo"],
-    exclude_keywords=["vendas"],
-    preferred_workplace_types=["hybrid", "onsite"],
-    home_city="Campinas - SP",
-    max_distance_km=50,
-    allow_unknown_distance=False,
-    minimum_score=50,
-)
+A busca regional ao vivo usa cidades próximas como consultas externas. Coordenadas exatas não precisam ser enviadas às fontes de vagas.
+
+---
+
+## Persistência incremental
+
+O armazenamento atual fica em:
+
+```text
+data/opportunity_radar.db
 ```
 
-## Fontes
+O arquivo é local e não é versionado.
 
-A v3 mantém:
+O sistema mantém:
 
-- Lever
-- Greenhouse
-- Ashby
-- Gupy pública
-- Gupy API opcional
-- Vagas.com
-- CIEE
-- 99jobs
-- LinkedIn como links de busca, sem scraping
+- `jobs`;
+- `discovery_state`;
+- `collection_scopes`.
 
-O Vagas.com passa a receber consultas geradas dinamicamente pelos cursos dos perfis ativos.
+Execuções incompletas ou com erro não podem, por si só, inativar vagas.
 
-## Como rodar
+Mais detalhes:
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python main.py
-python server.py
-```
+- [`docs/checkpoint-3.md`](docs/checkpoint-3.md)
 
-Depois abra `http://localhost:8000`. O `main.py` atualiza a base ampla; o `server.py` serve o dashboard e expõe a busca regional sob demanda.
-
-### Consistência dos presets e validação
-
-Presets usam a elegibilidade calculada no backend, incluindo a melhor afinidade
-entre todos os cursos do perfil. Uma palavra excluída torna a vaga inelegível
-somente para aquele perfil; ela continua no catálogo e em **Explorar tudo**.
-O seletor de relevância preserva o score mínimo exato do preset. Vagas da busca
-ao vivo sem matching calculado ficam disponíveis em Explorar.
-
-O armazenamento incremental invalida a localização geocodificada quando a
-localização muda. O hash inclui os sinais de origem `source_level`,
-`gupy_job_type`, `gupy_city`, `gupy_state` e `gupy_country`; scores, localização
-resolvida e metadados de diagnóstico não entram no hash. Registros antigos
-reencontrados na coleta são reprocessados uma vez com a nova versão.
-
-Para executar os testes:
-
-```powershell
-python -m pytest -q
-python check_project.py
-```
-
-Os testes do dashboard executam seu JavaScript com Node.js e um DOM mínimo
-simulado, sem pacotes npm. Sem Node.js, esses testes são sinalizados como
-ignorados. Eles não substituem uma validação visual em navegador.
-
-Arquivos já gerados em `output/` não mudam ao editar o template. Para atualizar
-o dashboard e seus matches sem nova coleta, use
-`python tools/reclassify_existing.py`. Esse comando atualiza as exportações;
-não altera o SQLite nem recalcula coordenadas históricas.
+---
 
 ## Arquivos gerados
 
-A deduplicação tem duas etapas, centralizadas em `processing/deduplicate.py`:
-
-- **Persistência:** mesma fonte e mesmo ID não vazio representam o mesmo
-  registro. IDs diferentes permanecem no SQLite, mesmo quando usam a mesma URL.
-- **Catálogo e busca regional:** além da identidade exata, duas entradas podem
-  ser consolidadas quando compartilham uma URL de detalhe com identificador no
-  caminho ou parâmetro explícito de vaga, empresa e título equivalentes, sem
-  conflitos conhecidos de localização, publicação, modalidade, vínculo,
-  descrição, departamento ou unidade. Sem evidência suficiente, ambas ficam.
-
-A comparação de URLs remove somente tracking conhecido (`utm_*`, `fbclid`,
-`gclid`, `mc_cid`, `mc_eid`). Preserva parâmetros desconhecidos, IDs, fragmentos,
-ordem dos parâmetros e diferenças de caminho. Não segue redirecionamentos.
-As URLs originais continuam intactas. Quando há consolidação,
-`metadata.source_references` guarda uma lista de `{source, source_job_id, url}`;
-não há mudança nos campos principais de `Job` ou na chave do SQLite. Novas
-referências também são preservadas em registros incrementais inalterados,
-sem forçar nova classificação. O catálogo mantém um representante com dados
-mais completos, enquanto o banco continua mantendo os registros por fonte.
-
-O consolidado não armazena snapshots completos de cada anúncio. Coletores
-podem já ter canonicalizado URLs ou eliminado repetições antes deste estágio;
-referências que não chegam ao pipeline não podem ser recuperadas aqui. A futura
-modelagem PostgreSQL poderá separar oportunidade, anúncios de origem e
-histórico. A deduplicação deliberadamente pode manter duplicatas quando URLs
-ou campos divergem, em vez de ocultar uma vaga legítima. Os filtros atuais de
-fonte usam a fonte do representante.
+A execução gera:
 
 ```text
 output/
@@ -221,259 +436,147 @@ output/
 └── index.html
 ```
 
-## Estrutura escalável para Supabase
+Esses arquivos são derivados da base e **não são versionados no Git**.
 
-`database/schema.sql` traz um desenho inicial multiusuário com PostGIS:
+No GitHub Actions eles são publicados como artifacts temporários.
 
-- `opportunities`: vaga única;
-- `search_profiles`: preferências de cada usuário;
-- `opportunity_course_scores`: afinidade vaga × curso;
-- `opportunity_intents`: tipos detectados;
-- coluna geográfica indexada para busca por proximidade.
+---
 
-No produto final, o celular não precisa comparar a posição com milhares de vagas: o banco pode retornar apenas as oportunidades próximas.
-
-## Próxima arquitetura
+## Estrutura do repositório
 
 ```text
-             Fontes de vagas
-                  ↓
-             Collectors
-                  ↓
-        Opportunity normalizada
-                  ↓
-     Classificação curso/intenção
-                  ↓
-         Supabase + PostGIS
-           ↓             ↓
-      Perfil A        Perfil B
-   Elétrica 50 km   Computação remoto
-           ↓             ↓
-             Expo / app
+opportunity-radar/
+├── api/                  # API FastAPI e busca regional
+├── collectors/           # integrações com fontes de vagas
+├── config/               # fontes, cursos, intenções e perfis
+├── database/             # desenho do schema PostgreSQL futuro
+├── docs/                 # documentação dos checkpoints
+├── models/               # modelos de domínio
+├── processing/           # classificação, localização e deduplicação
+├── storage/              # persistência incremental
+├── tests/                # testes automatizados
+├── tools/                # utilitários de manutenção
+├── output/               # artefatos gerados localmente
+├── main.py               # pipeline principal
+└── server.py             # servidor local
 ```
 
-O próximo passo natural é substituir `config/profiles.py` por perfis criados na interface e persistidos no Supabase, com login, favoritos e histórico de candidaturas.
+---
 
-## v3.1 — correções de robustez
+## Testes e validação
 
-- `preferred_countries` agora é aplicado no matching quando o país da vaga é conhecido.
-- Intenção de estágio/trainee/co-op é inferida principalmente pelo título/tipo da vaga, evitando falsos positivos por boilerplate da descrição.
-- Requisições possuem retry automático para falhas temporárias de DNS/conexão e erros 429/5xx.
-- Parser do Vagas.com ignora fragmentos inválidos como `em` ao tentar identificar a empresa.
+Suite principal:
 
-
-## v3.2 — Summer, Co-op, Trainee, Aprendiz e Pesquisa
-
-A coleta e o matching agora tratam `intent` como uma dimensão real do sistema.
-
-Perfis prontos incluídos:
-
-- Engenharia Elétrica — Estágio no Brasil
-- Engenharia Elétrica — Summer Internship / Co-op (EUA)
-- Engenharia Elétrica — Todas as oportunidades
-- Computação — Estágio no Brasil
-- Computação — Todas as oportunidades
-
-O perfil **Todas as oportunidades** inclui:
-
-- Estágio
-- Summer Internship
-- Co-op
-- Trainee / Graduate Program
-- Júnior / Entry Level
-- Pesquisa / Research
-- Aprendiz
-
-As buscas públicas brasileiras agora são geradas a partir da combinação
-**curso × intenção**. Assim, um perfil que inclui trainee e aprendiz gera
-consultas como `trainee engenharia elétrica` e `jovem aprendiz engenharia elétrica`,
-em vez de pesquisar somente por `estágio`.
-
-Summer/Co-op são principalmente internacionais e aparecem especialmente
-nas fontes ATS (Lever/Ashby/Greenhouse) e nos links de busca externa.
-
-
-## v3.3 — Collect first, filter later
-
-A coleta não depende mais dos perfis ativos.
-
-O backend tenta construir uma base ampla contendo:
-- estágio;
-- programa de estágio;
-- estágio de verão;
-- estágio de férias;
-- summer internship;
-- summer job / trabalho sazonal;
-- co-op;
-- trainee / graduate program;
-- júnior / entry level;
-- pesquisa / iniciação científica;
-- aprendiz / jovem aprendiz.
-
-No Brasil, `Summer Internship` também reconhece:
-- Estágio de Verão;
-- Programa de Estágio de Verão;
-- Estágio de Férias;
-- Programa de Estágio de Férias;
-- Programa de Férias.
-
-O dashboard agora inicia em:
-
-```text
-🌐 Explorar tudo
+```powershell
+python -m pytest -q
 ```
 
-Sem filtro de curso, intenção ou país.
+Regressões estruturais:
 
-Depois o usuário pode aplicar os filtros que quiser.
-
-### Coleta de Vagas.com
-
-As consultas são geradas globalmente em `processing/collection_planner.py`,
-independentemente dos perfis configurados.
-
-Perfis continuam existindo somente como presets de filtro/matching.
-
-### Observação
-
-Nenhum agregador consegue garantir literalmente "todas as vagas da internet".
-A arquitetura da v3.3, porém, evita perder uma vaga apenas porque o perfil ativo
-não tinha o curso, país ou intenção correspondente.
-
-
-## v3.4 — Gupy Global + dashboard renovado
-
-A coleta da Gupy agora usa o endpoint JSON consumido pelo portal público de candidatos, em vez de depender normalmente de páginas de empresas específicas.
-
-A estratégia da Gupy Global é:
-
-- coletar tipos nativos de início de carreira (`internship`, `summer`, `trainee`, `apprentice`) sem filtrar por curso ou cidade;
-- fazer buscas adicionais para `junior`, `entry level`, `new grad`, `co-op`, pesquisa e summer jobs;
-- paginar em lotes de até 100 vagas, com limites configuráveis em `config/sources.py`;
-- classificar por curso, intenção, país e distância somente depois da coleta;
-- manter `gupy_public.py` como fallback, desativado por padrão.
-
-O tipo estruturado da Gupy passa a ser usado pela classificação. Isso evita perder vagas com títulos genéricos como `Programa 2027` quando a própria Gupy informa que a vaga é `vacancy_type_summer` ou `vacancy_type_internship`.
-
-> Observação: o endpoint global é o usado pelo portal público e pode mudar. A API oficial autenticada (`gupy_api.py`) continua separada e opcional.
-
-### Dashboard
-
-O dashboard foi redesenhado com:
-
-- busca principal em destaque;
-- cards de métricas;
-- chips de tipos de oportunidade;
-- painel lateral de filtros;
-- cards de vaga com relevância, modalidade, cursos, distância e data;
-- layout responsivo para notebook e celular;
-- botão para limpar todos os filtros.
-
-Os arquivos de `output/` continuam locais e ignorados pelo Git. No GitHub Actions, o dashboard gerado é publicado como artifact temporário em vez de ser commitado no repositório.
-
-
-## v3.5 — radar regional sob demanda
-
-O dashboard agora pode pedir uma nova busca depois que a coleta principal terminou.
-
-Fluxo:
-
-```text
-Dashboard
-  ↓ POST /api/search
-FastAPI local
-  ├─ filtra a base já coletada pelo raio
-  ├─ descobre cidades dentro do raio com GeoNames
-  ├─ consulta a Gupy por cidade
-  ├─ faz buscas regionais complementares no Vagas.com
-  ├─ normaliza, classifica e geocodifica os resultados novos
-  ├─ deduplica com a base existente
-  └─ aplica o raio real em km
-       ↓
-Dashboard recebe e incorpora os resultados
+```powershell
+python check_project.py
 ```
 
-A busca regional usa cache em memória por 30 minutos por padrão (`NEARBY_SEARCH_CACHE_SECONDS=1800`) para evitar repetir as mesmas requisições. O botão **ignorar cache na próxima busca** força uma atualização.
+Há também smoke tests específicos para fontes e checkpoints.
 
-O raio aceito pela API vai de 5 a 250 km. A quantidade de cidades consultadas e o número de páginas por cidade ficam limitados em `config/sources.py` para manter a busca regional útil sem transformar cada clique em uma varredura nacional.
+Exemplos:
 
-Endpoints locais:
+```powershell
+python validate_checkpoint3_sources.py
+python validate_checkpoint31_sources.py
+```
 
-- `GET /api/health`
-- `GET /api/jobs`
-- `GET /api/jobs/nearby` — somente base existente
-- `POST /api/search` — base existente + coleta externa regional
-- `GET /api/stats`
+Smoke tests acessam fontes reais e, portanto, podem falhar temporariamente por timeout, rate limit ou indisponibilidade externa sem indicar uma regressão interna.
 
-> O endpoint público do portal da Gupy é tratado como uma integração defensiva e pode mudar. A busca regional mantém a mesma separação da v3.4 entre o portal público e a API oficial autenticada.
+---
 
-## ATS adicionais
+## Roadmap
 
-Além de Gupy, Lever, Greenhouse, Ashby, 99jobs, Vagas.com, CIEE e
-SuccessFactors, o radar possui coletores públicos/configuráveis para:
+| Etapa | Objetivo | Estado |
+|---|---|---|
+| CP1 | Consistência do pipeline | ✅ |
+| CP2 | Identidade, deduplicação e expansão de fontes | ✅ |
+| CP3 | Integridade incremental e lifecycle | ✅ |
+| CP3.1 | Engenharias + expansão brasileira | ✅ |
+| CP4 | Persistência unificada | 🚧 |
+| CP5 | PostgreSQL / Supabase / PostGIS | ⏳ |
+| CP6 | API de catálogo | ⏳ |
+| CP7 | Usuários e perfis persistentes | ⏳ |
+| CP8 | Favoritos e candidaturas | ⏳ |
+| CP9 | Experiência web definitiva | ⏳ |
+| CP10 | Aplicativo Expo / mobile | ⏳ |
 
-- InHire (tenant inicial: EloGroup);
-- IziRH (tenants iniciais: Embraer e Programas Embraer);
-- Workday CXS (board inicial: Hitachi);
-- SmartRecruiters Posting API (boards iniciais: Bosch Group e Aumovio).
+Roadmap detalhado:
 
-Essas integrações não usam perfis/cursos para decidir o que coletar.
-Boards potencialmente enormes (como Hitachi/Workday) usam consultas
-early-career configuráveis para manter o custo de rede controlado.
-CPFL Energia é tratada pelo coletor SuccessFactors já existente.
+- [`docs/roadmap.md`](docs/roadmap.md)
 
+---
 
-### Checkpoint 2.7: ATS e prioridade regional
+## Checkpoint atual
 
-Cadastros expandidos para InHire, IziRH, Workday e SmartRecruiters, incluindo
-Serasa Experian; Citrosuco e Volkswagen Group reutilizam SuccessFactors.
-TOTVS (Xmobots) e Teamtailor (Tecumseh) usam páginas públicas. O incremental
-reutiliza o JobStore por fonte/tenant; `FULL_REFRESH=1` também atualiza detalhes
-conhecidos. Consulte [evidências, limites e diagnóstico Gupy regional](docs/checkpoint-2.7.md).
+O próximo trabalho arquitetural é o:
 
+### Checkpoint 4 — Persistência unificada
 
-### Checkpoint 2.9: fontes brasileiras de estágio
+Objetivos principais:
 
-Integrações públicas para WallJobs, Companhia de Estágios, Nube e IEL. Collectors defensivos também foram preparados para Cia de Talentos e Super Estágios, mas ficam desativados até existir contrato público estável e identidade confiável. Veja `docs/checkpoint-2.9.md`.
+- separar **oportunidade consolidada** de **anúncio de origem**;
+- preservar identidade e lifecycle por fonte;
+- persistir associações cross-source de forma conservadora;
+- persistir course scores e intents de forma relacional;
+- manter compatibilidade com os exports atuais;
+- preparar uma migração simples para PostgreSQL no Checkpoint 5.
 
+Escopo completo:
 
-### Fechamento do bloco 2.x
+- [`docs/checkpoint-4.md`](docs/checkpoint-4.md)
 
-Workday, SmartRecruiters e SuccessFactors targeted não usam mais tetos de produto arbitrários.
-`FULL_DISCOVERY=1` executa um baseline exaustivo; runs normais usam early-stop conservador por query no SuccessFactors. Veja `docs/checkpoint-2x-finalization.md`.
+---
 
+## Limitações conhecidas
 
-## Incremental integrity (Checkpoint 3)
+O Opportunity Radar não pretende garantir literalmente todas as vagas existentes na internet.
 
-The local SQLite store now separates source discovery state from the active job
-catalog. IDs that are observed but outside the configured early-career scope
-can be remembered without becoming jobs. Vacancy closure is conservative:
-partial/early-stopped scans never count as misses; complete scans move jobs
-through active → missing → inactive, and a later sighting reopens them.
+A cobertura depende de:
 
-Additional ATS scopes receive periodic full audits so incremental early-stop
-does not prevent eventual vacancy retirement. See `docs/checkpoint-3.md`.
+- disponibilidade pública das fontes;
+- estabilidade dos endpoints;
+- paginação;
+- qualidade dos dados publicados;
+- limites técnicos e rate limits externos.
 
-### Daily audit versus local incremental mode
+Algumas fontes possuem APIs estruturadas; outras dependem de HTML público e exigem parsers defensivos.
 
-Normal local execution (`python main.py`) remains incremental. The scheduled
-GitHub Actions workflow runs with `DAILY_AUDIT=1`, restores the previous SQLite
-state from Actions cache, traverses configured listings without early-stop, and
-saves the updated state only after a successful run. Known detail pages are
-still reused during the audit; this is intentionally lighter than
-`FULL_REFRESH=1`.
+Matching por curso é uma estimativa baseada em sinais textuais e estruturados — não substitui a leitura dos requisitos oficiais da vaga.
 
-### Engineering and Brazilian-source expansion
+---
 
-Checkpoint 3.1 adds first-class affinity for Chemical, Materials, Computer,
-Physics, Agronomic, Environmental, Food and Forestry Engineering.
+## Documentação técnica
 
-New Brazilian public sources include TAQE, Bettha, Matchbox Brasil and the
-national Super Estágios engineering listing. Corporate coverage also adds Dow,
-Air Liquide, Johnson & Johnson, Baker Hughes, Syngenta Group, SGS and Wabtec.
+- [Roadmap](docs/roadmap.md)
+- [Checkpoint 3 — Incremental integrity](docs/checkpoint-3.md)
+- [Checkpoint 4 — Persistência unificada](docs/checkpoint-4.md)
+- [Checkpoint 2.7 — ATS adicionais](docs/checkpoint-2.7.md)
+- [Checkpoint 2.9 — Fontes brasileiras](docs/checkpoint-2.9.md)
+- [Fechamento do bloco 2.x](docs/checkpoint-2x-finalization.md)
 
-Cargill is collected directly from its official careers catalog by following
-the site's own pagination links.
+---
 
-The collect-first/filter-later rule remains unchanged: collectors do not inspect
-the active profile to decide what to collect.
+## Visão de produto
+
+A arquitetura de longo prazo é:
+
+```mermaid
+flowchart TD
+    A[Fontes públicas] --> B[Collectors]
+    B --> C[Catálogo persistente]
+    C --> D[PostgreSQL + PostGIS]
+    D --> E[API]
+    E --> F[Web]
+    E --> G[Mobile]
+    D --> H[Perfis]
+    D --> I[Favoritos]
+    D --> J[Candidaturas]
+```
+
+A ideia é que o Opportunity Radar deixe de ser apenas um script de agregação e evolua para uma plataforma pessoal de descoberta e acompanhamento de oportunidades.
