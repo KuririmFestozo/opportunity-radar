@@ -138,10 +138,18 @@ jobs:
         run: |
           TAG="radar-state-latest"
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release create "$TAG"               --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "Opportunity Radar rolling state snapshots"               --notes "Rolling, branch-scoped SQLite snapshots for server bootstrap. Data version is recorded in each .state.json asset."
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Opportunity Radar rolling state snapshots" \
+              --notes "Rolling, branch-scoped SQLite and dashboard snapshots for server bootstrap. Data version is recorded in each .state.json asset."
           fi
-          gh release upload "$TAG"             "opportunity_radar-${STATE_CHANNEL}.db.gz"             "opportunity_radar-${STATE_CHANNEL}.state.json"             --repo "$GITHUB_REPOSITORY"             --clobber
-          "opportunity_radar-${STATE_CHANNEL}-output.zip" \
+          gh release upload "$TAG" \
+            "opportunity_radar-${STATE_CHANNEL}.db.gz" \
+            "opportunity_radar-${STATE_CHANNEL}-output.zip" \
+            "opportunity_radar-${STATE_CHANNEL}.state.json" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber
 
       - name: Upload generated dashboard
         uses: actions/upload-artifact@v4

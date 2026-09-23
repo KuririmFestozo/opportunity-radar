@@ -237,9 +237,28 @@ def test_daily_workflow_publishes_branch_scoped_runtime_bundle():
 
     assert "contents: write" in workflow
     assert "radar-state-latest" in workflow
-    assert "opportunity_radar-${STATE_CHANNEL}.db.gz" in workflow
-    assert "opportunity_radar-${STATE_CHANNEL}-output.zip" in workflow
-    assert "opportunity_radar-${STATE_CHANNEL}.state.json" in workflow
     assert "output_zip_sha256" in workflow
-    assert "gh release upload" in workflow
-    assert "--clobber" in workflow
+
+    publish = workflow.split(
+        "      - name: Publish rolling server state\n", 1
+    )[1].split(
+        "      - name: Upload generated dashboard\n", 1
+    )[0]
+
+    db_asset = '"opportunity_radar-${STATE_CHANNEL}.db.gz"'
+    output_asset = '"opportunity_radar-${STATE_CHANNEL}-output.zip"'
+    metadata_asset = '"opportunity_radar-${STATE_CHANNEL}.state.json"'
+
+    assert 'gh release upload "$TAG" \\\n' in publish
+    assert db_asset in publish
+    assert output_asset in publish
+    assert metadata_asset in publish
+    assert publish.index(db_asset) < publish.index(output_asset)
+    assert publish.index(output_asset) < publish.index(metadata_asset)
+    upload = publish.split('gh release upload "$TAG"', 1)[1]
+    assert upload.index(db_asset) < upload.index(output_asset)
+    assert upload.index(output_asset) < upload.index(metadata_asset)
+    assert upload.index(metadata_asset) < upload.index(
+        '--repo "$GITHUB_REPOSITORY"'
+    )
+    assert "--clobber" in upload
