@@ -4,8 +4,8 @@ O **Opportunity Radar** é um agregador inteligente de oportunidades de início 
 
 A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
 
-> **Estado atual:** Checkpoints 3 e 3.1 concluídos.
-> **Próximo passo:** Checkpoint 4 — persistência unificada.
+> **Estado atual:** Checkpoint 4 em andamento — persistência relacional concluída até o CP4-E.
+> **Próximo passo:** sincronização segura do estado do servidor e cleanup final do CP4.
 
 ---
 

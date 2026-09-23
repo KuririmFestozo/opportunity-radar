@@ -22,3 +22,9 @@ baseline_stderr.log
 
 # Local checkpoint patch backups
 .checkpoint*-backup/
+# Server state sync
+data/backups/
+data/*.state.json
+data/*.download.gz
+data/*.incoming
+data/server-sync/

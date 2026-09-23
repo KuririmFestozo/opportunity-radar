@@ -13,6 +13,46 @@ A meta é garantir que exista **um modelo persistente coerente e estável** para
 
 ## Progresso de implementação
 
+### CP4-E.1 — Server state sync 🚧
+
+O servidor passa a poder reconstruir seu runtime a partir de um snapshot SQLite
+publicado automaticamente pelo GitHub Actions.
+
+Fluxo:
+
+```text
+git pull --ff-only
+        ↓
+download snapshot branch-scoped
+        ↓
+SHA-256 + PRAGMA integrity_check
+        ↓
+backup + atomic replace
+        ↓
+install prebuilt output bundle
+        ↓
+server.py
+```
+
+Componentes:
+
+- `tools/sync_server_state.py` baixa o snapshot rolling da branch atual;
+- assets são publicados na release `radar-state-latest`;
+- cada branch usa assets próprios para evitar misturar schemas durante desenvolvimento;
+- o SQLite só substitui o banco local após checksum e `integrity_check`;
+- o banco anterior é preservado em `data/backups/`;
+- o workflow empacota `output/` já gerado, evitando rebuild pesado no startup;
+- `start_server.ps1` orquestra pull, sync do banco/dashboard e servidor;
+- `start_server.ps1 -Offline` usa conscientemente o estado local existente.
+
+O `output/` continua derivado e não é versionado. O SQLite é o estado distribuído.
+
+> Segurança futura: este mecanismo pressupõe que o banco publicado contém apenas
+> catálogo público. Antes de armazenar dados pessoais/usuários no mesmo banco,
+> o snapshot público deve ser substituído por armazenamento privado/autenticado.
+
+
+
 
 ### CP4-E — Relational catalog reads 🚧
 

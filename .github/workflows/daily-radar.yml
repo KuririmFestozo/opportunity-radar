@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   collect:
@@ -68,6 +68,80 @@ jobs:
           name: opportunity-radar-state
           path: data/opportunity_radar.db
           retention-days: 7
+
+      - name: Prepare rolling server state
+        if: success()
+        shell: bash
+        run: |
+          STATE_CHANNEL="${GITHUB_REF_NAME//\//-}"
+          echo "STATE_CHANNEL=$STATE_CHANNEL" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import gzip
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import shutil
+          import zipfile
+          from datetime import datetime, timezone
+
+          db = pathlib.Path("data/opportunity_radar.db")
+          channel = os.environ["GITHUB_REF_NAME"].replace("/", "-")
+          compressed = pathlib.Path(f"opportunity_radar-{channel}.db.gz")
+          metadata = pathlib.Path(f"opportunity_radar-{channel}.state.json")
+          output_zip = pathlib.Path(f"opportunity_radar-{channel}-output.zip")
+
+          with db.open("rb") as source, gzip.open(compressed, "wb") as target:
+              shutil.copyfileobj(source, target)
+
+          output_dir = pathlib.Path("output")
+          with zipfile.ZipFile(
+              output_zip, "w", compression=zipfile.ZIP_DEFLATED
+          ) as archive:
+              for path in sorted(output_dir.rglob("*")):
+                  if path.is_file():
+                      archive.write(
+                          path,
+                          path.relative_to(output_dir).as_posix(),
+                      )
+
+          def sha256(path):
+              digest = hashlib.sha256()
+              with path.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          metadata.write_text(
+              json.dumps(
+                  {
+                      "channel": channel,
+                      "commit_sha": os.environ["GITHUB_SHA"],
+                      "run_id": os.environ["GITHUB_RUN_ID"],
+                      "generated_at": datetime.now(timezone.utc).isoformat(),
+                      "db_bytes": db.stat().st_size,
+                      "db_sha256": sha256(db),
+                      "gzip_sha256": sha256(compressed),
+                      "output_zip_sha256": sha256(output_zip),
+                  },
+                  indent=2,
+              ) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Publish rolling server state
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="radar-state-latest"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG"               --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "Opportunity Radar rolling state snapshots"               --notes "Rolling, branch-scoped SQLite snapshots for server bootstrap. Data version is recorded in each .state.json asset."
+          fi
+          gh release upload "$TAG"             "opportunity_radar-${STATE_CHANNEL}.db.gz"             "opportunity_radar-${STATE_CHANNEL}.state.json"             --repo "$GITHUB_REPOSITORY"             --clobber
+          "opportunity_radar-${STATE_CHANNEL}-output.zip" \
 
       - name: Upload generated dashboard
         uses: actions/upload-artifact@v4
