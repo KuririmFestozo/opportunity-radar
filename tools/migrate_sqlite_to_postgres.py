@@ -348,13 +348,21 @@ def migrate(
         if reset_target:
             _reset_target(conn)
 
-        _migrate_opportunities(conn, data["opportunities"])
-        _migrate_source_postings(conn, data["source_postings"])
-        _migrate_course_scores(conn, data["opportunity_course_scores"])
-        _migrate_intents(conn, data["opportunity_intents"])
-        _migrate_discovery(conn, data["discovery_state"])
-        _migrate_scopes(conn, data["collection_scopes"])
+        steps = (
+            ("opportunities", _migrate_opportunities),
+            ("source_postings", _migrate_source_postings),
+            ("opportunity_course_scores", _migrate_course_scores),
+            ("opportunity_intents", _migrate_intents),
+            ("discovery_state", _migrate_discovery),
+            ("collection_scopes", _migrate_scopes),
+        )
+        for table, fn in steps:
+            rows = data[table]
+            print(f"Migrando {table}: {len(rows)} linhas...")
+            fn(conn, rows)
+            print(f"Migrando {table}: OK")
 
+        print("Validando contagens no PostgreSQL...")
         target_counts = _target_counts(conn)
         conn.commit()
 
