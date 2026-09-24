@@ -25,7 +25,11 @@ from storage.job_store import (
     _merge_cached_fields,
     raw_content_hash,
 )
-from storage.unified_schema import _stable_opportunity_id
+from storage.unified_schema import (
+    _course_scores,
+    _intents,
+    _stable_opportunity_id,
+)
 
 
 def _iso(value):
@@ -286,6 +290,88 @@ class PostgresOpportunityRepository:
             ),
         )
         return opportunity_id
+
+    def _sync_opportunity_classification(self, opportunity_id: str) -> None:
+        """Rebuild course scores and intents from every posting in an opportunity."""
+        rows = self.conn.execute(
+            """
+            SELECT normalized_job_json
+            FROM public.source_postings
+            WHERE opportunity_id = %s
+            ORDER BY source, source_job_id
+            """,
+            (opportunity_id,),
+        ).fetchall()
+
+        scores: dict[str, int] = {}
+        intents: set[str] = set()
+        for row in rows:
+            payload = dict(row["normalized_job_json"] or {})
+            for course_id, score in _course_scores(payload).items():
+                scores[course_id] = max(scores.get(course_id, 0), score)
+            intents.update(_intents(payload))
+
+        self.conn.execute(
+            """
+            DELETE FROM public.opportunity_course_scores
+            WHERE opportunity_id = %s
+            """,
+            (opportunity_id,),
+        )
+        if scores:
+            with self.conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO public.opportunity_course_scores(
+                        opportunity_id, course_id, score
+                    )
+                    VALUES(%s, %s, %s)
+                    """,
+                    [
+                        (opportunity_id, course_id, score)
+                        for course_id, score in sorted(scores.items())
+                    ],
+                )
+
+        self.conn.execute(
+            """
+            DELETE FROM public.opportunity_intents
+            WHERE opportunity_id = %s
+            """,
+            (opportunity_id,),
+        )
+        if intents:
+            with self.conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO public.opportunity_intents(
+                        opportunity_id, intent_id
+                    )
+                    VALUES(%s, %s)
+                    """,
+                    [
+                        (opportunity_id, intent_id)
+                        for intent_id in sorted(intents)
+                    ],
+                )
+
+    def upsert_posting(
+        self,
+        job: Job,
+        *,
+        seen_at: str | None = None,
+        processing_version: str | None = None,
+        commit: bool = False,
+    ) -> None:
+        """Persist a processed posting and refresh relational classification."""
+        opportunity_id = self._upsert_posting_core(
+            job,
+            seen_at=seen_at,
+            processing_version=processing_version,
+        )
+        self._sync_opportunity_classification(opportunity_id)
+        if commit:
+            self.commit()
 
     def touch_posting(
         self,

@@ -630,3 +630,144 @@ def test_normalized_payload_removes_store_lifecycle_metadata():
     assert "store_first_seen_at" not in payload["metadata"]
     assert "store_miss_count" not in payload["metadata"]
     assert payload["metadata"]["gupy_city"] == "São Carlos"
+
+
+def test_sync_opportunity_classification_uses_max_scores_and_union_intents():
+    opportunity_id = "00000000-0000-0000-0000-000000000123"
+    repo = _repo(
+        rows=[
+            {
+                "normalized_job_json": {
+                    "course_scores": {
+                        "electrical_engineering": 82,
+                        "computer_engineering": 60,
+                    },
+                    "detected_intents": ["internship"],
+                }
+            },
+            {
+                "normalized_job_json": {
+                    "course_scores": {
+                        "electrical_engineering": 94,
+                        "computer_engineering": 55,
+                    },
+                    "detected_intents": [
+                        "internship",
+                        "summer_internship",
+                    ],
+                }
+            },
+        ]
+    )
+
+    repo._sync_opportunity_classification(opportunity_id)
+
+    assert len(repo.conn.calls) == 5
+
+    _, select_sql, select_args = repo.conn.calls[0]
+    assert "SELECT normalized_job_json" in select_sql
+    assert select_args == (opportunity_id,)
+
+    _, delete_scores_sql, delete_scores_args = repo.conn.calls[1]
+    assert "DELETE FROM public.opportunity_course_scores" in delete_scores_sql
+    assert delete_scores_args == (opportunity_id,)
+
+    kind, score_sql, score_rows = repo.conn.calls[2]
+    assert kind == "executemany"
+    assert "INSERT INTO public.opportunity_course_scores" in score_sql
+    assert score_rows == [
+        (opportunity_id, "computer_engineering", 60),
+        (opportunity_id, "electrical_engineering", 94),
+    ]
+
+    _, delete_intents_sql, delete_intents_args = repo.conn.calls[3]
+    assert "DELETE FROM public.opportunity_intents" in delete_intents_sql
+    assert delete_intents_args == (opportunity_id,)
+
+    kind, intent_sql, intent_rows = repo.conn.calls[4]
+    assert kind == "executemany"
+    assert "INSERT INTO public.opportunity_intents" in intent_sql
+    assert intent_rows == [
+        (opportunity_id, "internship"),
+        (opportunity_id, "summer_internship"),
+    ]
+
+
+def test_sync_opportunity_classification_clears_stale_rows_when_empty():
+    opportunity_id = "00000000-0000-0000-0000-000000000123"
+    repo = _repo(
+        rows=[
+            {
+                "normalized_job_json": {
+                    "course_scores": {},
+                    "detected_intents": [],
+                }
+            }
+        ]
+    )
+
+    repo._sync_opportunity_classification(opportunity_id)
+
+    assert len(repo.conn.calls) == 3
+    assert "SELECT normalized_job_json" in repo.conn.calls[0][1]
+    assert "DELETE FROM public.opportunity_course_scores" in repo.conn.calls[1][1]
+    assert "DELETE FROM public.opportunity_intents" in repo.conn.calls[2][1]
+
+
+def test_upsert_posting_runs_core_then_classification_without_implicit_commit():
+    job = _posting_payload(
+        course_scores={"electrical_engineering": 90},
+        detected_intents=["internship"],
+    )
+    repo = _repo(
+        row_queue=[None],
+        rows=[
+            {
+                "normalized_job_json": job.to_dict(),
+            }
+        ],
+    )
+
+    repo.upsert_posting(
+        job,
+        seen_at="2026-09-24T17:00:00+00:00",
+    )
+
+    sql_calls = [call[1] for call in repo.conn.calls]
+    assert any("INSERT INTO public.opportunities" in sql for sql in sql_calls)
+    assert any("INSERT INTO public.source_postings" in sql for sql in sql_calls)
+    assert any(
+        "DELETE FROM public.opportunity_course_scores" in sql
+        for sql in sql_calls
+    )
+    assert any(
+        call[0] == "executemany"
+        and "INSERT INTO public.opportunity_course_scores" in call[1]
+        for call in repo.conn.calls
+    )
+    assert any(
+        call[0] == "executemany"
+        and "INSERT INTO public.opportunity_intents" in call[1]
+        for call in repo.conn.calls
+    )
+    assert repo.conn.committed is False
+
+
+def test_upsert_posting_can_commit_explicitly():
+    job = _posting_payload()
+    repo = _repo(
+        row_queue=[None],
+        rows=[
+            {
+                "normalized_job_json": job.to_dict(),
+            }
+        ],
+    )
+
+    repo.upsert_posting(
+        job,
+        seen_at="2026-09-24T17:00:00+00:00",
+        commit=True,
+    )
+
+    assert repo.conn.committed is True
