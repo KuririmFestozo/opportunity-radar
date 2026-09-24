@@ -32,6 +32,7 @@ class _FakeConnection:
         self.row = row
         self.rows = rows or []
         self.calls = []
+        self.committed = False
 
     def execute(self, sql, args=None):
         self.calls.append(("execute", sql, args))
@@ -39,6 +40,9 @@ class _FakeConnection:
 
     def cursor(self):
         return _FakeCursor(self)
+
+    def commit(self):
+        self.committed = True
 
 
 def _repo(row=None, rows=None):
@@ -303,3 +307,38 @@ def test_reconcile_scope_applies_prefix_to_read_and_check_update():
         "example",
         "region:%",
     ]
+
+
+def test_touch_posting_refreshes_last_seen_and_reactivates():
+    repo = _repo()
+
+    repo.touch_posting(
+        "example",
+        "job-1",
+        seen_at="2026-09-24T15:00:00+00:00",
+    )
+
+    kind, sql, args = repo.conn.calls[0]
+    assert kind == "execute"
+    assert "UPDATE public.source_postings" in sql
+    assert "last_seen_at = %s" in sql
+    assert "is_active = true" in sql
+    assert args == (
+        "2026-09-24T15:00:00+00:00",
+        "example",
+        "job-1",
+    )
+    assert repo.conn.committed is False
+
+
+def test_touch_posting_can_commit_explicitly():
+    repo = _repo()
+
+    repo.touch_posting(
+        "example",
+        "job-1",
+        seen_at="2026-09-24T15:00:00+00:00",
+        commit=True,
+    )
+
+    assert repo.conn.committed is True

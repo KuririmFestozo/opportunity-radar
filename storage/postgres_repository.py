@@ -74,6 +74,28 @@ class PostgresOpportunityRepository:
             for row in self.conn.execute(sql, args).fetchall()
         }
 
+    def touch_posting(
+        self,
+        source: str,
+        source_job_id: str,
+        *,
+        seen_at: str | None = None,
+        commit: bool = False,
+    ) -> None:
+        """Refresh a known posting without reprocessing its normalized payload."""
+        now = seen_at or _utcnow()
+        self.conn.execute(
+            """
+            UPDATE public.source_postings
+            SET last_seen_at = %s,
+                is_active = true
+            WHERE source = %s AND source_job_id = %s
+            """,
+            (now, source, source_job_id),
+        )
+        if commit:
+            self.commit()
+
     def known_discovery_ids(
         self,
         source: str,
