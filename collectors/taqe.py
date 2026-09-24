@@ -116,7 +116,7 @@ def collect_taqe(config: dict) -> list[Job]:
         known = set(config.get("known_source_job_ids") or ())
         ids = {job.source_job_id for job in jobs}
         print(
-            f"[FAST] TAQE: {len(ids & known)} conhecidos | "
+            f"[INCREMENTAL] TAQE: {len(ids & known)} conhecidos | "
             f"{len(ids - known)} novos | 1 request"
         )
 

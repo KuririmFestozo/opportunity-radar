@@ -136,11 +136,11 @@ def deduplicate_source_jobs(jobs: Iterable[Job]) -> list[Job]:
     return [_merge(group) for group in groups.values()]
 
 
-def deduplicate_jobs(jobs: list[Job]) -> list[Job]:
-    """Catalog stage: exact identity, then matching detail URLs with no conflicts.
+def deduplicate_job_groups(jobs: list[Job]) -> list[list[Job]]:
+    """Return conservative catalog groups before merging their fields.
 
-    Compare every member so sparse records cannot bridge conflicting dates or
-    departments. Uncertain records remain separate. Inputs are not mutated.
+    CP4 persists these exact groups so database identity and exported catalog
+    identity cannot drift apart.
     """
     groups: list[list[Job]] = []
     by_url: dict[str, list[int]] = {}
@@ -154,4 +154,13 @@ def deduplicate_jobs(jobs: list[Job]) -> list[Job]:
             if url:
                 by_url.setdefault(url, []).append(len(groups))
             groups.append([job])
-    return [_merge(group) for group in groups]
+    return groups
+
+
+def deduplicate_jobs(jobs: list[Job]) -> list[Job]:
+    """Catalog stage: exact identity, then matching detail URLs with no conflicts.
+
+    Compare every member so sparse records cannot bridge conflicting dates or
+    departments. Uncertain records remain separate. Inputs are not mutated.
+    """
+    return [_merge(group) for group in deduplicate_job_groups(jobs)]

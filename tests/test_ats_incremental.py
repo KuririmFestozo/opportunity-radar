@@ -44,7 +44,7 @@ def test_izirh_known_streak_resets(monkeypatch, capsys, new_on_page, expected_ca
     jobs = izirh.collect_izirh(izi_config())
     assert len(calls) == expected_calls
     assert len(jobs) == expected_calls * 10
-    assert "[FAST-STOP]" in capsys.readouterr().out
+    assert "[INCREMENTAL-STOP]" in capsys.readouterr().out
 
 
 def test_izirh_repeated_page_stops_even_full_refresh(monkeypatch):

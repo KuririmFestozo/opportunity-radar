@@ -34,7 +34,7 @@ class SuccessFactorsProbe:
         return self.new_native_ids
 
     def summary(self, company):
-        return (f"[FAST] {company}: {self.method} | {self.pages} requests | "
+        return (f"[INCREMENTAL] {company}: {self.method} | {self.pages} requests | "
                 f"{len(self.seen_native_ids)} IDs verificados | "
                 f"{len(self.catalog_new_native_ids)} novos catálogo | "
                 f"{len(self.relevant_new_native_ids)} novos early-career | "
