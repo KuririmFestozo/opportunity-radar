@@ -7,6 +7,7 @@ exists so catalog parity can be measured before the backend cutover.
 from __future__ import annotations
 
 import os
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
@@ -188,6 +189,176 @@ class PostgresOpportunityRepository:
             """,
             (source, scope_key, coverage, coverage, now),
         )
+
+    def mark_seen_ids(
+        self,
+        source: str,
+        source_job_ids: Iterable[str],
+        *,
+        scope_status: str = "catalog",
+        seen_at: str | None = None,
+    ) -> dict[str, int]:
+        """Reset missing/inactive state for IDs that were positively observed."""
+        now = seen_at or _utcnow()
+        ids = sorted({str(value) for value in source_job_ids if str(value)})
+        if not ids:
+            return {"seen": 0, "reopened": 0}
+
+        self.record_discoveries(
+            source,
+            ids,
+            scope_status=scope_status,
+            seen_at=now,
+        )
+
+        reopened_row = self.conn.execute(
+            """
+            SELECT COUNT(*) AS n
+            FROM public.source_postings
+            WHERE source = %s
+              AND source_job_id = ANY(%s)
+              AND (NOT is_active OR miss_count > 0)
+            """,
+            (source, ids),
+        ).fetchone()
+        reopened = int(reopened_row["n"] or 0)
+
+        self.conn.execute(
+            """
+            UPDATE public.source_postings
+            SET last_seen_at = %s,
+                last_checked_at = %s,
+                seen_count = seen_count + 1,
+                miss_count = 0,
+                missing_since = NULL,
+                inactive_at = NULL,
+                is_active = true
+            WHERE source = %s
+              AND source_job_id = ANY(%s)
+            """,
+            (now, now, source, ids),
+        )
+        return {"seen": len(ids), "reopened": reopened}
+
+    def mark_seen_postings(
+        self,
+        jobs: Iterable[Job],
+        *,
+        seen_at: str | None = None,
+    ) -> dict[str, int]:
+        """Mark a collection of source-native postings as positively observed."""
+        grouped: dict[str, set[str]] = defaultdict(set)
+        for job in jobs:
+            grouped[str(job.source)].add(str(job.source_job_id))
+
+        total_seen = 0
+        reopened = 0
+        for source, ids in grouped.items():
+            result = self.mark_seen_ids(
+                source,
+                ids,
+                scope_status="catalog",
+                seen_at=seen_at,
+            )
+            total_seen += result["seen"]
+            reopened += result["reopened"]
+        return {"seen": total_seen, "reopened": reopened}
+
+    def reconcile_scope(
+        self,
+        source: str,
+        seen_source_job_ids: Iterable[str],
+        *,
+        prefix: str | None = None,
+        coverage: str = "partial",
+        miss_threshold: int = 2,
+        checked_at: str | None = None,
+    ) -> dict[str, Any]:
+        """Advance lifecycle only after a provably complete source scan."""
+        now = checked_at or _utcnow()
+        seen = {str(value) for value in seen_source_job_ids if str(value)}
+        result: dict[str, Any] = {
+            "coverage": coverage,
+            "checked": 0,
+            "seen": len(seen),
+            "new_missing": 0,
+            "inactivated": 0,
+            "skipped": coverage != "complete",
+        }
+        if coverage != "complete":
+            return result
+
+        threshold = max(2, int(miss_threshold or 2))
+        select_sql = """
+            SELECT source_job_id, is_active, miss_count, missing_since
+            FROM public.source_postings
+            WHERE source = %s
+        """
+        select_args: list[Any] = [source]
+        if prefix is not None:
+            select_sql += " AND source_job_id LIKE %s"
+            select_args.append(prefix + "%")
+
+        rows = self.conn.execute(select_sql, select_args).fetchall()
+        result["checked"] = len(rows)
+
+        check_sql = """
+            UPDATE public.source_postings
+            SET last_checked_at = %s
+            WHERE source = %s
+        """
+        check_args: list[Any] = [now, source]
+        if prefix is not None:
+            check_sql += " AND source_job_id LIKE %s"
+            check_args.append(prefix + "%")
+        self.conn.execute(check_sql, check_args)
+
+        updates = []
+        for row in rows:
+            source_job_id = str(row["source_job_id"])
+            if source_job_id in seen or not bool(row["is_active"]):
+                continue
+
+            old_miss = int(row["miss_count"] or 0)
+            new_miss = old_miss + 1
+            inactive = new_miss >= threshold
+            if old_miss == 0:
+                result["new_missing"] += 1
+            if inactive:
+                result["inactivated"] += 1
+
+            updates.append(
+                (
+                    new_miss,
+                    now,
+                    inactive,
+                    now,
+                    inactive,
+                    source,
+                    source_job_id,
+                )
+            )
+
+        if updates:
+            with self.conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    UPDATE public.source_postings
+                    SET miss_count = %s,
+                        missing_since = COALESCE(missing_since, %s),
+                        inactive_at = CASE
+                            WHEN %s THEN COALESCE(inactive_at, %s)
+                            ELSE inactive_at
+                        END,
+                        is_active = CASE
+                            WHEN %s THEN false
+                            ELSE is_active
+                        END
+                    WHERE source = %s AND source_job_id = %s
+                    """,
+                    updates,
+                )
+        return result
 
     def load_opportunities(self, *, active_only: bool = True) -> list[Job]:
         sql = """
