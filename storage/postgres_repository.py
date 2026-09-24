@@ -6,6 +6,7 @@ exists so catalog parity can be measured before the backend cutover.
 
 from __future__ import annotations
 
+import json
 import os
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -16,12 +17,15 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from models.job import Job
+from processing.deduplicate import canonical_job_url
 from storage.job_store import (
     PROCESSING_VERSION,
+    _clean_metadata,
     _job_from_dict,
     _merge_cached_fields,
     raw_content_hash,
 )
+from storage.unified_schema import _stable_opportunity_id
 
 
 def _iso(value):
@@ -34,6 +38,14 @@ def _iso(value):
 
 def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _normalized_payload(job: Job) -> dict[str, Any]:
+    payload = job.to_dict()
+    payload["metadata"] = _clean_metadata(payload.get("metadata"))
+    return json.loads(
+        json.dumps(payload, ensure_ascii=False, default=str)
+    )
 
 
 class PostgresOpportunityRepository:
@@ -105,7 +117,7 @@ class PostgresOpportunityRepository:
             cached_references = (cached.metadata or {}).get("source_references")
             if references != cached_references:
                 cached.metadata["source_references"] = references
-                refreshed = cached.to_dict()
+                refreshed = _normalized_payload(cached)
                 self.conn.execute(
                     """
                     UPDATE public.source_postings
@@ -120,6 +132,160 @@ class PostgresOpportunityRepository:
             return candidate, "reprocess", True
 
         return candidate, "changed", True
+
+    def _upsert_posting_core(
+        self,
+        job: Job,
+        *,
+        seen_at: str | None = None,
+        processing_version: str | None = None,
+    ) -> str:
+        """Persist opportunity + source posting identity, excluding scores/intents."""
+        now = seen_at or _utcnow()
+        version = processing_version or PROCESSING_VERSION
+        new_hash = raw_content_hash(job)
+
+        current = self.conn.execute(
+            """
+            SELECT opportunity_id, first_seen_at, last_changed_at, raw_hash
+            FROM public.source_postings
+            WHERE source = %s AND source_job_id = %s
+            """,
+            (job.source, job.source_job_id),
+        ).fetchone()
+
+        if current is None:
+            opportunity_id = _stable_opportunity_id(
+                job.source,
+                job.source_job_id,
+            )
+            first_seen = now
+            last_changed = now
+        else:
+            opportunity_id = str(current["opportunity_id"])
+            first_seen = current["first_seen_at"]
+            last_changed = (
+                current["last_changed_at"]
+                if str(current["raw_hash"]) == new_hash
+                else now
+            )
+
+        payload = _normalized_payload(job)
+        canonical = canonical_job_url(job.url) or job.url or None
+
+        self.conn.execute(
+            """
+            INSERT INTO public.opportunities(
+                id, company, title, description,
+                location_text, location, location_confidence,
+                workplace_type, employment_type, salary,
+                published_at, canonical_url,
+                created_at, updated_at
+            )
+            VALUES(
+                %s, %s, %s, %s,
+                %s,
+                CASE
+                    WHEN %s::double precision IS NULL
+                      OR %s::double precision IS NULL
+                    THEN NULL
+                    ELSE extensions.st_point(
+                        %s::double precision,
+                        %s::double precision
+                    )::extensions.geography
+                END,
+                %s, %s, %s, %s,
+                %s, %s, %s, %s
+            )
+            ON CONFLICT(id) DO UPDATE SET
+                company = excluded.company,
+                title = excluded.title,
+                description = excluded.description,
+                location_text = excluded.location_text,
+                location = excluded.location,
+                location_confidence = excluded.location_confidence,
+                workplace_type = excluded.workplace_type,
+                employment_type = excluded.employment_type,
+                salary = excluded.salary,
+                published_at = excluded.published_at,
+                canonical_url = excluded.canonical_url,
+                created_at = LEAST(
+                    public.opportunities.created_at,
+                    excluded.created_at
+                ),
+                updated_at = GREATEST(
+                    public.opportunities.updated_at,
+                    excluded.updated_at
+                )
+            """,
+            (
+                opportunity_id,
+                job.company or "",
+                job.title or "",
+                job.description or "",
+                job.location or "",
+                job.latitude,
+                job.longitude,
+                job.longitude,
+                job.latitude,
+                job.location_confidence,
+                job.workplace_type,
+                job.employment_type,
+                job.salary,
+                job.published_at,
+                canonical,
+                first_seen,
+                last_changed,
+            ),
+        )
+
+        self.conn.execute(
+            """
+            INSERT INTO public.source_postings(
+                source, source_job_id, opportunity_id,
+                url, source_type, normalized_job_json,
+                raw_hash, processing_version,
+                first_seen_at, last_seen_at, last_checked_at,
+                last_changed_at, is_active,
+                missing_since, inactive_at, miss_count, seen_count,
+                association_method, associated_at
+            )
+            VALUES(
+                %s, %s, %s,
+                %s, %s, %s,
+                %s, %s,
+                %s, %s, %s,
+                %s, true,
+                NULL, NULL, 0, 0,
+                'identity', %s
+            )
+            ON CONFLICT(source, source_job_id) DO UPDATE SET
+                url = excluded.url,
+                source_type = excluded.source_type,
+                normalized_job_json = excluded.normalized_job_json,
+                raw_hash = excluded.raw_hash,
+                processing_version = excluded.processing_version,
+                last_seen_at = excluded.last_seen_at,
+                last_changed_at = excluded.last_changed_at,
+                is_active = true
+            """,
+            (
+                job.source,
+                job.source_job_id,
+                opportunity_id,
+                job.url or "",
+                job.source_type or "official_api",
+                Jsonb(payload),
+                new_hash,
+                version,
+                first_seen,
+                now,
+                now,
+                last_changed,
+                first_seen,
+            ),
+        )
+        return opportunity_id
 
     def touch_posting(
         self,

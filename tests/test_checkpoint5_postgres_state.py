@@ -498,3 +498,135 @@ def test_prepare_posting_persists_metadata_only_source_reference_refresh():
     assert kind == "execute"
     assert "SET normalized_job_json = %s" in sql
     assert args[1:] == ("example", "job-1")
+
+
+def test_upsert_posting_core_creates_stable_identity_rows_for_new_posting():
+    from storage.unified_schema import _stable_opportunity_id
+
+    job = _posting_payload(
+        latitude=-22.0174,
+        longitude=-47.8860,
+        location_confidence="city",
+    )
+    repo = _repo(row_queue=[None])
+
+    opportunity_id = repo._upsert_posting_core(
+        job,
+        seen_at="2026-09-24T16:00:00+00:00",
+    )
+
+    expected_id = _stable_opportunity_id("example", "job-1")
+    assert opportunity_id == expected_id
+    assert len(repo.conn.calls) == 3
+
+    _, select_sql, select_args = repo.conn.calls[0]
+    assert "FROM public.source_postings" in select_sql
+    assert select_args == ("example", "job-1")
+
+    _, opportunity_sql, opportunity_args = repo.conn.calls[1]
+    assert "INSERT INTO public.opportunities" in opportunity_sql
+    assert "extensions.st_point" in opportunity_sql
+    assert "%s::double precision" in opportunity_sql
+    assert "ON CONFLICT(id) DO UPDATE" in opportunity_sql
+    assert opportunity_args[0] == expected_id
+    assert opportunity_args[5:9] == (
+        -22.0174,
+        -47.8860,
+        -47.8860,
+        -22.0174,
+    )
+
+    _, posting_sql, posting_args = repo.conn.calls[2]
+    assert "INSERT INTO public.source_postings" in posting_sql
+    assert "'identity'" in posting_sql
+    assert posting_args[0:3] == ("example", "job-1", expected_id)
+    assert posting_args[8] == "2026-09-24T16:00:00+00:00"
+    assert posting_args[9] == "2026-09-24T16:00:00+00:00"
+    assert posting_args[10] == "2026-09-24T16:00:00+00:00"
+    assert posting_args[11] == "2026-09-24T16:00:00+00:00"
+    assert posting_args[12] == "2026-09-24T16:00:00+00:00"
+
+
+def test_upsert_posting_core_preserves_existing_association_and_first_seen():
+    from storage.job_store import raw_content_hash
+
+    job = _posting_payload(description="Same content")
+    existing_id = "00000000-0000-0000-0000-000000000123"
+    old_first_seen = "2026-09-01T10:00:00+00:00"
+    old_last_changed = "2026-09-02T10:00:00+00:00"
+    repo = _repo(
+        row_queue=[
+            {
+                "opportunity_id": existing_id,
+                "first_seen_at": old_first_seen,
+                "last_changed_at": old_last_changed,
+                "raw_hash": raw_content_hash(job),
+            }
+        ]
+    )
+
+    opportunity_id = repo._upsert_posting_core(
+        job,
+        seen_at="2026-09-24T16:00:00+00:00",
+    )
+
+    assert opportunity_id == existing_id
+
+    _, opportunity_sql, opportunity_args = repo.conn.calls[1]
+    assert opportunity_args[0] == existing_id
+    assert opportunity_args[-2] == old_first_seen
+    assert opportunity_args[-1] == old_last_changed
+
+    _, posting_sql, posting_args = repo.conn.calls[2]
+    conflict_update = posting_sql.split(
+        "ON CONFLICT(source, source_job_id) DO UPDATE SET",
+        1,
+    )[1]
+    assert "opportunity_id =" not in conflict_update
+    assert "first_seen_at =" not in conflict_update
+    assert "association_method =" not in conflict_update
+    assert posting_args[2] == existing_id
+    assert posting_args[8] == old_first_seen
+    assert posting_args[11] == old_last_changed
+
+
+def test_upsert_posting_core_advances_last_changed_when_raw_content_changes():
+    job = _posting_payload(description="New description")
+    repo = _repo(
+        row_queue=[
+            {
+                "opportunity_id": "00000000-0000-0000-0000-000000000123",
+                "first_seen_at": "2026-09-01T10:00:00+00:00",
+                "last_changed_at": "2026-09-02T10:00:00+00:00",
+                "raw_hash": "different-hash",
+            }
+        ]
+    )
+
+    repo._upsert_posting_core(
+        job,
+        seen_at="2026-09-24T16:00:00+00:00",
+    )
+
+    opportunity_args = repo.conn.calls[1][2]
+    posting_args = repo.conn.calls[2][2]
+    assert opportunity_args[-1] == "2026-09-24T16:00:00+00:00"
+    assert posting_args[11] == "2026-09-24T16:00:00+00:00"
+
+
+def test_normalized_payload_removes_store_lifecycle_metadata():
+    from storage.postgres_repository import _normalized_payload
+
+    job = _posting_payload(
+        metadata={
+            "store_first_seen_at": "old",
+            "store_miss_count": 2,
+            "gupy_city": "São Carlos",
+        }
+    )
+
+    payload = _normalized_payload(job)
+
+    assert "store_first_seen_at" not in payload["metadata"]
+    assert "store_miss_count" not in payload["metadata"]
+    assert payload["metadata"]["gupy_city"] == "São Carlos"
