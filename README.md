@@ -4,8 +4,8 @@ O **Opportunity Radar** é um agregador inteligente de oportunidades de início 
 
 A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
 
-> **Estado atual:** Checkpoint 4 concluído — persistência relacional unificada e sincronização segura do estado do servidor validadas.
-> **Próximo passo:** Checkpoint 5 — PostgreSQL / Supabase / PostGIS.
+> **Estado atual:** Checkpoint 5 em andamento — migração do catálogo para PostgreSQL/Supabase/PostGIS.
+> **Subcheckpoint concluído:** CP5-B — paridade de leitura SQLite ↔ PostgreSQL validada. Próximo: CP5-C — escrita e lifecycle.
 
 ---
 
@@ -132,7 +132,7 @@ O GitHub Actions executa auditorias mais pesadas, persiste o SQLite entre runs e
 | Lifecycle active / missing / inactive | ✅ |
 | Auditoria diária no GitHub Actions | ✅ |
 | Persistência relacional unificada | ✅ |
-| PostgreSQL / Supabase / PostGIS | ⏳ |
+| PostgreSQL / Supabase / PostGIS | 🚧 Checkpoint 5 |
 | Usuários e perfis persistentes | ⏳ |
 | Favoritos e candidaturas | ⏳ |
 | Aplicativo mobile | ⏳ |
@@ -526,6 +526,14 @@ Objetivos principais:
 - preservar identidade, lifecycle, course scores, intents e associações cross-source;
 - introduzir PostGIS para consultas geográficas;
 - reduzir gradualmente a dependência do SQLite local sem reformular o domínio.
+
+Estado da migração:
+
+- CP5-A concluído: schema remoto, PostGIS e bootstrap SQLite → PostgreSQL;
+- CP5-B concluído: 23.311 opportunities comparadas entre os backends, sem divergências de catálogo;
+- lifecycle agregado idêntico entre SQLite e PostgreSQL no snapshot validado;
+- consulta de proximidade PostGIS validada;
+- próximo passo: CP5-C, portando escrita e lifecycle para PostgreSQL.
 
 Referências:
 
