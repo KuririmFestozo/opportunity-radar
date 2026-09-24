@@ -112,9 +112,9 @@ def _migrate_opportunities(conn, rows: list[dict[str, Any]]) -> None:
         VALUES(
             %s, %s, %s, %s, %s,
             CASE
-                WHEN %s IS NULL OR %s IS NULL THEN NULL
+                WHEN %s::double precision IS NULL OR %s::double precision IS NULL THEN NULL
                 ELSE extensions.st_setsrid(
-                    extensions.st_makepoint(%s, %s), 4326
+                    extensions.st_makepoint(%s::double precision, %s::double precision), 4326
                 )::extensions.geography
             END,
             %s, %s, %s, %s, %s, %s, %s, %s
