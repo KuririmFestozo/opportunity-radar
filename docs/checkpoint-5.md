@@ -114,14 +114,23 @@ deve ser usado apenas conscientemente.
 
 ---
 
-## CP5-B — Paridade de leitura 🚧
+## CP5-B — Paridade de leitura ✅
 
-- comparar SQLite e PostgreSQL pelo `opportunity_id`;
-- validar campos de catálogo, source references, scores e intents;
-- comparar lifecycle agregado entre os backends;
-- validar consultas de proximidade via PostGIS;
-- executar `python -m tools.validate_backend_parity` contra o snapshot migrado;
-- adicionar testes de contrato que não dependem de banco remoto no CI.
+Concluído em 24/09/2026.
+
+Validação executada com `python -m tools.validate_backend_parity` contra o
+snapshot migrado:
+
+- 23.311 opportunities no SQLite e 23.311 no PostgreSQL;
+- 0 IDs exclusivos em qualquer backend;
+- 0 divergências nos campos comparados do catálogo;
+- source references, course scores e intents equivalentes;
+- lifecycle agregado idêntico: 23.311 active, 0 missing e 0 inactive;
+- discovery state idêntico: 23.311 registros e 0 out of scope;
+- smoke test de proximidade PostGIS aprovado, com distância mínima de 0 m;
+- normalização explícita de timestamps legados sem timezone como UTC para
+  comparar semântica, e não apenas serialização;
+- testes de contrato mantidos independentes do banco remoto no CI.
 
 O bootstrap real do CP5-A foi concluído com 23.311 opportunities,
 23.311 source postings, 163.177 course scores, 8.116 intents e
@@ -165,7 +174,7 @@ O bootstrap real do CP5-A foi concluído com 23.311 opportunities,
 - [x] opportunities preservam IDs e associações;
 - [x] course scores e intents têm paridade;
 - [x] discovery state e collection scopes têm paridade;
-- [ ] leitura do catálogo é equivalente ao SQLite;
+- [x] leitura do catálogo é equivalente ao SQLite;
 - [ ] lifecycle permanece conservador;
 - [ ] GitHub Actions pode operar contra PostgreSQL;
 - [ ] nenhuma credencial é versionada;

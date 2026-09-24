@@ -5,7 +5,7 @@ O **Opportunity Radar** é um agregador inteligente de oportunidades de início 
 A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
 
 > **Estado atual:** Checkpoint 5 em andamento — migração do catálogo para PostgreSQL/Supabase/PostGIS.
-> **Subcheckpoint atual:** CP5-A — schema remoto, bootstrap e migração SQLite → PostgreSQL.
+> **Subcheckpoint concluído:** CP5-B — paridade de leitura SQLite ↔ PostgreSQL validada. Próximo: CP5-C — escrita e lifecycle.
 
 ---
 
@@ -526,6 +526,14 @@ Objetivos principais:
 - preservar identidade, lifecycle, course scores, intents e associações cross-source;
 - introduzir PostGIS para consultas geográficas;
 - reduzir gradualmente a dependência do SQLite local sem reformular o domínio.
+
+Estado da migração:
+
+- CP5-A concluído: schema remoto, PostGIS e bootstrap SQLite → PostgreSQL;
+- CP5-B concluído: 23.311 opportunities comparadas entre os backends, sem divergências de catálogo;
+- lifecycle agregado idêntico entre SQLite e PostgreSQL no snapshot validado;
+- consulta de proximidade PostGIS validada;
+- próximo passo: CP5-C, portando escrita e lifecycle para PostgreSQL.
 
 Referências:
 
