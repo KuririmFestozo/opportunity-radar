@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from storage.job_store import DEFAULT_DB_PATH, JobStore
-from storage.unified_schema import sync_unified_persistence
+from storage.unified_schema import validate_unified_schema
 
 MIGRATION_PATH = ROOT / "database" / "migrations" / "0001_cp5_catalog.sql"
 TABLES = (
@@ -35,9 +35,30 @@ TABLES = (
 
 
 def _prepare_sqlite(path: Path) -> None:
-    """Bring a local DB to the latest CP4 relational state before exporting."""
+    """Validate the already-synchronized CP4 state without rebuilding it."""
     with JobStore(path) as store:
-        sync_unified_persistence(store)
+        validation = validate_unified_schema(store, require_tables=True)
+
+    if not validation["ok"]:
+        raise RuntimeError(
+            "SQLite CP4 não está sincronizado. Rode "
+            "`python -m tools.migrate_unified_schema` antes da migração. "
+            f"Detalhes: {validation}"
+        )
+
+
+def _sqlite_counts(path: Path) -> dict[str, int]:
+    """Read table counts without materializing hundreds of thousands of rows."""
+    conn = sqlite3.connect(path)
+    try:
+        return {
+            table: int(
+                conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            )
+            for table in TABLES
+        }
+    finally:
+        conn.close()
 
 
 def _snapshot(path: Path) -> dict[str, list[dict[str, Any]]]:
@@ -367,16 +388,16 @@ def main() -> None:
     args = parser.parse_args()
 
     sqlite_path = Path(args.db)
-    _prepare_sqlite(sqlite_path)
-    data = _snapshot(sqlite_path)
-    source_counts = _counts(data)
 
     print("CP5-A SQLite -> PostgreSQL")
     print(f"SQLite: {sqlite_path}")
-    for table, count in source_counts.items():
-        print(f"{table}: {count}")
+    print("Validando estado relacional do CP4...")
+    _prepare_sqlite(sqlite_path)
 
     if args.dry_run:
+        source_counts = _sqlite_counts(sqlite_path)
+        for table, count in source_counts.items():
+            print(f"{table}: {count}")
         print("Dry-run: OK (nenhuma conexão PostgreSQL realizada).")
         return
 
@@ -386,11 +407,16 @@ def main() -> None:
             "DATABASE_URL não configurada. Use --dry-run ou forneça a conexão."
         )
 
+    print("Carregando snapshot SQLite para migração...")
     source_counts, target_counts = migrate(
         sqlite_path,
         dsn,
         reset_target=args.reset_target,
     )
+
+    print("SQLite:")
+    for table, count in source_counts.items():
+        print(f"{table}: {count}")
 
     print("PostgreSQL:")
     for table, count in target_counts.items():
