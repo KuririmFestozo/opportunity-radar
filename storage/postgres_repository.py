@@ -13,8 +13,15 @@ from typing import Any, Iterable
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 
 from models.job import Job
+from storage.job_store import (
+    PROCESSING_VERSION,
+    _job_from_dict,
+    _merge_cached_fields,
+    raw_content_hash,
+)
 
 
 def _iso(value):
@@ -73,6 +80,46 @@ class PostgresOpportunityRepository:
             str(row["source_job_id"])
             for row in self.conn.execute(sql, args).fetchall()
         }
+
+    def prepare_posting(self, incoming: Job) -> tuple[Job, str, bool]:
+        """Return the cached/merged posting state and whether it needs processing."""
+        row = self.conn.execute(
+            """
+            SELECT normalized_job_json, raw_hash, processing_version
+            FROM public.source_postings
+            WHERE source = %s AND source_job_id = %s
+            """,
+            (incoming.source, incoming.source_job_id),
+        ).fetchone()
+
+        if row is None:
+            return incoming, "new", True
+
+        payload = dict(row["normalized_job_json"] or {})
+        cached = _job_from_dict(payload)
+        candidate = _merge_cached_fields(incoming, cached)
+        same_raw = raw_content_hash(candidate) == str(row["raw_hash"])
+
+        if same_raw and str(row["processing_version"]) == PROCESSING_VERSION:
+            references = (candidate.metadata or {}).get("source_references")
+            cached_references = (cached.metadata or {}).get("source_references")
+            if references != cached_references:
+                cached.metadata["source_references"] = references
+                refreshed = cached.to_dict()
+                self.conn.execute(
+                    """
+                    UPDATE public.source_postings
+                    SET normalized_job_json = %s
+                    WHERE source = %s AND source_job_id = %s
+                    """,
+                    (Jsonb(refreshed), cached.source, cached.source_job_id),
+                )
+            return cached, "unchanged", False
+
+        if same_raw:
+            return candidate, "reprocess", True
+
+        return candidate, "changed", True
 
     def touch_posting(
         self,

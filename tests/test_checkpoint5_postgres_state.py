@@ -28,15 +28,17 @@ class _FakeCursor:
 
 
 class _FakeConnection:
-    def __init__(self, row=None, rows=None):
+    def __init__(self, row=None, rows=None, row_queue=None):
         self.row = row
         self.rows = rows or []
+        self.row_queue = list(row_queue or [])
         self.calls = []
         self.committed = False
 
     def execute(self, sql, args=None):
         self.calls.append(("execute", sql, args))
-        return _FakeResult(self.row, self.rows)
+        row = self.row_queue.pop(0) if self.row_queue else self.row
+        return _FakeResult(row, self.rows)
 
     def cursor(self):
         return _FakeCursor(self)
@@ -45,9 +47,13 @@ class _FakeConnection:
         self.committed = True
 
 
-def _repo(row=None, rows=None):
+def _repo(row=None, rows=None, row_queue=None):
     repo = object.__new__(PostgresOpportunityRepository)
-    repo.conn = _FakeConnection(row=row, rows=rows)
+    repo.conn = _FakeConnection(
+        row=row,
+        rows=rows,
+        row_queue=row_queue,
+    )
     return repo
 
 
@@ -342,3 +348,153 @@ def test_touch_posting_can_commit_explicitly():
     )
 
     assert repo.conn.committed is True
+
+
+def _posting_payload(**overrides):
+    from models.job import Job
+
+    values = {
+        "source": "example",
+        "source_job_id": "job-1",
+        "company": "Example",
+        "title": "Engineering Intern",
+        "location": "São Carlos - SP",
+        "url": "https://example.com/jobs/1",
+        "description": "Work with engineering systems.",
+        "detected_intents": ["internship"],
+        "course_scores": {"electrical_engineering": 88},
+        "metadata": {},
+    }
+    values.update(overrides)
+    return Job(**values)
+
+
+def _prepare_row(job, *, processing_version=None):
+    from storage.job_store import PROCESSING_VERSION, raw_content_hash
+
+    return {
+        "normalized_job_json": job.to_dict(),
+        "raw_hash": raw_content_hash(job),
+        "processing_version": processing_version or PROCESSING_VERSION,
+    }
+
+
+def test_prepare_posting_marks_unknown_identity_as_new():
+    incoming = _posting_payload()
+    repo = _repo(row=None)
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert job is incoming
+    assert status == "new"
+    assert needs_processing is True
+    assert len(repo.conn.calls) == 1
+
+
+def test_prepare_posting_returns_cached_job_when_raw_content_is_unchanged():
+    cached = _posting_payload(
+        detected_intents=["internship"],
+        course_scores={"electrical_engineering": 91},
+    )
+    incoming = _posting_payload(
+        detected_intents=[],
+        course_scores={},
+    )
+    repo = _repo(row=_prepare_row(cached))
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert status == "unchanged"
+    assert needs_processing is False
+    assert job.detected_intents == ["internship"]
+    assert job.course_scores == {"electrical_engineering": 91}
+    assert len(repo.conn.calls) == 1
+
+
+def test_prepare_posting_reprocesses_same_raw_content_after_version_change():
+    cached = _posting_payload()
+    incoming = _posting_payload()
+    repo = _repo(row=_prepare_row(cached, processing_version="old-version"))
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert status == "reprocess"
+    assert needs_processing is True
+    assert job.source_job_id == "job-1"
+
+
+def test_prepare_posting_marks_changed_raw_content_for_processing():
+    cached = _posting_payload(description="Old description")
+    incoming = _posting_payload(description="New description")
+    repo = _repo(row=_prepare_row(cached))
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert status == "changed"
+    assert needs_processing is True
+    assert job.description == "New description"
+
+
+def test_prepare_posting_reuses_rich_cached_fields_from_lightweight_stub():
+    cached = _posting_payload(
+        description="Detailed description",
+        location="São Carlos - SP",
+        employment_type="Internship",
+    )
+    incoming = _posting_payload(
+        description="",
+        location="",
+        employment_type=None,
+    )
+    repo = _repo(row=_prepare_row(cached))
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert status == "unchanged"
+    assert needs_processing is False
+    assert job.description == "Detailed description"
+    assert job.location == "São Carlos - SP"
+    assert job.employment_type == "Internship"
+
+
+def test_prepare_posting_persists_metadata_only_source_reference_refresh():
+    cached = _posting_payload(
+        metadata={
+            "source_references": [
+                {
+                    "source": "example",
+                    "source_job_id": "job-1",
+                    "url": "https://example.com/jobs/1",
+                }
+            ]
+        }
+    )
+    incoming = _posting_payload(
+        metadata={
+            "source_references": [
+                {
+                    "source": "example",
+                    "source_job_id": "job-1",
+                    "url": "https://example.com/jobs/1",
+                },
+                {
+                    "source": "mirror",
+                    "source_job_id": "mirror-1",
+                    "url": "https://mirror.example/jobs/1",
+                },
+            ]
+        }
+    )
+    repo = _repo(row=_prepare_row(cached))
+
+    job, status, needs_processing = repo.prepare_posting(incoming)
+
+    assert status == "unchanged"
+    assert needs_processing is False
+    assert len(job.metadata["source_references"]) == 2
+    assert len(repo.conn.calls) == 2
+
+    kind, sql, args = repo.conn.calls[1]
+    assert kind == "execute"
+    assert "SET normalized_job_json = %s" in sql
+    assert args[1:] == ("example", "job-1")
