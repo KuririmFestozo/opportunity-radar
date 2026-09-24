@@ -178,15 +178,15 @@ def main():
         print(f"Banco incremental: {store.count_postings()} registros armazenados.")
     if full_refresh:
         print("Modo FULL_REFRESH: early-stop e cache de detalhes desativados nesta execução.")
-    else:
-        print("Modo incremental: early-stop ativo para fontes paginadas com IDs conhecidos.")
-    if full_discovery:
-        print("Modo FULL_DISCOVERY: baseline exaustivo; FAST-stop SAP e query early-stop desativados.")
-    if daily_audit:
+    elif full_discovery:
+        print("Modo FULL_DISCOVERY: baseline exaustivo; early-stops incrementais desativados.")
+    elif daily_audit:
         print(
             "Modo DAILY_AUDIT: varredura completa de listagens; "
-            "cache de detalhes preservado e lifecycle habilitado."
+            "early-stops desativados, cache de detalhes preservado e lifecycle habilitado."
         )
+    else:
+        print("Modo incremental: early-stop ativo para fontes paginadas com IDs conhecidos.")
     if unbounded_collection:
         print("Modo UNBOUNDED_COLLECTION: sem tetos de produto; somente guard rails técnicos.")
     print()
@@ -455,7 +455,7 @@ def main():
                             seen_catalog_native
                         )
                         print(
-                            f'  [FAST-STOP] {runtime_source["name"]}: nenhuma oportunidade early-career nova.'
+                            f'  [INCREMENTAL-STOP] {runtime_source["name"]}: nenhuma oportunidade early-career nova.'
                         )
                         continue
                     if probe.relevant_new_native_ids or probe.uncertain_new_native_ids:

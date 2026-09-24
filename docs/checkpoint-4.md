@@ -13,7 +13,12 @@ A meta é garantir que exista **um modelo persistente coerente e estável** para
 
 ## Progresso de implementação
 
-### CP4-E.1 — Server state sync 🚧
+### Fechamento do CP4 ✅
+
+O CP4 foi considerado concluído após a auditoria completa do GitHub Actions #15 terminar com sucesso, incluindo testes, full audit, checkpoint do SQLite, publicação do estado rolling e upload do dashboard. O catálogo relacional e o bundle de estado do servidor ficaram validados para a transição ao CP5.
+
+
+### CP4-E.1 — Server state sync ✅
 
 O servidor passa a poder reconstruir seu runtime a partir de um snapshot SQLite
 publicado automaticamente pelo GitHub Actions.
@@ -54,7 +59,7 @@ O `output/` continua derivado e não é versionado. O SQLite é o estado distrib
 
 
 
-### CP4-E — Relational catalog reads 🚧
+### CP4-E — Relational catalog reads ✅
 
 - o catálogo final passa a ser lido diretamente de `opportunities`;
 - `main.py` deixa de montar o catálogo com `load_postings() + deduplicate_jobs()`;
@@ -69,7 +74,7 @@ legado ainda permanece como write-store temporário até o cleanup do CP4-F.
 
 
 
-### CP4-D — Relational classification 🚧
+### CP4-D — Relational classification ✅
 
 - `opportunity_course_scores` e `opportunity_intents` passam a ser a fonte de
   verdade para leitura de classificação;
@@ -86,7 +91,7 @@ muda a autoridade de persistência/leitura, não o algoritmo de classificação.
 
 
 
-### CP4-C — Persistent associations 🚧
+### CP4-C — Persistent associations ✅
 
 - a deduplicação conservadora do catálogo agora expõe os grupos antes do merge;
 - esses mesmos grupos são persistidos como `opportunities`;
@@ -102,7 +107,7 @@ O pipeline ainda escreve primeiro no armazenamento legado. A leitura definitiva
 diretamente de `opportunities` fica para o CP4-E.
 
 
-### CP4-A — Schema + migration 🚧
+### CP4-A — Schema + migration ✅
 
 Implementado como **shadow schema**:
 
@@ -444,7 +449,7 @@ sem reconstruir o pipeline.
 
 ---
 
-## Etapas sugeridas
+## Etapas concluídas
 
 ### CP4-A — Schema e migration
 
@@ -486,12 +491,14 @@ Migrar:
 
 Todos passam a ler opportunities consolidadas do repository.
 
-### CP4-F — Compatibilidade e cleanup
+### CP4-F — Compatibilidade e cleanup ✅
 
-- manter exports atuais;
-- testes de regressão;
-- remover caminhos legados somente após equivalência comprovada;
-- atualizar `database/schema.sql` para refletir o modelo estabilizado.
+- exports atuais preservados;
+- suíte de regressão mantida;
+- logs de execução tornados explícitos para diferenciar incremental de auditoria completa;
+- server state rolling validado de ponta a ponta no GitHub Actions;
+- documentação atualizada para encerrar o CP4 e apontar o CP5 como próxima etapa;
+- `database/schema.sql` alinhado ao modelo relacional estabilizado.
 
 ---
 
@@ -499,18 +506,18 @@ Todos passam a ler opportunities consolidadas do repository.
 
 O CP4 termina quando:
 
-- [ ] todos os anúncios existentes migram sem perda;
-- [ ] source identity continua intacta;
-- [ ] lifecycle continua conservador;
-- [ ] cross-source associations persistem entre execuções;
-- [ ] course scores persistem relacionalmente;
-- [ ] intents persistem relacionalmente;
-- [ ] API/dashboard recebem o mesmo catálogo ou um catálogo comprovadamente equivalente;
-- [ ] exports atuais continuam sendo gerados;
-- [ ] execução local continua em SQLite;
-- [ ] GitHub Actions continua persistindo estado entre runs;
-- [ ] suite de regressão permanece verde;
-- [ ] não há dependência obrigatória de Supabase.
+- [x] todos os anúncios existentes migram sem perda;
+- [x] source identity continua intacta;
+- [x] lifecycle continua conservador;
+- [x] cross-source associations persistem entre execuções;
+- [x] course scores persistem relacionalmente;
+- [x] intents persistem relacionalmente;
+- [x] API/dashboard recebem o mesmo catálogo ou um catálogo comprovadamente equivalente;
+- [x] exports atuais continuam sendo gerados;
+- [x] execução local continua em SQLite;
+- [x] GitHub Actions continua persistindo estado entre runs;
+- [x] suite de regressão permanece verde;
+- [x] não há dependência obrigatória de Supabase.
 
 ---
 

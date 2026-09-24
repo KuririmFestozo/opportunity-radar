@@ -4,8 +4,8 @@ O **Opportunity Radar** é um agregador inteligente de oportunidades de início 
 
 A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
 
-> **Estado atual:** Checkpoint 4 em andamento — persistência relacional concluída até o CP4-E.
-> **Próximo passo:** sincronização segura do estado do servidor e cleanup final do CP4.
+> **Estado atual:** Checkpoint 4 concluído — persistência relacional unificada e sincronização segura do estado do servidor validadas.
+> **Próximo passo:** Checkpoint 5 — PostgreSQL / Supabase / PostGIS.
 
 ---
 
@@ -131,7 +131,7 @@ O GitHub Actions executa auditorias mais pesadas, persiste o SQLite entre runs e
 | Persistência incremental em SQLite | ✅ |
 | Lifecycle active / missing / inactive | ✅ |
 | Auditoria diária no GitHub Actions | ✅ |
-| Persistência relacional unificada | 🚧 Checkpoint 4 |
+| Persistência relacional unificada | ✅ |
 | PostgreSQL / Supabase / PostGIS | ⏳ |
 | Usuários e perfis persistentes | ⏳ |
 | Favoritos e candidaturas | ⏳ |
@@ -498,7 +498,7 @@ Smoke tests acessam fontes reais e, portanto, podem falhar temporariamente por t
 | CP2 | Identidade, deduplicação e expansão de fontes | ✅ |
 | CP3 | Integridade incremental e lifecycle | ✅ |
 | CP3.1 | Engenharias + expansão brasileira | ✅ |
-| CP4 | Persistência unificada | 🚧 |
+| CP4 | Persistência unificada | ✅ |
 | CP5 | PostgreSQL / Supabase / PostGIS | ⏳ |
 | CP6 | API de catálogo | ⏳ |
 | CP7 | Usuários e perfis persistentes | ⏳ |
@@ -514,22 +514,23 @@ Roadmap detalhado:
 
 ## Checkpoint atual
 
-O próximo trabalho arquitetural é o:
+O Checkpoint 4 foi concluído e estabilizou o modelo relacional do catálogo.
 
-### Checkpoint 4 — Persistência unificada
+O próximo trabalho arquitetural é:
+
+### Checkpoint 5 — PostgreSQL / Supabase / PostGIS
 
 Objetivos principais:
 
-- separar **oportunidade consolidada** de **anúncio de origem**;
-- preservar identidade e lifecycle por fonte;
-- persistir associações cross-source de forma conservadora;
-- persistir course scores e intents de forma relacional;
-- manter compatibilidade com os exports atuais;
-- preparar uma migração simples para PostgreSQL no Checkpoint 5.
+- portar o modelo estabilizado de `opportunities` e `source_postings` para PostgreSQL;
+- preservar identidade, lifecycle, course scores, intents e associações cross-source;
+- introduzir PostGIS para consultas geográficas;
+- reduzir gradualmente a dependência do SQLite local sem reformular o domínio.
 
-Escopo completo:
+Referências:
 
 - [`docs/checkpoint-4.md`](docs/checkpoint-4.md)
+- [`docs/roadmap.md`](docs/roadmap.md)
 
 ---
 

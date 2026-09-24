@@ -93,7 +93,7 @@ def collect_nube(config: dict) -> list[Job]:
         known = set(config.get("known_source_job_ids") or ())
         ids = {job.source_job_id for job in jobs}
         print(
-            f"[FAST] Nube: {len(ids & known)} conhecidos | "
+            f"[INCREMENTAL] Nube: {len(ids & known)} conhecidos | "
             f"{len(ids - known)} novos | 1 request"
         )
         if not jobs:

@@ -67,7 +67,7 @@ def collect_walljobs(config: dict) -> list[Job]:
     if config.get("show_incremental_stats", True):
         known = set(config.get("known_source_job_ids") or ())
         ids = {j.source_job_id for j in jobs}
-        print(f"[FAST] WallJobs: {len(ids & known)} conhecidos | {len(ids - known)} novos | {requests} requests")
+        print(f"[INCREMENTAL] WallJobs: {len(ids & known)} conhecidos | {len(ids - known)} novos | {requests} requests")
         if not jobs:
             print("[SKIP] WallJobs: catálogo público não expôs cards parseáveis nesta execução.")
     return jobs

@@ -264,7 +264,7 @@ def collect_iel(config: dict) -> list[Job]:
     if config.get("show_incremental_stats", True):
         ids = {job.source_job_id for job in out}
         print(
-            f"[FAST] IEL: {len(ids & known)} conhecidos | "
+            f"[INCREMENTAL] IEL: {len(ids & known)} conhecidos | "
             f"{len(ids - known)} novos | {requests} requests "
             f"({detail_requests} detalhes)"
         )

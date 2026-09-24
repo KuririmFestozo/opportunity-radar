@@ -33,7 +33,7 @@ def report_incremental(config, jobs, requests, *, stopped=False):
         return
     ids = {job.source_job_id for job in jobs}
     known = ids & set(config.get("known_source_job_ids") or ())
-    print(f"[FAST] {config['name']}: {len(known)} conhecidos | "
+    print(f"[INCREMENTAL] {config['name']}: {len(known)} conhecidos | "
           f"{len(ids - known)} novos | {requests} páginas/requests")
     if stopped:
-        print(f"[FAST-STOP] {config['name']}: catálogo recente já conhecido.")
+        print(f"[INCREMENTAL-STOP] {config['name']}: catálogo recente já conhecido.")

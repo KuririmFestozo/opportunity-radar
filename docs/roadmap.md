@@ -151,13 +151,13 @@ UNBOUNDED_COLLECTION=1
 
 ---
 
-# CP4 — Persistência unificada 🚧
+# CP4 — Persistência unificada ✅
 
 Objetivo:
 
 transformar a persistência atual em um modelo relacional claro, sem migrar ainda para PostgreSQL.
 
-Principais mudanças planejadas:
+Principais mudanças concluídas:
 
 - `opportunity` deixa de ser sinônimo de anúncio de origem;
 - anúncios source-native passam a existir como entidades próprias;
