@@ -7,7 +7,8 @@ exists so catalog parity can be measured before the backend cutover.
 from __future__ import annotations
 
 import os
-from typing import Any
+from datetime import datetime, timezone
+from typing import Any, Iterable
 
 import psycopg
 from psycopg.rows import dict_row
@@ -21,6 +22,10 @@ def _iso(value):
     if hasattr(value, "isoformat"):
         return value.isoformat()
     return str(value)
+
+
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class PostgresOpportunityRepository:
@@ -83,6 +88,106 @@ class PostgresOpportunityRepository:
             str(row["source_job_id"])
             for row in self.conn.execute(sql, args).fetchall()
         }
+
+    def record_discoveries(
+        self,
+        source: str,
+        source_job_ids: Iterable[str],
+        *,
+        scope_status: str = "catalog",
+        seen_at: str | None = None,
+    ) -> int:
+        """Remember IDs even when they are intentionally outside the catalog."""
+        now = seen_at or _utcnow()
+        ids = sorted({str(value) for value in source_job_ids if str(value)})
+        if not ids:
+            return 0
+
+        sql = """
+            INSERT INTO public.discovery_state AS ds(
+                source, source_job_id, scope_status,
+                first_seen_at, last_seen_at, last_checked_at, seen_count
+            )
+            VALUES(%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT(source, source_job_id) DO UPDATE SET
+                scope_status = CASE
+                    WHEN ds.scope_status = 'catalog'
+                      OR excluded.scope_status = 'catalog'
+                        THEN 'catalog'
+                    ELSE excluded.scope_status
+                END,
+                last_seen_at = excluded.last_seen_at,
+                last_checked_at = excluded.last_checked_at,
+                seen_count = ds.seen_count + 1
+        """
+        rows = [
+            (source, source_job_id, scope_status, now, now, now, 1)
+            for source_job_id in ids
+        ]
+        with self.conn.cursor() as cur:
+            cur.executemany(sql, rows)
+        return len(ids)
+
+    def needs_full_audit(
+        self,
+        source: str,
+        scope_key: str,
+        *,
+        every_runs: int = 7,
+    ) -> bool:
+        """Force an occasional full scan after partial incremental runs."""
+        every = max(2, int(every_runs or 7))
+        row = self.conn.execute(
+            """
+            SELECT successful_runs, last_full_run
+            FROM public.collection_scopes
+            WHERE source = %s AND scope_key = %s
+            """,
+            (source, scope_key),
+        ).fetchone()
+        if row is None:
+            return False
+
+        runs = int(row["successful_runs"] or 0)
+        last_full = int(row["last_full_run"] or 0)
+        return (runs - last_full) >= (every - 1)
+
+    def finish_scope_run(
+        self,
+        source: str,
+        scope_key: str,
+        *,
+        coverage: str,
+        finished_at: str | None = None,
+    ) -> None:
+        """Advance persistent collection-scope counters atomically."""
+        now = finished_at or _utcnow()
+        self.conn.execute(
+            """
+            INSERT INTO public.collection_scopes AS scopes(
+                source, scope_key, successful_runs,
+                last_full_run, last_coverage, last_run_at
+            )
+            VALUES(
+                %s,
+                %s,
+                1,
+                CASE WHEN %s = 'complete' THEN 1 ELSE 0 END,
+                %s,
+                %s
+            )
+            ON CONFLICT(source, scope_key) DO UPDATE SET
+                successful_runs = scopes.successful_runs + 1,
+                last_full_run = CASE
+                    WHEN excluded.last_coverage = 'complete'
+                        THEN scopes.successful_runs + 1
+                    ELSE scopes.last_full_run
+                END,
+                last_coverage = excluded.last_coverage,
+                last_run_at = excluded.last_run_at
+            """,
+            (source, scope_key, coverage, coverage, now),
+        )
 
     def load_opportunities(self, *, active_only: bool = True) -> list[Job]:
         sql = """
