@@ -41,7 +41,7 @@ pertencem aos CP7/CP8.
 
 ---
 
-## CP5-A — Schema remoto e bootstrap 🚧
+## CP5-A — Schema remoto e bootstrap ✅
 
 Escopo:
 
@@ -114,12 +114,18 @@ deve ser usado apenas conscientemente.
 
 ---
 
-## CP5-B — Paridade de leitura
+## CP5-B — Paridade de leitura 🚧
 
-- comparar SQLite e PostgreSQL;
-- validar catálogo, source references, scores e intents;
+- comparar SQLite e PostgreSQL pelo `opportunity_id`;
+- validar campos de catálogo, source references, scores e intents;
+- comparar lifecycle agregado entre os backends;
 - validar consultas de proximidade via PostGIS;
-- adicionar testes de contrato entre backends.
+- executar `python -m tools.validate_backend_parity` contra o snapshot migrado;
+- adicionar testes de contrato que não dependem de banco remoto no CI.
+
+O bootstrap real do CP5-A foi concluído com 23.311 opportunities,
+23.311 source postings, 163.177 course scores, 8.116 intents e
+23.311 discovery records, com paridade de contagens entre SQLite e PostgreSQL.
 
 ## CP5-C — Escrita e lifecycle
 
@@ -153,12 +159,12 @@ deve ser usado apenas conscientemente.
 
 ## Critérios de aceite
 
-- [ ] schema PostgreSQL reproduzível;
-- [ ] PostGIS habilitado fora de `public`;
-- [ ] todos os source postings migram sem perda;
-- [ ] opportunities preservam IDs e associações;
-- [ ] course scores e intents têm paridade;
-- [ ] discovery state e collection scopes têm paridade;
+- [x] schema PostgreSQL reproduzível;
+- [x] PostGIS habilitado fora de `public`;
+- [x] todos os source postings migram sem perda;
+- [x] opportunities preservam IDs e associações;
+- [x] course scores e intents têm paridade;
+- [x] discovery state e collection scopes têm paridade;
 - [ ] leitura do catálogo é equivalente ao SQLite;
 - [ ] lifecycle permanece conservador;
 - [ ] GitHub Actions pode operar contra PostgreSQL;

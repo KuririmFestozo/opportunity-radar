@@ -54,3 +54,51 @@ def test_cp5_schema_uses_postgis_and_source_native_identity():
     assert "primary key(source, source_job_id)" in schema
     assert "enable row level security" in schema
     assert "st_dwithin" in schema
+
+
+
+def test_cp5_job_signature_ignores_backend_catalog_marker():
+    from tools.validate_backend_parity import job_signature
+
+    common = dict(
+        source="test",
+        source_job_id="job-1",
+        company="Example",
+        title="Estágio",
+        location="São Carlos - SP",
+        url="https://example.com/1",
+        detected_intents=["internship"],
+        course_scores={"electrical_engineering": 90},
+    )
+    sqlite_job = Job(
+        **common,
+        metadata={
+            "opportunity_id": "00000000-0000-0000-0000-000000000001",
+            "catalog_source": "relational_opportunities",
+            "source_references": [
+                {
+                    "source": "test",
+                    "source_job_id": "job-1",
+                    "url": "https://example.com/1",
+                }
+            ],
+            "opportunity_is_active": True,
+        },
+    )
+    postgres_job = Job(
+        **common,
+        metadata={
+            "opportunity_id": "00000000-0000-0000-0000-000000000001",
+            "catalog_source": "postgres_opportunities",
+            "source_references": [
+                {
+                    "source": "test",
+                    "source_job_id": "job-1",
+                    "url": "https://example.com/1",
+                }
+            ],
+            "opportunity_is_active": True,
+        },
+    )
+
+    assert job_signature(sqlite_job) == job_signature(postgres_job)
