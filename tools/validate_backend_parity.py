@@ -26,7 +26,13 @@ def _norm_time(value: Any) -> str:
         parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except ValueError:
         return raw
-    if parsed.tzinfo is not None:
+    if parsed.tzinfo is None:
+        # CP4 SQLite stores source publication timestamps without timezone
+        # information. The CP5 PostgreSQL column is timestamptz and returns the
+        # same instant explicitly as UTC. Treat legacy naive values as UTC so
+        # parity compares semantics rather than serialization.
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    else:
         parsed = parsed.astimezone(timezone.utc)
     return parsed.isoformat()
 

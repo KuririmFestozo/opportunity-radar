@@ -102,3 +102,11 @@ def test_cp5_job_signature_ignores_backend_catalog_marker():
     )
 
     assert job_signature(sqlite_job) == job_signature(postgres_job)
+
+
+
+def test_cp5_parity_normalizes_legacy_naive_timestamp_as_utc():
+    from tools.validate_backend_parity import _norm_time
+
+    assert _norm_time("2026-09-10T00:00:00") == "2026-09-10T00:00:00+00:00"
+    assert _norm_time("2026-09-10T00:00:00+00:00") == "2026-09-10T00:00:00+00:00"
