@@ -55,7 +55,7 @@ def _normalized_payload(job: Job) -> dict[str, Any]:
 class PostgresOpportunityRepository:
     """Read the CP4 catalog model from PostgreSQL/PostGIS."""
 
-    supports_writes = False
+    supports_writes = True
 
     def __init__(self, dsn: str | None = None):
         self.dsn = (dsn or os.getenv("DATABASE_URL", "")).strip()
