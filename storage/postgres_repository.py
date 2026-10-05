@@ -1,7 +1,8 @@
-"""PostgreSQL read-side repository introduced in CP5-A.
+"""PostgreSQL/PostGIS repository for the CP5 persistence backend.
 
-Writes and lifecycle reconciliation remain on SQLite until CP5-C. This module
-exists so catalog parity can be measured before the backend cutover.
+The repository writes source-native postings directly and reconciles the
+user-facing opportunity catalog with the same conservative cross-source URL
+identity rules used by the SQLite CP4 implementation.
 """
 
 from __future__ import annotations
@@ -17,7 +18,11 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from models.job import Job
-from processing.deduplicate import canonical_job_url
+from processing.deduplicate import (
+    canonical_job_url,
+    deduplicate_job_groups,
+    deduplicate_jobs,
+)
 from storage.job_store import (
     PROCESSING_VERSION,
     _clean_metadata,
@@ -44,6 +49,89 @@ def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+
+def _association_plan(
+    rows: Iterable[dict[str, Any]],
+    *,
+    dirty_keys: set[tuple[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Compute conservative desired associations without mutating PostgreSQL."""
+    rows = list(rows)
+    jobs: list[Job] = []
+    times: dict[tuple[str, str], tuple[Any, Any]] = {}
+    current_by_key: dict[tuple[str, str], dict[str, Any]] = {}
+
+    for row in rows:
+        key = (str(row["source"]), str(row["source_job_id"]))
+        payload = dict(row["normalized_job_json"] or {})
+        job = _job_from_dict(payload)
+        job.source, job.source_job_id = key
+        jobs.append(job)
+        times[key] = (row["first_seen_at"], row["last_changed_at"])
+        current_by_key[key] = row
+
+    groups = deduplicate_job_groups(jobs)
+    desired_by_key: dict[tuple[str, str], tuple[str, str]] = {}
+    groups_by_opportunity: dict[str, list[Job]] = {}
+
+    for group in groups:
+        if not group:
+            continue
+        anchor = min(
+            group,
+            key=lambda job: (
+                times[(job.source, job.source_job_id)][0],
+                job.source,
+                job.source_job_id,
+            ),
+        )
+        opportunity_id = _stable_opportunity_id(
+            anchor.source,
+            anchor.source_job_id,
+        )
+        method = "conservative_url" if len(group) > 1 else "identity"
+        groups_by_opportunity[opportunity_id] = group
+        for job in group:
+            desired_by_key[(job.source, job.source_job_id)] = (
+                opportunity_id,
+                method,
+            )
+
+    link_updates: list[tuple[str, str, str, str]] = []
+    affected_opportunity_ids: set[str] = set()
+
+    for key, (desired_id, desired_method) in desired_by_key.items():
+        current = current_by_key[key]
+        current_id = str(current["opportunity_id"])
+        current_method = str(current.get("association_method") or "identity")
+        if current_id != desired_id or current_method != desired_method:
+            affected_opportunity_ids.update((current_id, desired_id))
+            link_updates.append(
+                (desired_id, desired_method, key[0], key[1])
+            )
+
+    for key in dirty_keys or set():
+        desired = desired_by_key.get(key)
+        if desired is not None:
+            affected_opportunity_ids.add(desired[0])
+
+    # Cross-source groups are expected to stay sparse. Rebuilding all of them
+    # also repairs a prior interrupted reconciliation if in-memory dirty state
+    # was lost between processes.
+    for opportunity_id, group in groups_by_opportunity.items():
+        if len(group) > 1:
+            affected_opportunity_ids.add(opportunity_id)
+
+    return {
+        "groups": groups,
+        "groups_by_opportunity": groups_by_opportunity,
+        "desired_by_key": desired_by_key,
+        "times": times,
+        "link_updates": link_updates,
+        "affected_opportunity_ids": affected_opportunity_ids,
+    }
+
+
 def _normalized_payload(job: Job) -> dict[str, Any]:
     payload = job.to_dict()
     payload["metadata"] = _clean_metadata(payload.get("metadata"))
@@ -62,6 +150,7 @@ class PostgresOpportunityRepository:
         if not self.dsn:
             raise ValueError("DATABASE_URL não configurada.")
         self.conn = psycopg.connect(self.dsn, row_factory=dict_row)
+        self._association_dirty_keys: set[tuple[str, str]] = set()
 
     def __enter__(self):
         return self
@@ -289,6 +378,10 @@ class PostgresOpportunityRepository:
                 first_seen,
             ),
         )
+        dirty = getattr(self, "_association_dirty_keys", None)
+        if dirty is None:
+            dirty = self._association_dirty_keys = set()
+        dirty.add((str(job.source), str(job.source_job_id)))
         return opportunity_id
 
     def _sync_opportunity_classification(self, opportunity_id: str) -> None:
@@ -828,6 +921,268 @@ class PostgresOpportunityRepository:
                 )
             )
         return jobs
+
+
+    def _sync_group_classification(
+        self,
+        opportunity_id: str,
+        group: list[Job],
+    ) -> None:
+        scores: dict[str, int] = {}
+        intents: set[str] = set()
+        for job in group:
+            for course_id, raw_score in (job.course_scores or {}).items():
+                course_id = str(course_id)
+                score = int(raw_score)
+                scores[course_id] = max(scores.get(course_id, 0), score)
+            intents.update(
+                str(intent).strip()
+                for intent in (job.detected_intents or [])
+                if str(intent).strip()
+            )
+
+        self.conn.execute(
+            """
+            DELETE FROM public.opportunity_course_scores
+            WHERE opportunity_id = %s
+            """,
+            (opportunity_id,),
+        )
+        if scores:
+            with self.conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO public.opportunity_course_scores(
+                        opportunity_id, course_id, score
+                    )
+                    VALUES(%s, %s, %s)
+                    """,
+                    [
+                        (opportunity_id, course_id, score)
+                        for course_id, score in sorted(scores.items())
+                    ],
+                )
+
+        self.conn.execute(
+            """
+            DELETE FROM public.opportunity_intents
+            WHERE opportunity_id = %s
+            """,
+            (opportunity_id,),
+        )
+        if intents:
+            with self.conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO public.opportunity_intents(
+                        opportunity_id, intent_id
+                    )
+                    VALUES(%s, %s)
+                    """,
+                    [
+                        (opportunity_id, intent_id)
+                        for intent_id in sorted(intents)
+                    ],
+                )
+
+    def _upsert_opportunity_group(
+        self,
+        opportunity_id: str,
+        group: list[Job],
+        times: dict[tuple[str, str], tuple[Any, Any]],
+    ) -> None:
+        merged = deduplicate_jobs(group)[0]
+        created_at = min(
+            times[(job.source, job.source_job_id)][0]
+            for job in group
+        )
+        updated_at = max(
+            times[(job.source, job.source_job_id)][1]
+            for job in group
+        )
+        canonical = canonical_job_url(merged.url) or merged.url or None
+
+        self.conn.execute(
+            """
+            INSERT INTO public.opportunities(
+                id, company, title, description,
+                location_text, location, location_confidence,
+                workplace_type, employment_type, salary,
+                published_at, canonical_url,
+                created_at, updated_at
+            )
+            VALUES(
+                %s, %s, %s, %s,
+                %s,
+                CASE
+                    WHEN %s::double precision IS NULL
+                      OR %s::double precision IS NULL
+                    THEN NULL
+                    ELSE extensions.st_point(
+                        %s::double precision,
+                        %s::double precision
+                    )::extensions.geography
+                END,
+                %s, %s, %s, %s,
+                %s, %s, %s, %s
+            )
+            ON CONFLICT(id) DO UPDATE SET
+                company = excluded.company,
+                title = excluded.title,
+                description = excluded.description,
+                location_text = excluded.location_text,
+                location = excluded.location,
+                location_confidence = excluded.location_confidence,
+                workplace_type = excluded.workplace_type,
+                employment_type = excluded.employment_type,
+                salary = excluded.salary,
+                published_at = excluded.published_at,
+                canonical_url = excluded.canonical_url,
+                created_at = excluded.created_at,
+                updated_at = excluded.updated_at
+            """,
+            (
+                opportunity_id,
+                merged.company or "",
+                merged.title or "",
+                merged.description or "",
+                merged.location or "",
+                merged.latitude,
+                merged.longitude,
+                merged.longitude,
+                merged.latitude,
+                merged.location_confidence,
+                merged.workplace_type,
+                merged.employment_type,
+                merged.salary,
+                merged.published_at,
+                canonical,
+                created_at,
+                updated_at,
+            ),
+        )
+        self._sync_group_classification(opportunity_id, group)
+
+    def _association_stats(self) -> dict[str, int]:
+        row = self.conn.execute(
+            """
+            SELECT
+                COUNT(*) FILTER (
+                    WHERE EXISTS (
+                        SELECT 1
+                        FROM public.source_postings p
+                        WHERE p.opportunity_id = o.id
+                          AND p.is_active
+                    )
+                ) AS active_opportunities,
+                COUNT(*) FILTER (
+                    WHERE (
+                        SELECT COUNT(DISTINCT p.source)
+                        FROM public.source_postings p
+                        WHERE p.opportunity_id = o.id
+                    ) > 1
+                ) AS cross_source_opportunities
+            FROM public.opportunities o
+            """
+        ).fetchone()
+        associated = self.conn.execute(
+            """
+            SELECT COUNT(*) AS n
+            FROM public.source_postings
+            WHERE association_method = 'conservative_url'
+            """
+        ).fetchone()
+        return {
+            "active_opportunities": int(row["active_opportunities"] or 0),
+            "cross_source_opportunities": int(
+                row["cross_source_opportunities"] or 0
+            ),
+            "associated_postings": int(associated["n"] or 0),
+        }
+
+    def sync_unified_schema(self, *, commit: bool = True) -> dict[str, Any]:
+        """Reconcile PostgreSQL opportunities with CP4 conservative identity."""
+        rows = self.conn.execute(
+            """
+            SELECT
+                source, source_job_id, opportunity_id,
+                association_method, associated_at,
+                normalized_job_json,
+                first_seen_at, last_changed_at
+            FROM public.source_postings
+            ORDER BY source, source_job_id
+            """
+        ).fetchall()
+
+        dirty = set(getattr(self, "_association_dirty_keys", set()))
+        plan = _association_plan(rows, dirty_keys=dirty)
+        associated_at = _utcnow()
+        rebuilt = 0
+
+        try:
+            for opportunity_id in sorted(plan["affected_opportunity_ids"]):
+                group = plan["groups_by_opportunity"].get(opportunity_id)
+                if group is None:
+                    continue
+                self._upsert_opportunity_group(
+                    opportunity_id,
+                    group,
+                    plan["times"],
+                )
+                rebuilt += 1
+
+            if plan["link_updates"]:
+                with self.conn.cursor() as cur:
+                    cur.executemany(
+                        """
+                        UPDATE public.source_postings
+                        SET opportunity_id = %s,
+                            association_method = %s,
+                            associated_at = %s
+                        WHERE source = %s AND source_job_id = %s
+                        """,
+                        [
+                            (
+                                opportunity_id,
+                                method,
+                                associated_at,
+                                source,
+                                source_job_id,
+                            )
+                            for opportunity_id, method, source, source_job_id
+                            in plan["link_updates"]
+                        ],
+                    )
+
+            self.conn.execute(
+                """
+                DELETE FROM public.opportunities o
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM public.source_postings p
+                    WHERE p.opportunity_id = o.id
+                )
+                """
+            )
+
+            if commit:
+                self.conn.commit()
+                self._association_dirty_keys.clear()
+        except Exception:
+            if commit:
+                self.conn.rollback()
+            raise
+
+        stats = self.stats()
+        stats.update(self._association_stats())
+        stats.update(
+            {
+                "association_groups": len(plan["groups"]),
+                "association_changes": len(plan["link_updates"]),
+                "opportunities_rebuilt": rebuilt,
+            }
+        )
+        return stats
 
     def nearby_opportunities(
         self,

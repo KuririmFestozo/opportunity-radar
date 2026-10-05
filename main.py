@@ -649,13 +649,9 @@ def main():
     seen_state = store.mark_seen_postings(source_unique)
     store.commit()
 
-    if backend == "sqlite":
-        # CP4 compatibility: mirror the legacy jobs table into the relational
-        # catalog only while SQLite remains the selected backend.
-        unified_state = store.sync_unified_schema()
-    else:
-        # PostgreSQL already writes directly to the relational catalog.
-        unified_state = store.stats()
+    # Both backends reconcile source-native postings into the same
+    # conservative relational opportunity catalog before user-facing reads.
+    unified_state = store.sync_unified_schema()
 
     # Read the user-facing catalog from relational opportunities.
     unique = store.load_opportunities(active_only=True)
@@ -683,7 +679,9 @@ def main():
         print(
             "Persistência PostgreSQL: "
             f"{unified_state['source_postings']} postings | "
-            f"{unified_state['opportunities']} opportunities"
+            f"{unified_state['opportunities']} opportunities | "
+            f"{unified_state['active_opportunities']} ativas | "
+            f"{unified_state['cross_source_opportunities']} cross-source"
         )
     print(
         "Lifecycle: "
