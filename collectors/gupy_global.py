@@ -21,7 +21,7 @@ from models.job import Job
 from processing.incremental import KnownPageStopper
 
 
-API_URL = "https://employability-portal.gupy.io/api/v1/jobs"
+API_URL = "https://portal.gupy.io/api/job-search/jobs"
 PORTAL_HEADERS = {
     "Accept": "application/json, text/plain, */*",
     "Origin": "https://portal.gupy.io",
