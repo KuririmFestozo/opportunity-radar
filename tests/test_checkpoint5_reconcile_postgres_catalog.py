@@ -2,6 +2,7 @@ import pytest
 
 from models.job import Job
 from storage.postgres_repository import _association_plan
+from storage.unified_schema import _stable_opportunity_id
 from tools.reconcile_postgres_catalog import (
     guard_apply,
     summarize_plan,
@@ -22,9 +23,7 @@ def _row(source, source_job_id, first_seen):
     return {
         "source": source,
         "source_job_id": source_job_id,
-        "opportunity_id": "00000000-0000-0000-0000-000000000001"
-        if source == "alpha"
-        else "00000000-0000-0000-0000-000000000002",
+        "opportunity_id": _stable_opportunity_id(source, source_job_id),
         "association_method": "identity",
         "normalized_job_json": job.to_dict(),
         "first_seen_at": first_seen,
