@@ -129,3 +129,18 @@ def test_cp5d_plan_splits_stale_merged_group_when_identity_evidence_changes():
     )
     assert set(plan["affected_opportunity_ids"]) == {first_id, second_id}
     assert len(plan["link_updates"]) == 2
+
+
+def test_cp5d_transactional_smoke_fixtures_merge_then_split():
+    # Keep the production smoke fixtures aligned with the real identity rules.
+    from tools.smoke_postgres_associations import (
+        CONFLICTING_TITLE,
+        build_fixtures,
+    )
+    from processing.deduplicate import deduplicate_job_groups
+
+    first, second = build_fixtures("12345678-1234-4abc-8def-1234567890ab")
+    assert len(deduplicate_job_groups([first, second])) == 1
+
+    second.title = CONFLICTING_TITLE
+    assert len(deduplicate_job_groups([first, second])) == 2
