@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from tools.reconciliation_evidence import classify_score_drift, compare_collection_scopes
+
 
 POSTINGS_SQL = """
 SELECT source, source_job_id, opportunity_id, raw_hash, processing_version,
@@ -31,6 +33,10 @@ SQLITE_PAYLOAD_SQL = """
 SELECT source, source_job_id,
        json_extract(normalized_job_json, '$.course_scores') AS scores
 FROM source_postings
+"""
+SCOPES_SQL = """
+SELECT source, scope_key, successful_runs, last_full_run, last_coverage, last_run_at
+FROM collection_scopes
 """
 POSTGRES_PAYLOAD_SQL = """
 SELECT source, source_job_id,
@@ -128,6 +134,8 @@ def build_reconciliation_plan(
     postgres_intents: Iterable[Any] = (),
     sqlite_payloads: Iterable[Any] | None = None,
     postgres_payloads: Iterable[Any] | None = None,
+    sqlite_scopes: Iterable[Any] = (),
+    postgres_scopes: Iterable[Any] = (),
     max_samples: int = 5,
 ) -> dict[str, Any]:
     """Pure, deterministic snapshot analysis. All proposed writes remain blocked."""
@@ -244,6 +252,15 @@ def build_reconciliation_plan(
         "shared_posting_conflicts": dict(sorted(conflicts.items())),
         "timestamp_evidence_not_authority": dict(sorted(newer.items())),
         "derived_differences": dict(sorted(derived.items())),
+        "classification_provenance": classify_score_drift(
+            sqlite_op_ids, pg_op_ids, s_scores, p_scores,
+            expected_s, expected_p, max_samples=max_samples,
+        ),
+        "collection_scope_evidence": compare_collection_scopes(
+            sqlite_scopes, postgres_scopes,
+            posting_sources=(key[0] for key in keys_left | keys_right),
+            max_samples=max_samples,
+        ),
         "by_source": {k: dict(sorted(v.items())) for k, v in sorted(per_source.items())},
         "samples": {k: v for k, v in sorted(samples.items())},
         "next_step": "Review source collection coverage and classification provenance, then design a separately guarded transactional apply with backup and rollback.",
@@ -273,6 +290,7 @@ def main() -> None:
         local_scores = con.execute(SCORES_SQL).fetchall()
         local_intents = con.execute(INTENTS_SQL).fetchall()
         local_payloads = con.execute(SQLITE_PAYLOAD_SQL).fetchall()
+        local_scopes = con.execute(SCOPES_SQL).fetchall()
 
     with PostgresOpportunityRepository() as repo:
         repo.conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
@@ -281,6 +299,7 @@ def main() -> None:
         remote_scores = repo.conn.execute(SCORES_SQL.replace("FROM opportunity_course_scores", "FROM public.opportunity_course_scores")).fetchall()
         remote_intents = repo.conn.execute(INTENTS_SQL.replace("FROM opportunity_intents", "FROM public.opportunity_intents")).fetchall()
         remote_payloads = repo.conn.execute(POSTGRES_PAYLOAD_SQL).fetchall()
+        remote_scopes = repo.conn.execute(SCOPES_SQL.replace("FROM collection_scopes", "FROM public.collection_scopes")).fetchall()
         repo.conn.rollback()
 
     report = build_reconciliation_plan(
@@ -288,6 +307,7 @@ def main() -> None:
         sqlite_scores=local_scores, postgres_scores=remote_scores,
         sqlite_intents=local_intents, postgres_intents=remote_intents,
         sqlite_payloads=local_payloads, postgres_payloads=remote_payloads,
+        sqlite_scopes=local_scopes, postgres_scopes=remote_scopes,
         max_samples=args.max_samples,
     )
     rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"

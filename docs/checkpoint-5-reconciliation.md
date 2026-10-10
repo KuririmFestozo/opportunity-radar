@@ -37,3 +37,36 @@ Exigir backup verificável, plano congelado com contagens/identidades,
 implementação transacional separada, rollback testado, validação de
 associações e classificações, e revisão de lifecycle por escopo. Não
 migrar o workflow diário nem trocar o backend padrão nesta etapa.
+
+## Diagnóstico de proveniência da classificação e cobertura
+
+A partir do plano estendido, inspecione:
+
+- `classification_provenance.metrics`: separação *exclusiva* das
+  diferenças de pontuação por oportunidade entre chaves de cursos que faltam
+  em um dos bancos, valores divergentes de cursos compartilhados e casos
+  mistos. As contagens de células não são contagens de oportunidades.
+- `classification_provenance.course_count_distribution`: quantas
+  oportunidades compartilhadas possuem 7, 15 ou outra quantidade de cursos
+  em cada snapshot.
+- `classification_provenance.courses_missing_from_postgres`:
+  contagem por `course_id` ausente da tabela relacional do PostgreSQL,
+  mas presente no SQLite. Também existe o campo simétrico.
+- `classification_provenance.metrics.both_relational_match_own_payload`:
+  ambos os catálogos estão consistentes com seus próprios payloads, mas
+  podem ter sido classificados em versões ou abrangências diferentes.
+- `collection_scope_evidence`: comparação dos registros persistidos de
+  `collection_scopes` em ambas as bases. Um escopo marcado como completo
+  não prova por si só que cada posting foi coberto; verificar a semântica
+  de `scope_key` e o êxito da coleta correspondente.
+
+Em 10/10/2026, uma consulta somente leitura no PostgreSQL identificou
+os 7 cursos históricos presentes em 33.062 oportunidades; os 8 cursos
+adicionados depois apareciam em apenas 10.325. Logo, 22.737 oportunidades
+não tinham aqueles 8 cursos na classificação relacional. Isso justifica
+separar expansão do catálogo de inconsistência de pontuação, mas **não**
+autoriza recalcular nem gravar sem revisão.
+
+A rotina continua sem opção de escrita e preserva o snapshot analisado.
+Uma atualização do GitHub Actions não muda retroativamente os dados do
+relatório, mas é preciso regenerar o plano para utilizar novos snapshots.
