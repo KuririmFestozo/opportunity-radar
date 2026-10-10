@@ -49,7 +49,7 @@ from processing.export import export_all
 from processing.geolocation import enrich_job_location
 from processing.matching import match_job
 from processing.deduplicate import deduplicate_source_jobs
-from storage.sqlite_repository import SQLiteOpportunityRepository
+from storage.backend import create_repository
 from storage.incremental_state import (
     known_discovery_ids,
     needs_full_audit,
@@ -157,8 +157,10 @@ def main():
     profiles = active_profiles()
     all_jobs = []
     source_stats = Counter()
-    store = SQLiteOpportunityRepository()
-    bootstrap = store.bootstrap_from_json(Path("output/jobs.json"))
+    store, backend = create_repository()
+    bootstrap = {"imported": 0}
+    if backend == "sqlite":
+        bootstrap = store.bootstrap_from_json(Path("output/jobs.json"))
     full_refresh = os.getenv("FULL_REFRESH", "").strip().lower() in {"1", "true", "yes", "on"}
     full_discovery = os.getenv("FULL_DISCOVERY", "").strip().lower() in {"1", "true", "yes", "on"}
     daily_audit = os.getenv("DAILY_AUDIT", "").strip().lower() in {
@@ -172,6 +174,7 @@ def main():
     print(" OPPORTUNITY RADAR v3.17.0 — UFSCar ENGINEERING + SOURCE EXPANSION")
     print("=" * 86)
     print("Perfis ativos são apenas presets de filtro; NÃO limitam a coleta.")
+    print(f"Backend persistente: {backend}")
     if bootstrap["imported"]:
         print(f"Banco incremental criado do jobs.json: {bootstrap['imported']} vagas preservadas.")
     else:
@@ -628,7 +631,7 @@ def main():
     print(f"Vagas brutas nesta coleta: {len(all_jobs)}")
 
     # First dedup only exact source-native IDs. This preserves alternative
-    # sources in SQLite even when the dashboard later collapses them.
+    # sources in the persistent store even when the dashboard later collapses them.
     source_unique = deduplicate_source_jobs(all_jobs)
     print(f"IDs únicos nesta coleta: {len(source_unique)}")
 
@@ -646,11 +649,11 @@ def main():
     seen_state = store.mark_seen_postings(source_unique)
     store.commit()
 
-    # CP4-A shadow migration: legacy jobs remain authoritative for now.
-    # The relational schema is synchronized only after a successful batch.
+    # Both backends reconcile source-native postings into the same
+    # conservative relational opportunity catalog before user-facing reads.
     unified_state = store.sync_unified_schema()
 
-    # CP4-E: read the user-facing catalog from relational opportunities.
+    # Read the user-facing catalog from relational opportunities.
     unique = store.load_opportunities(active_only=True)
 
     print(
@@ -663,14 +666,23 @@ def main():
     life_stats = store.lifecycle_stats()
     print(f"Banco persistente ativo: {life_stats['active']} registros por fonte/ID")
     print(f"Vagas únicas no catálogo: {len(unique)}")
-    print(
-        "Persistência CP4-C: "
-        f"{unified_state['source_postings']} postings | "
-        f"{unified_state['opportunities']} opportunities | "
-        f"{unified_state['active_opportunities']} ativas | "
-        f"{unified_state['cross_source_opportunities']} cross-source | "
-        f"schema v{unified_state['schema_version']}"
-    )
+    if backend == "sqlite":
+        print(
+            "Persistência CP4-C: "
+            f"{unified_state['source_postings']} postings | "
+            f"{unified_state['opportunities']} opportunities | "
+            f"{unified_state['active_opportunities']} ativas | "
+            f"{unified_state['cross_source_opportunities']} cross-source | "
+            f"schema v{unified_state['schema_version']}"
+        )
+    else:
+        print(
+            "Persistência PostgreSQL: "
+            f"{unified_state['source_postings']} postings | "
+            f"{unified_state['opportunities']} opportunities | "
+            f"{unified_state['active_opportunities']} ativas | "
+            f"{unified_state['cross_source_opportunities']} cross-source"
+        )
     print(
         "Lifecycle: "
         f"{life_stats['active']} ativas | "

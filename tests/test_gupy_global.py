@@ -1,5 +1,9 @@
-from collectors.gupy_global import _build_params, job_from_item
+from collectors.gupy_global import API_URL, _build_params, job_from_item
 from processing.classification import classify_job
+
+
+def test_gupy_global_uses_current_portal_endpoint():
+    assert API_URL == "https://portal.gupy.io/api/job-search/jobs"
 
 
 def test_gupy_global_builds_native_type_query():

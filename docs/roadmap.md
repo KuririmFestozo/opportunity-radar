@@ -172,7 +172,7 @@ Documento de escopo:
 
 ---
 
-## CP5 — PostgreSQL / Supabase / PostGIS ⏳
+## CP5 — PostgreSQL / Supabase / PostGIS 🚧
 
 Objetivo:
 

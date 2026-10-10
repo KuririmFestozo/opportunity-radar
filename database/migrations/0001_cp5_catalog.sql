@@ -1,10 +1,5 @@
--- Opportunity Radar — PostgreSQL/PostGIS catalog schema (CP5).
---
--- Mirrors the relational domain stabilized in CP4. Personal tables
--- (users, presets, favorites and applications) remain deferred to CP7/CP8.
---
--- Supabase guidance recommends keeping PostGIS outside public. CP5 standardizes
--- the extension in the dedicated `extensions` schema.
+-- CP5-A — PostgreSQL/PostGIS catalog schema.
+-- Idempotent bootstrap for a dedicated Opportunity Radar database.
 
 create schema if not exists extensions;
 create extension if not exists postgis with schema extensions;
@@ -32,8 +27,7 @@ on public.opportunities using gist(location);
 create table if not exists public.source_postings (
     source text not null,
     source_job_id text not null,
-    opportunity_id uuid not null
-        references public.opportunities(id) on delete restrict,
+    opportunity_id uuid not null references public.opportunities(id) on delete restrict,
     url text not null default '',
     source_type text not null default 'official_api',
     normalized_job_json jsonb not null default '{}'::jsonb,
@@ -55,24 +49,20 @@ create table if not exists public.source_postings (
 
 create index if not exists source_postings_opportunity_idx
 on public.source_postings(opportunity_id);
-
 create index if not exists source_postings_active_idx
 on public.source_postings(is_active);
-
 create index if not exists source_postings_last_seen_idx
 on public.source_postings(last_seen_at);
 
 create table if not exists public.opportunity_course_scores (
-    opportunity_id uuid not null
-        references public.opportunities(id) on delete cascade,
+    opportunity_id uuid not null references public.opportunities(id) on delete cascade,
     course_id text not null,
     score integer not null check(score between 0 and 100),
     primary key(opportunity_id, course_id)
 );
 
 create table if not exists public.opportunity_intents (
-    opportunity_id uuid not null
-        references public.opportunities(id) on delete cascade,
+    opportunity_id uuid not null references public.opportunities(id) on delete cascade,
     intent_id text not null,
     primary key(opportunity_id, intent_id)
 );
@@ -90,7 +80,6 @@ create table if not exists public.discovery_state (
 
 create index if not exists discovery_state_source_idx
 on public.discovery_state(source);
-
 create index if not exists discovery_state_scope_status_idx
 on public.discovery_state(scope_status);
 
@@ -104,8 +93,6 @@ create table if not exists public.collection_scopes (
     primary key(source, scope_key)
 );
 
--- The catalog is currently consumed by the backend through a direct database
--- connection, not exposed directly to anonymous Data API clients.
 alter table public.opportunities enable row level security;
 alter table public.source_postings enable row level security;
 alter table public.opportunity_course_scores enable row level security;

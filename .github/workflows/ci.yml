@@ -31,3 +31,6 @@ jobs:
 
       - name: Validate CP4 migration on clean SQLite
         run: python -m tools.migrate_unified_schema --db /tmp/opportunity-radar-ci.db
+
+      - name: Validate CP5 SQLite export dry-run
+        run: python -m tools.migrate_sqlite_to_postgres --db /tmp/opportunity-radar-ci.db --dry-run
