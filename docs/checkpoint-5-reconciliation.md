@@ -70,3 +70,46 @@ autoriza recalcular nem gravar sem revisão.
 A rotina continua sem opção de escrita e preserva o snapshot analisado.
 Uma atualização do GitHub Actions não muda retroativamente os dados do
 relatório, mas é preciso regenerar o plano para utilizar novos snapshots.
+
+## CP5 — Estágio transacional aditivo (sem cutover)
+
+`tools/stage_postgres_additions.py` prepara o primeiro estágio, **não a reconciliação completa**.
+A prévia não modifica o PostgreSQL ou o SQLite:
+
+```powershell
+python -m tools.stage_postgres_additions --db data/snapshots/main-20261010.db --output data/snapshots/cp5-additive-preview.json
+```
+
+Uma inserção é candidata somente se `(source, source_job_id)` não existir no
+PostgreSQL, o `opportunity_id` também não existir no destino, a oportunidade
+possuir um único posting no SQLite e `association_method` ser `identity`.
+
+Grupos cross-source, associações não-identidade e colisões de UUID são
+bloqueados e relatados. Não são apagados nem modificados. O estágio copia
+apenas oportunidades novas, seus postings, scores, intents e discovery_state.
+Preserva todo registro PostgreSQL existente. Não altera lifecycle
+compartilhado, não recalcula classificações e não modifica collection_scopes.
+
+### Regras de segurança para futura execução
+
+**Não executar `--apply` nesta fase** sem revisão dos contadores e
+ensaio independente de restauração do backup.
+
+A aplicação futura exige `--apply --confirm-additive-only`, SHA-256 imutável
+do SQLite (`--expected-source-sha256`), fingerprint do PostgreSQL
+(`--expected-postgres-fingerprint`), contagem exata de candidatos
+(`--expected-inserts`) e `pg_dump`/`pg_restore` compatíveis com o servidor.
+
+O utilitário cria `pg_dump` do schema public, valida a listagem do dump
+e calcula SHA-256. Só então abre transação SERIALIZABLE, bloqueia as
+tabelas afetadas, recalcula os guards, insere candidatos, valida contagens
+e confirma COMMIT. Falhas antes do commit provocam ROLLBACK.
+
+**Limitação:** validar o sumário de `pg_restore --list` não substitui
+um teste de restauração. O código não oferece restauração automática.
+Antes da primeira execução real, restaurar o backup em banco isolado e
+documentar como recuperar o banco remoto em caso de problema pós-commit.
+
+A segunda etapa (conteúdo compartilhado, lifecycle, classificações antigas
+e cobertura por escopo) exige uma rotina separada, ainda não implementada.
+Não migrar GitHub Actions nem mudar o backend padrão nesta etapa.
