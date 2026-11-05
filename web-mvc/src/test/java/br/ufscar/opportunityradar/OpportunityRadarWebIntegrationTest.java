@@ -253,6 +253,17 @@ class OpportunityRadarWebIntegrationTest {
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")));
     }
 
+
+    @Test
+    void renderedPostFormsIncludeCsrfHiddenField() throws Exception {
+        mvc.perform(get("/opportunities/" + ID).cookie(browser(DEVICE_A)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"_csrf\"")));
+        mvc.perform(get("/profile").cookie(browser(DEVICE_A)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"_csrf\"")));
+    }
+
     @Test
     void anonymousBrowserReceivesHttpOnlyVisitorCookie() throws Exception {
         mvc.perform(get("/favorites"))

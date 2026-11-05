@@ -61,7 +61,9 @@ detalhes, URLs, favoritos, candidaturas e validações.
 - View: páginas HTML Thymeleaf com CSS responsivo;
 - Banco: SQLite existente com tabelas adicionais para a camada web.
 
-A aplicação cria web_favorites e web_applications e **índices de consulta**
+A aplicação preserva web_favorites e web_applications legadas, cria tabelas
+web_device_favorites e web_device_applications para identificação por navegador,
+e **índices de consulta**
 sobre as tabelas relacionais na **cópia** do SQLite. O índice composto
 (opportunity_id, is_active, source) evita uma consulta correlacionada muito
 lenta em bancos com dezenas de milhares de registros. O índice de updated_at
@@ -72,8 +74,10 @@ Na primeira inicialização, a criação dos índices pode consumir alguns segun
 
 ## Limitações e segurança
 
-- Protótipo monousuário, ouvindo por padrão apenas em 127.0.0.1. Não publicar
-  na internet sem autenticação, autorização, CSRF e configuração adequada.
+- Protótipo monousuário, ouvindo por padrão apenas em 127.0.0.1.
+  A proteção CSRF está ativa, mas **não há autenticação real**, contas ou
+  controle de permissões. Use Cloudflare Quick Tunnel apenas para testes
+  temporários e evite colocar dados sensíveis no site.
 - SQLite só aceita uma transação de escrita por vez. Por isso recomendamos uma
   cópia do banco, sem disputar gravações com o processo de coleta.
 - A busca textual usa LIKE, não FTS. Para dezenas de milhares de vagas,

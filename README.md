@@ -619,6 +619,27 @@ python -m pytest -q
 mvn -B -ntp -f web-mvc/pom.xml test
 ~~~
 
-A interface é **monousuário, local e sem autenticação**. Não exponha na internet
-sem implementar controle de acesso, CSRF e demais proteções. O módulo não usa
+A interface é **local e sem autenticação de usuários**; já protege requisições
+POST contra CSRF, mas não tem contas nem controle de acesso para publicação
+permanente. Use túneis Cloudflare apenas para testes. O módulo não usa
 Supabase nem modifica tabelas de coleta/lifecycle.
+
+
+### Recursos de busca avançada e perfis (Entrega 2+)
+
+O protótipo Java agora permite geolocalização por consentimento (HTTPS ou
+localhost), ordenação por proximidade via Haversine, raio em quilômetros,
+ordenação por afinidade de curso, data ou título; filtros por curso, intenção,
+modalidade, fonte, local e termos incluídos/excluídos.
+
+Cada navegador mantém favoritos e acompanhamentos próprios no SQLite com
+JPA. Em **Meu perfil**, um código secreto de recuperação permite continuar
+com a mesma lista após a troca do endereço temporário da Cloudflare ou,
+se desejado, sincronizar manualmente outro dispositivo. Sem inserir esse
+código, cada navegador começa com listas separadas.
+
+As coordenadas usadas em filtros são arredondadas e ficam na URL da busca;
+não são armazenadas no banco. O código de recuperação é confidencial:
+qualquer pessoa com ele poderá abrir as listas daquele perfil.
+
+Consulte [o guia detalhado](web-mvc/README.md).
