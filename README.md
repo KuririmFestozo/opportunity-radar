@@ -619,27 +619,16 @@ python -m pytest -q
 mvn -B -ntp -f web-mvc/pom.xml test
 ~~~
 
-A interface é **local e sem autenticação de usuários**; já protege requisições
-POST contra CSRF, mas não tem contas nem controle de acesso para publicação
-permanente. Use túneis Cloudflare apenas para testes. O módulo não usa
+A interface agora possui login com usuário e senha (BCrypt), contas no SQLite
+ e proteção CSRF. Ainda não inclui recuperação de senha; use o túnel Cloudflare
+ apenas para testes temporários. O módulo não usa
 Supabase nem modifica tabelas de coleta/lifecycle.
 
 
-### Recursos de busca avançada e perfis (Entrega 2+)
 
-O protótipo Java agora permite geolocalização por consentimento (HTTPS ou
-localhost), ordenação por proximidade via Haversine, raio em quilômetros,
-ordenação por afinidade de curso, data ou título; filtros por curso, intenção,
-modalidade, fonte, local e termos incluídos/excluídos.
+### Busca avançada e autenticação
 
-Cada navegador mantém favoritos e acompanhamentos próprios no SQLite com
-JPA. Em **Meu perfil**, um código secreto de recuperação permite continuar
-com a mesma lista após a troca do endereço temporário da Cloudflare ou,
-se desejado, sincronizar manualmente outro dispositivo. Sem inserir esse
-código, cada navegador começa com listas separadas.
-
-As coordenadas usadas em filtros são arredondadas e ficam na URL da busca;
-não são armazenadas no banco. O código de recuperação é confidencial:
-qualquer pessoa com ele poderá abrir as listas daquele perfil.
-
-Consulte [o guia detalhado](web-mvc/README.md).
+A aplicação MVC inclui localização, raio, ordenação por proximidade ou
+afinidade, filtros por curso, tipo e modalidade. Possui contas próprias
+com usuário e senha: favoritos e candidaturas sincronizados entre aparelhos
+que usam a mesma conta. Consulte [o guia](web-mvc/README.md).
