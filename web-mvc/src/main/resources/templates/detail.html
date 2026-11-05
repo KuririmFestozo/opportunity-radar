@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title th:text="${opportunity.title} + ' | Opportunity Radar'">Detalhes</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container detail-layout">
+  <a th:href="@{/opportunities}" class="back-link">← Voltar às oportunidades</a>
+  <div th:if="${message}" class="flash" role="status" th:text="${message}"></div>
+  <section class="detail-heading">
+    <div class="eyebrow" th:text="${opportunity.company}">Empresa</div>
+    <h1 th:text="${opportunity.title}">Vaga</h1>
+    <div class="detail-meta">
+      <span class="tag" th:text="${opportunity.locationText != null ? opportunity.locationText : 'Local não informado'}"></span>
+      <span class="tag" th:if="${opportunity.workplaceType}" th:text="${opportunity.workplaceType}"></span>
+      <span class="tag" th:if="${opportunity.employmentType}" th:text="${opportunity.employmentType}"></span>
+    </div>
+    <div class="actions">
+      <a class="button button-primary" th:if="${safeUrl != null}" th:href="${safeUrl}" target="_blank" rel="noopener noreferrer">Abrir vaga original ↗</a>
+      <form th:action="@{/favorites/{id}(id=${opportunity.id})}" method="post"><button class="button button-outline" type="submit" th:text="${favorite ? '★ Remover dos favoritos' : '☆ Salvar nos favoritos'}"></button></form>
+    </div>
+  </section>
+  <div class="detail-columns">
+    <div class="detail-main">
+      <section class="panel">
+        <div class="eyebrow">SOBRE A OPORTUNIDADE</div><h2>Descrição</h2>
+        <p class="description" th:text="${opportunity.description != null && !opportunity.description.isBlank() ? opportunity.description : 'Descrição não fornecida pela origem.'}"></p>
+      </section>
+      <section class="panel">
+        <div class="eyebrow">CLASSIFICAÇÃO</div><h2>Afinidade por curso</h2>
+        <p class="muted">Estimativas do radar; leia os requisitos oficiais antes de se candidatar.</p>
+        <div class="scores" th:if="${!scores.isEmpty()}">
+          <div class="score-row" th:each="s : ${scores}">
+            <div class="score-label"><span th:text="${#strings.replace(s.courseId,'_',' ')}"></span><strong th:text="${s.score} + '%'"></strong></div>
+            <div class="score-track"><div class="score-fill" th:style="'width:' + ${s.score} + '%'"></div></div>
+          </div>
+        </div>
+        <p th:if="${scores.isEmpty()}">Esta vaga ainda não possui pontuação por curso.</p>
+      </section>
+      <section class="panel">
+        <div class="eyebrow">ORIGENS</div><h2>Fontes do anúncio</h2>
+        <ul class="source-list"><li th:each="p : ${postings}"><strong th:text="${p.source}">Fonte</strong><span th:text="${p.active ? 'Ativa' : 'Inativa'}" th:class="${p.active ? 'state-active' : 'state-inactive'}"></span></li></ul>
+      </section>
+    </div>
+    <aside class="detail-side">
+      <section class="panel sticky">
+        <div class="eyebrow">ACOMPANHAMENTO</div><h2>Minha candidatura</h2>
+        <p class="muted">Organize sua busca sem precisar de uma conta externa.</p>
+        <form th:action="@{/applications/{id}(id=${opportunity.id})}" method="post">
+          <label class="field">Situação<select name="status" required><option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.label}" th:selected="${application != null && application.status == s}"></option></select></label>
+          <label class="field">Anotações<textarea name="notes" rows="6" maxlength="2000" placeholder="Próximos passos, datas ou observações..." th:text="${application != null ? application.notes : ''}"></textarea></label>
+          <button type="submit" class="button button-primary full-width">Salvar acompanhamento</button>
+        </form>
+        <form th:if="${application != null}" th:action="@{/applications/{id}/delete(id=${opportunity.id})}" method="post"><button type="submit" class="button button-quiet full-width">Remover acompanhamento</button></form>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer class="container footer">Opportunity Radar · Seus dados permanecem no SQLite local.</footer>
+</body>
+</html>

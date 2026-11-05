@@ -28,3 +28,8 @@ data/*.state.json
 data/*.download.gz
 data/*.incoming
 data/server-sync/
+
+# MVC local databases and builds
+web-mvc/*.db
+web-mvc/*.db-*
+web-mvc/target/

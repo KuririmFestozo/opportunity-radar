@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Candidaturas | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container subsection">
+  <div class="eyebrow">ORGANIZAÇÃO PESSOAL</div><h1>Minhas <em>candidaturas.</em></h1><p class="muted">Acompanhe o andamento de cada oportunidade.</p>
+  <div th:if="${message}" class="flash" th:text="${message}"></div>
+  <section class="panel" th:if="${!entries.isEmpty()}">
+    <div class="track-row" th:each="entry : ${entries}" th:with="o=${opportunities[entry.opportunityId]}" th:if="${o != null}">
+      <div><span class="company" th:text="${o.company}"></span><h3 th:text="${o.title}"></h3><p class="muted note-preview" th:text="${entry.notes}"></p></div>
+      <div class="track-right"><span class="tag" th:text="${entry.status.label}"></span><a th:href="@{/opportunities/{id}(id=${o.id})}">Editar acompanhamento →</a></div>
+    </div>
+  </section>
+  <div class="empty-state" th:if="${entries.isEmpty()}"><h2>Nenhuma candidatura registrada</h2><p>Abra uma oportunidade e salve a situação da sua candidatura.</p><a class="button button-primary" th:href="@{/opportunities}">Encontrar oportunidades</a></div>
+</main><footer class="container footer">Opportunity Radar · MVC · JPA</footer></body></html>

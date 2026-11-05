@@ -31,3 +31,17 @@ jobs:
 
       - name: Validate CP4 migration on clean SQLite
         run: python -m tools.migrate_unified_schema --db /tmp/opportunity-radar-ci.db
+
+  mvc:
+    name: Java MVC + SQLite (Entrega 2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: web-mvc/pom.xml
+      - name: Test Spring MVC + JPA on SQLite
+        run: mvn -B -ntp -f web-mvc/pom.xml test
