@@ -69,3 +69,25 @@ h2{font-size:27px;margin:0 0 14px}h3{font-size:21px;margin:8px 0 12px}
 .flash{background:#e4f6e9;color:#17683d;border:1px solid #addcc2;padding:12px 18px;border-radius:9px;margin:16px 0}
 @media(max-width:970px){.job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.filters-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-button{grid-column:span 2}.detail-columns{grid-template-columns:1fr}.sticky{position:static}}
 @media(max-width:630px){.container{width:min(100% - 24px,1160px)}.header-inner{flex-direction:column;padding:13px 0;min-height:0;gap:8px}nav{gap:17px;flex-wrap:wrap;justify-content:center;font-size:12px}.brand{font-size:19px}.hero{padding:33px 24px}.job-grid,.filters-grid{grid-template-columns:1fr}.field.wide,.filter-button{grid-column:span 1}.job-card{min-height:210px}.detail-heading{padding:24px}.panel{padding:20px}.section-heading{align-items:start;flex-direction:column;gap:10px}.track-row{flex-direction:column}.track-right{align-items:start}.hero-stats{gap:12px}}
+
+
+/* Advanced search + browser-location controls */
+.geo-panel{margin-top:24px;border:1px solid #d4e9dc;background:#f4faf5;
+ border-radius:13px;padding:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.geo-details{flex:1;min-width:230px}.geo-heading{font:700 15px 'Outfit',sans-serif}
+.geo-details p{margin:5px 0 0;font-size:12px;color:#516d61}
+.geo-details .geo-privacy{color:#73877d;font-size:11px}
+.geo-radius{width:140px;flex:0 0 140px}
+.geo-check{font-size:12px;font-weight:700;color:#44615a;display:flex;align-items:center;gap:7px}
+.geo-check input{accent-color:var(--accent)}
+.filter-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
+.score-chip{background:#e4f6e4;border:1px solid #c3e9c3;color:#216a49;font-size:11px;
+ border-radius:999px;padding:5px 12px;font-weight:800}
+.card-meta{display:flex;flex-direction:column;gap:4px;min-width:0;color:var(--muted)}
+.distance-label{color:var(--accent);font-weight:800}
+.geo-note{background:#fff6e7;border:1px solid #f5dfb4;border-radius:9px;padding:12px;color:#805b24;font-size:13px}
+@media(max-width:630px){
+ .geo-panel{align-items:stretch}.geo-details{min-width:0;width:100%}
+ .geo-radius{flex:1;min-width:140px}.geo-panel>.button{width:100%}
+ .geo-check{width:100%}.filter-actions>.button{min-width:0;padding:12px}
+}

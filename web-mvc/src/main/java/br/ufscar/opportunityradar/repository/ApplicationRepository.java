@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ApplicationRepository extends JpaRepository<ApplicationEntry, String> {
-    Optional<ApplicationEntry> findByOpportunityId(String opportunityId);
-    List<ApplicationEntry> findAllByOrderByUpdatedAtDesc();
+    Optional<ApplicationEntry> findByOwnerIdAndOpportunityId(String ownerId, String opportunityId);
+    List<ApplicationEntry> findAllByOwnerIdOrderByUpdatedAtDesc(String ownerId);
+    void deleteByOwnerId(String ownerId);
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, String> {
-    Optional<Favorite> findByOpportunityId(String opportunityId);
-    List<Favorite> findAllByOrderByCreatedAtDesc();
+    Optional<Favorite> findByOwnerIdAndOpportunityId(String ownerId, String opportunityId);
+    List<Favorite> findAllByOwnerIdOrderByCreatedAtDesc(String ownerId);
+    void deleteByOwnerId(String ownerId);
 }

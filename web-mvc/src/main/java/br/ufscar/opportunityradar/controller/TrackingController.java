@@ -1,6 +1,6 @@
 package br.ufscar.opportunityradar.controller;
 
-import br.ufscar.opportunityradar.domain.ApplicationStatus;
+import br.ufscar.opportunityradar.config.VisitorIdentityFilter;
 import br.ufscar.opportunityradar.domain.Opportunity;
 import br.ufscar.opportunityradar.service.CatalogService;
 import br.ufscar.opportunityradar.service.TrackingService;
@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,8 +26,9 @@ public class TrackingController {
     }
 
     @GetMapping("/favorites")
-    public String favorites(Model model) {
-        var favorites = tracking.favorites();
+    public String favorites(@RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                            Model model) {
+        var favorites = tracking.favorites(visitor);
         Map<String, Opportunity> opportunities = new LinkedHashMap<>();
         for (var favorite : favorites) {
             try { opportunities.put(favorite.getOpportunityId(), catalog.require(favorite.getOpportunityId())); }
@@ -38,15 +40,18 @@ public class TrackingController {
     }
 
     @PostMapping("/favorites/{id}")
-    public String toggle(@PathVariable String id, RedirectAttributes flash) {
-        tracking.toggleFavorite(id);
-        flash.addFlashAttribute("message", "Favoritos atualizados.");
+    public String toggle(@PathVariable String id,
+                         @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                         RedirectAttributes flash) {
+        tracking.toggleFavorite(visitor, id);
+        flash.addFlashAttribute("message", "Favoritos atualizados neste navegador.");
         return "redirect:/opportunities/" + id;
     }
 
     @GetMapping("/applications")
-    public String applications(Model model) {
-        var entries = tracking.applications();
+    public String applications(@RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                               Model model) {
+        var entries = tracking.applications(visitor);
         Map<String, Opportunity> opportunities = new LinkedHashMap<>();
         for (var entry : entries) {
             try { opportunities.put(entry.getOpportunityId(), catalog.require(entry.getOpportunityId())); }
@@ -54,22 +59,25 @@ public class TrackingController {
         }
         model.addAttribute("entries", entries);
         model.addAttribute("opportunities", opportunities);
-        model.addAttribute("statuses", ApplicationStatus.values());
         return "applications";
     }
 
     @PostMapping("/applications/{id}")
-    public String save(@PathVariable String id, @RequestParam String status,
+    public String save(@PathVariable String id,
+                       @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                       @RequestParam String status,
                        @RequestParam(defaultValue = "") String notes,
                        RedirectAttributes flash) {
-        tracking.saveApplication(id, status, notes);
-        flash.addFlashAttribute("message", "Acompanhamento salvo.");
+        tracking.saveApplication(visitor, id, status, notes);
+        flash.addFlashAttribute("message", "Acompanhamento salvo neste navegador.");
         return "redirect:/opportunities/" + id;
     }
 
     @PostMapping("/applications/{id}/delete")
-    public String delete(@PathVariable String id, RedirectAttributes flash) {
-        tracking.deleteApplication(id);
+    public String delete(@PathVariable String id,
+                         @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                         RedirectAttributes flash) {
+        tracking.deleteApplication(visitor, id);
         flash.addFlashAttribute("message", "Acompanhamento removido.");
         return "redirect:/applications";
     }

@@ -1,44 +1,126 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oportunidades | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explorar oportunidades | Opportunity Radar</title>
+<link rel="stylesheet" th:href="@{/css/app.css}">
+<script th:src="@{/js/geolocation.js}" defer></script>
+</head>
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main class="container">
   <section class="hero">
-    <div class="eyebrow">DESCUBRA SEU PRÓXIMO PASSO</div>
+    <div class="eyebrow">SEU PRÓXIMO PASSO COMEÇA AQUI</div>
     <h1>Oportunidades para <em>ir além.</em></h1>
-    <p>Vagas reais coletadas de múltiplas fontes, organizadas em um único lugar.</p>
-    <div class="hero-stats"><span><strong th:text="${total}">0</strong> oportunidades no catálogo</span><span><strong th:text="${results.totalElements}">0</strong> encontradas</span></div>
+    <p>Encontre oportunidades por afinidade com seu curso, região e tipo de vaga.</p>
+    <div class="hero-stats"><span><strong th:text="${total}">0</strong> no catálogo</span><span><strong th:text="${results.totalElements}">0</strong> com estes filtros</span></div>
   </section>
-  <section class="search-panel" aria-label="Filtros">
-    <form th:action="@{/opportunities}" method="get">
+
+  <section class="search-panel" aria-label="Busca e filtros">
+    <form id="radar-filters" th:action="@{/opportunities}" method="get">
+      <input type="hidden" id="geo-lat" name="latitude" th:value="${latitude}">
+      <input type="hidden" id="geo-lon" name="longitude" th:value="${longitude}">
       <div class="filters-grid">
-        <label class="field wide">Buscar por vaga ou empresa<input name="q" type="search" maxlength="100" placeholder="Ex.: estágio em engenharia..." th:value="${q}"></label>
-        <label class="field">Localização<input name="location" maxlength="100" placeholder="Ex.: São Carlos" th:value="${location}"></label>
-        <label class="field">Fonte<select name="source"><option value="">Todas as fontes</option><option th:each="s : ${sources}" th:value="${s}" th:text="${s}" th:selected="${s == source}"></option></select></label>
-        <label class="field">Curso / área<select name="course"><option value="">Todos os cursos</option><option th:each="c : ${courses}" th:value="${c}" th:text="${#strings.replace(c,'_',' ')}" th:selected="${c == course}"></option></select></label>
-        <label class="field">Afinidade mínima<input type="number" name="minScore" min="0" max="100" th:value="${minScore}"></label>
-        <label class="field">Disponibilidade<select name="activeOnly"><option value="true" th:selected="${activeOnly}">Somente ativas</option><option value="false" th:selected="${!activeOnly}">Todas, inclusive encerradas</option></select></label>
-        <button class="button button-primary filter-button" type="submit">Filtrar oportunidades <span>↗</span></button>
+        <label class="field wide">Buscar oportunidade<input name="q" type="search" maxlength="100" placeholder="Ex.: estágio em engenharia..." th:value="${q}"></label>
+        <label class="field">Cidade ou região<input name="location" maxlength="100" placeholder="Ex.: São Carlos" th:value="${location}"></label>
+        <label class="field">Curso / área
+          <select name="course"><option value="">Todas as áreas</option><option th:each="c : ${courses}" th:value="${c}" th:text="${#strings.replace(c,'_',' ')}" th:selected="${c == course}"></option></select>
+        </label>
+        <label class="field">Tipo de oportunidade
+          <select name="intent"><option value="">Todos os tipos</option><option th:each="i : ${intents}" th:value="${i}" th:text="${#strings.replace(i,'_',' ')}" th:selected="${i == intent}"></option></select>
+        </label>
+        <label class="field">Modalidade
+          <select name="workplace">
+            <option value="">Todas</option>
+            <option value="remote" th:selected="${workplace == 'remote'}">Remoto</option>
+            <option value="hybrid" th:selected="${workplace == 'hybrid'}">Híbrido</option>
+            <option value="onsite" th:selected="${workplace == 'onsite'}">Presencial</option>
+          </select>
+        </label>
+        <label class="field">Fonte
+          <select name="source"><option value="">Todas as fontes</option><option th:each="s : ${sources}" th:value="${s}" th:text="${s}" th:selected="${s == source}"></option></select>
+        </label>
+        <label class="field">Afinidade mínima
+          <select name="minScore">
+            <option value="0" th:selected="${minScore == 0}">Qualquer pontuação</option>
+            <option value="35" th:selected="${minScore == 35}">35% ou mais</option>
+            <option value="50" th:selected="${minScore == 50}">50% ou mais</option>
+            <option value="70" th:selected="${minScore == 70}">70% ou mais</option>
+            <option value="85" th:selected="${minScore == 85}">85% ou mais</option>
+          </select>
+        </label>
+        <label class="field">Ordenar por
+          <select name="sort" id="sort-select">
+            <option value="relevance" th:selected="${sort == 'relevance'}">Maior afinidade</option>
+            <option value="distance" th:selected="${sort == 'distance'}">Mais perto de mim</option>
+            <option value="recent" th:selected="${sort == 'recent'}">Mais recente</option>
+            <option value="title" th:selected="${sort == 'title'}">Título A–Z</option>
+          </select>
+        </label>
+        <label class="field">Situação
+          <select name="activeOnly">
+            <option value="true" th:selected="${activeOnly}">Apenas ativas</option>
+            <option value="false" th:selected="${!activeOnly}">Incluir encerradas</option>
+          </select>
+        </label>
+        <label class="field wide">Deve conter (separe por vírgula)<input name="include" maxlength="100" th:value="${include}" placeholder="Ex.: automação, estágio"></label>
+        <label class="field wide">Excluir palavras<input name="exclude" maxlength="100" th:value="${exclude}" placeholder="Ex.: sênior, vendas"></label>
+      </div>
+      <div class="geo-panel">
+        <div class="geo-details">
+          <div class="geo-heading">📍 Proximidade</div>
+          <p id="geo-status" role="status" aria-live="polite"
+             th:text="${hasLocation ? 'Localização aproximada ativa. Distâncias calculadas para vagas geocodificadas.' : 'Sua localização só será solicitada ao clicar no botão.'}"></p>
+          <p class="geo-privacy">Usamos coordenadas aproximadas (2 casas decimais); não salvamos sua posição no banco. Elas entram na URL da busca.</p>
+        </div>
+        <button id="geo-button" class="button button-outline" type="button">Usar minha localização</button>
+        <label class="field geo-radius">Raio máximo (km)
+          <input id="radius-field" type="number" name="radiusKm" min="1" max="1000" placeholder="Sem limite" th:value="${radiusKm}">
+        </label>
+        <label class="geo-check"><input type="checkbox" name="includeRemote" value="true" th:checked="${includeRemote}"> Incluir remotas fora do raio</label>
+      </div>
+      <div class="filter-actions">
+        <a class="button button-quiet" th:href="@{/opportunities}">Limpar filtros</a>
+        <button class="button button-primary" type="submit">Aplicar filtros <span>↗</span></button>
       </div>
     </form>
   </section>
+
   <section class="results-section">
-    <div class="section-heading"><div><div class="eyebrow">CATÁLOGO</div><h2>Resultados <span th:text="'(' + ${results.totalElements} + ')'"></span></h2></div><span class="muted">Ordenadas por atualização</span></div>
+    <div class="section-heading">
+      <div><div class="eyebrow">CATÁLOGO</div><h2>Resultados <span th:text="'(' + ${results.totalElements} + ')'"></span></h2></div>
+      <span class="muted" th:switch="${appliedSort}">
+        <span th:case="'distance'">Ordenadas por proximidade</span>
+        <span th:case="'relevance'">Ordenadas por afinidade</span>
+        <span th:case="'title'">Ordenadas por título</span>
+        <span th:case="*">Ordenadas por atualização</span>
+      </span>
+    </div>
+    <p class="geo-note" th:if="${sort == 'distance' && !hasLocation}">Para ordenar por proximidade, clique em “Usar minha localização”. Até lá, a lista usa a ordem de atualização.</p>
     <div class="job-grid" th:if="${!results.empty}">
       <article class="job-card" th:each="o : ${results.content}">
-        <div class="card-top"><span class="icon-square">✦</span><span class="tag" th:text="${o.employmentType != null && !o.employmentType.isBlank() ? o.employmentType : 'Oportunidade'}">Oportunidade</span></div>
+        <div class="card-top">
+          <span class="icon-square">✦</span>
+          <span class="score-chip" th:if="${affinity[o.id] != null && affinity[o.id] > 0}" th:text="${affinity[o.id]} + '% afinidade'">90% afinidade</span>
+          <span class="tag" th:if="${affinity[o.id] == null || affinity[o.id] == 0}">Sem pontuação</span>
+        </div>
         <div class="company" th:text="${o.company}">Empresa</div>
         <h3 th:text="${o.title}">Título da vaga</h3>
         <p class="location" th:text="${o.locationText != null && !o.locationText.isBlank() ? o.locationText : 'Local não informado'}">Local</p>
-        <div class="card-bottom"><span class="muted" th:text="${o.workplaceType != null ? o.workplaceType : 'Modalidade não informada'}"></span><a class="detail-link" th:href="@{/opportunities/{id}(id=${o.id})}">Ver detalhes <span>→</span></a></div>
+        <div class="card-bottom">
+          <div class="card-meta">
+            <span th:text="${o.workplaceType != null ? o.workplaceType : 'Modalidade indefinida'}"></span>
+            <span class="distance-label" th:if="${distances[o.id] != null}" th:text="'↔ ' + ${distances[o.id]} + ' km'"></span>
+          </div>
+          <a class="detail-link" th:href="@{/opportunities/{id}(id=${o.id})}">Ver detalhes →</a>
+        </div>
       </article>
     </div>
-    <div class="empty-state" th:if="${results.empty}"><div class="empty-icon">⌁</div><h3>Nenhuma oportunidade encontrada</h3><p>Tente ampliar os filtros ou incluir vagas inativas.</p><a th:href="@{/opportunities}" class="button button-primary">Limpar filtros</a></div>
+    <div class="empty-state" th:if="${results.empty}"><div class="empty-icon">⌁</div><h3>Nenhuma oportunidade encontrada</h3><p>Tente aumentar o raio, reduzir a afinidade mínima ou remover filtros.</p><a th:href="@{/opportunities}" class="button button-primary">Limpar filtros</a></div>
     <div class="pagination" th:if="${results.totalPages > 1}">
-      <a th:if="${results.hasPrevious()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},minScore=${minScore},activeOnly=${activeOnly},page=${results.number - 1})}">← Anterior</a>
+      <a th:if="${results.hasPrevious()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number - 1})}">← Anterior</a>
       <span th:text="'Página ' + ${results.number + 1} + ' de ' + ${results.totalPages}"></span>
-      <a th:if="${results.hasNext()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},minScore=${minScore},activeOnly=${activeOnly},page=${results.number + 1})}">Próxima →</a>
+      <a th:if="${results.hasNext()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number + 1})}">Próxima →</a>
     </div>
   </section>
 </main>

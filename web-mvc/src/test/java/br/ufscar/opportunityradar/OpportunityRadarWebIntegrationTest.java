@@ -1,5 +1,6 @@
 package br.ufscar.opportunityradar;
 
+import br.ufscar.opportunityradar.config.VisitorIdentityFilter;
 import br.ufscar.opportunityradar.repository.ApplicationRepository;
 import br.ufscar.opportunityradar.repository.FavoriteRepository;
 import br.ufscar.opportunityradar.service.CatalogService;
@@ -15,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import jakarta.servlet.http.Cookie;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OpportunityRadarWebIntegrationTest {
     private static final String ID = "11111111-1111-4111-8111-111111111111";
     private static final String CLOSED = "22222222-2222-4222-8222-222222222222";
+    private static final String DEVICE_A = "a".repeat(64);
+    private static final String DEVICE_B = "b".repeat(64);
+    private static Cookie browser(String token) { return new Cookie(VisitorIdentityFilter.COOKIE, token); }
     private static final Path SQLITE = createFixture();
 
     @DynamicPropertySource
@@ -43,7 +49,8 @@ class OpportunityRadarWebIntegrationTest {
                       id TEXT PRIMARY KEY, company TEXT NOT NULL, title TEXT NOT NULL,
                       description TEXT NOT NULL, location_text TEXT NOT NULL,
                       workplace_type TEXT, employment_type TEXT, published_at TEXT,
-                      canonical_url TEXT, updated_at TEXT NOT NULL
+                      canonical_url TEXT, updated_at TEXT NOT NULL,
+                      latitude REAL, longitude REAL
                     )""");
                 stmt.executeUpdate("""
                     CREATE TABLE source_postings (
@@ -57,14 +64,15 @@ class OpportunityRadarWebIntegrationTest {
                       opportunity_id TEXT NOT NULL, course_id TEXT NOT NULL, score INTEGER NOT NULL,
                       PRIMARY KEY(opportunity_id, course_id)
                     )""");
+                stmt.executeUpdate("CREATE TABLE opportunity_intents (opportunity_id TEXT NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(opportunity_id,intent_id))");
                 stmt.executeUpdate("""
                     INSERT INTO opportunities VALUES
                     ('11111111-1111-4111-8111-111111111111','Acme','Estágio em engenharia',
                      'Aprenda Java e SQL','São Carlos, SP','hybrid','internship',
-                     '2026-11-01','https://example.com/job/1','2026-11-05'),
+                     '2026-11-01','https://example.com/job/1','2026-11-05',-22.01,-47.89),
                     ('22222222-2222-4222-8222-222222222222','Beta','Vaga encerrada',
                      'Vaga antiga','Campinas, SP','remote','trainee',
-                     '2026-10-01','javascript:alert(1)','2026-10-05')
+                     '2026-10-01','javascript:alert(1)','2026-10-05',-22.91,-47.06)
                     """);
                 stmt.executeUpdate("""
                     INSERT INTO source_postings VALUES
@@ -78,6 +86,7 @@ class OpportunityRadarWebIntegrationTest {
                     ('11111111-1111-4111-8111-111111111111','electrical_engineering',90),
                     ('22222222-2222-4222-8222-222222222222','computer_science',10)
                     """);
+                stmt.executeUpdate("INSERT INTO opportunity_intents VALUES ('11111111-1111-4111-8111-111111111111','internship')");
             }
             db.toFile().deleteOnExit();
             return db;
@@ -139,44 +148,120 @@ class OpportunityRadarWebIntegrationTest {
 
     @Test
     void favoritesArePersistedAndCanBeRemoved() throws Exception {
-        mvc.perform(post("/favorites/" + ID))
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)).with(csrf()))
             .andExpect(status().is3xxRedirection());
-        assertThat(favorites.findByOpportunityId(ID)).isPresent();
-        mvc.perform(get("/favorites"))
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isPresent();
+        mvc.perform(get("/favorites").cookie(browser(DEVICE_A)))
             .andExpect(status().isOk())
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")));
-        mvc.perform(post("/favorites/" + ID))
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)).with(csrf()))
             .andExpect(status().is3xxRedirection());
-        assertThat(favorites.findByOpportunityId(ID)).isEmpty();
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isEmpty();
     }
 
     @Test
     void applicationsSupportCreateUpdateAndDelete() throws Exception {
-        mvc.perform(post("/applications/" + ID).param("status","PLANNED").param("notes","Enviar CV"))
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_A)).with(csrf()).param("status","PLANNED").param("notes","Enviar CV"))
             .andExpect(status().is3xxRedirection());
-        assertThat(applications.findByOpportunityId(ID)).isPresent();
-        mvc.perform(post("/applications/" + ID).param("status","INTERVIEW").param("notes","Entrevista dia 10"))
+        assertThat(applications.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isPresent();
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_A)).with(csrf()).param("status","INTERVIEW").param("notes","Entrevista dia 10"))
             .andExpect(status().is3xxRedirection());
-        assertThat(applications.findByOpportunityId(ID).orElseThrow().getStatus().name()).isEqualTo("INTERVIEW");
+        assertThat(applications.findByOwnerIdAndOpportunityId(DEVICE_A, ID).orElseThrow().getStatus().name()).isEqualTo("INTERVIEW");
         assertThat(applications.findAll()).hasSize(1);
-        mvc.perform(get("/applications"))
+        mvc.perform(get("/applications").cookie(browser(DEVICE_A)))
             .andExpect(status().isOk())
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Entrevista")));
-        mvc.perform(post("/applications/" + ID + "/delete"))
+        mvc.perform(post("/applications/" + ID + "/delete").cookie(browser(DEVICE_A)).with(csrf()))
             .andExpect(status().is3xxRedirection());
-        assertThat(applications.findByOpportunityId(ID)).isEmpty();
+        assertThat(applications.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isEmpty();
     }
 
     @Test
     void rejectsInvalidStatusOrOversizedNotes() throws Exception {
-        mvc.perform(post("/applications/" + ID).param("status","HACK"))
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_A)).with(csrf()).param("status","HACK"))
             .andExpect(status().isBadRequest());
-        mvc.perform(post("/applications/" + ID).param("status","PLANNED")
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_A)).with(csrf()).param("status","PLANNED")
             .param("notes","x".repeat(2001)))
             .andExpect(status().isBadRequest());
         assertThat(applications.findAll()).isEmpty();
     }
 
+
+
+    @Test
+    void browserIdentitiesKeepFavoritesAndApplicationsSeparate() throws Exception {
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)).with(csrf()))
+            .andExpect(status().is3xxRedirection());
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isPresent();
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_B, ID)).isEmpty();
+        mvc.perform(get("/favorites").cookie(browser(DEVICE_B)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.not(
+                org.hamcrest.Matchers.containsString("Estágio em engenharia"))));
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_B)).with(csrf()))
+            .andExpect(status().is3xxRedirection());
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)).with(csrf()))
+            .andExpect(status().is3xxRedirection());
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isEmpty();
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_B, ID)).isPresent();
+
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_A)).with(csrf())
+            .param("status","PLANNED").param("notes","Apenas no computador"))
+            .andExpect(status().is3xxRedirection());
+        mvc.perform(post("/applications/" + ID).cookie(browser(DEVICE_B)).with(csrf())
+            .param("status","INTERVIEW").param("notes","Apenas no celular"))
+            .andExpect(status().is3xxRedirection());
+        assertThat(applications.findByOwnerIdAndOpportunityId(DEVICE_A, ID)
+            .orElseThrow().getNotes()).isEqualTo("Apenas no computador");
+        assertThat(applications.findByOwnerIdAndOpportunityId(DEVICE_B, ID)
+            .orElseThrow().getNotes()).isEqualTo("Apenas no celular");
+    }
+
+    @Test
+    void refusesCrossSitePostsWithoutCsrf() throws Exception {
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)))
+            .andExpect(status().isForbidden());
+        assertThat(favorites.findByOwnerIdAndOpportunityId(DEVICE_A, ID)).isEmpty();
+    }
+
+    @Test
+    void advancedSearchSupportsGeoRadiusAffinitySortAndKeywords() throws Exception {
+        mvc.perform(get("/opportunities").param("activeOnly","false")
+            .param("latitude","-22.01").param("longitude","-47.89")
+            .param("radiusKm","50").param("sort","distance"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(
+                org.hamcrest.Matchers.containsString("Vaga encerrada"))))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("0.0 km")));
+
+        mvc.perform(get("/opportunities").param("activeOnly","false")
+            .param("sort","relevance").param("minScore","80"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("90% afinidade")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(
+                org.hamcrest.Matchers.containsString("Vaga encerrada"))));
+
+        mvc.perform(get("/opportunities").param("intent","internship"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")));
+        mvc.perform(get("/opportunities").param("workplace","remote").param("activeOnly","false"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Vaga encerrada")));
+        mvc.perform(get("/opportunities").param("include","Java").param("exclude","Beta"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")));
+    }
+
+    @Test
+    void anonymousBrowserReceivesHttpOnlyVisitorCookie() throws Exception {
+        mvc.perform(get("/favorites"))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Set-Cookie",
+                org.hamcrest.Matchers.containsString("radar_visitor=")))
+            .andExpect(header().string("Set-Cookie",
+                org.hamcrest.Matchers.containsString("HttpOnly")));
+    }
 
     @Test
     void sqliteUsesIndexForActivePostingLookupOnCatalog() {
