@@ -21,7 +21,10 @@ from models.job import Job
 from processing.incremental import KnownPageStopper
 
 
-API_URL = "https://employability-portal.gupy.io/api/v1/jobs"
+# The legacy employability-portal host began returning HTTP 404 in late 2026.
+# The candidate search now uses the portal's /api/job-search/jobs route.
+# This remains an undocumented public endpoint: fail closed on schema drift.
+API_URL = "https://portal.gupy.io/api/job-search/jobs"
 PORTAL_HEADERS = {
     "Accept": "application/json, text/plain, */*",
     "Origin": "https://portal.gupy.io",
@@ -192,7 +195,7 @@ def _collect_segment(
             country=country,
         )
         payload = _get_payload_with_type_fallback(params, job_type)
-        items = payload.get("data", []) if isinstance(payload, dict) else []
+        items = _extract_items(payload)
 
         if not isinstance(items, list) or not items:
             break
@@ -222,6 +225,19 @@ def _collect_segment(
         time.sleep(PUBLIC_DELAY)
 
     return jobs
+
+
+def _extract_items(payload: dict) -> list[dict]:
+    """Validate public responses; do not mistake API changes for an empty list.
+
+    A silently empty result could eventually inactivate previously known jobs.
+    """
+    if not isinstance(payload, dict):
+        raise ValueError("Gupy: JSON do portal nao e objeto")
+    for key in ("data", "jobs", "results"):
+        if isinstance(payload.get(key), list):
+            return payload[key]
+    raise ValueError("Gupy: formato de lista desconhecido (coleta parcial/abortada)")
 
 
 def _build_params(
@@ -255,17 +271,16 @@ def _build_params(
 
 
 def _get_payload_with_type_fallback(params: dict, job_type: str | None) -> dict:
-    """Support both filter names seen across public portal generations.
+    """Try a parameter alias only for invalid-filter responses (400/422).
 
-    The portal has used ``type`` in its own network requests, while newer
-    community clients also report ``jobTypes``. We prefer ``type`` and only
-    retry with the alias when the first request is rejected.
+    A 404 normally means the endpoint is gone, not that a job type was rejected.
+    Retrying with a different filter would waste time and hide the root cause.
     """
     try:
         return get_json(API_URL, params=params, headers=PORTAL_HEADERS)
     except requests.HTTPError as exc:
         status = getattr(exc.response, "status_code", None)
-        if not job_type or status not in {400, 404, 422}:
+        if not job_type or status not in {400, 422}:
             raise
 
         fallback = dict(params)
