@@ -267,6 +267,7 @@ def main():
     # 2) Public global Gupy candidate portal.
     #    This replaces company-by-company page scraping in normal operation.
     gupy_global_cfg = PUBLIC_SOURCES.get("gupy_global", {})
+    gupy_global_jobs = None
     if gupy_global_cfg.get("enabled", True):
         gupy_runtime_cfg = dict(gupy_global_cfg)
         if unbounded_collection:
@@ -283,7 +284,7 @@ def main():
                 0 if (full_discovery or daily_audit) else 2
             )
             gupy_runtime_cfg["show_incremental_stats"] = True
-        _run(
+        gupy_global_jobs = _run(
             "Gupy Global [public portal API]",
             lambda: collect_gupy_global(gupy_runtime_cfg),
             all_jobs,
@@ -298,7 +299,13 @@ def main():
     # 4) Emergency fallback: old public company pages. Disabled by default to
     #    avoid duplicate work while Gupy Global is healthy.
     fallback_cfg = PUBLIC_SOURCES.get("gupy_public_fallback", {})
-    if fallback_cfg.get("enabled"):
+    if _should_run_gupy_fallback(
+        global_enabled=gupy_global_cfg.get("enabled", True),
+        global_jobs=gupy_global_jobs,
+        fallback_cfg=fallback_cfg,
+    ):
+        if not gupy_global_jobs:
+            print("  [AVISO] Gupy Global indisponivel ou vazio; usando paginas de empresas.")
         for page in [p for p in GUPY_PUBLIC_PAGES if p.get("enabled", True)]:
             _run(
                 f'{page["name"]} [gupy_public fallback]',
@@ -752,6 +759,14 @@ def main():
     print("Para abrir o dashboard com busca regional sob demanda:")
     print("  python server.py")
     print("  abra http://localhost:8000")
+
+
+def _should_run_gupy_fallback(*, global_enabled, global_jobs, fallback_cfg):
+    """Only use smaller company pages on a failed/empty global scan or explicit opt-in."""
+    return bool(fallback_cfg.get("enabled")) or (
+        bool(global_enabled) and not global_jobs
+        and bool(fallback_cfg.get("on_global_failure", True))
+    )
 
 
 def _run(label, fn, all_jobs, source_stats):

@@ -25,3 +25,9 @@ Evitar fixes que transformem timeout em sucesso/catálogo vazio.
 A janela de resultados do portal tem limite aproximado de 10 mil vagas. A
 paginação foi limitada antes do offset 10000; se esse limite for atingido sem
 página curta, o coletor emite aviso de cobertura potencialmente parcial.
+
+O sistema também executa as três páginas Gupy corporativas configuradas como
+contingência, com limite de detalhes, quando o coletor global falha ou não
+retorna vagas. Essa ação conserva `source=gupy_public`; não inventa IDs do portal
+nem conclui lifecycle da Gupy Global. Pode ser desabilitada em
+`gupy_public_fallback.on_global_failure`.
