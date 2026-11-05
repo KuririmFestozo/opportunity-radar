@@ -122,6 +122,10 @@ public class AdvancedSearchService {
             + "' ' || lower(coalesce(o.location_text,'')) || ' ' || lower(coalesce(o.description,'')))";
         addTerms(conditions, p, haystack, f.include(), true);
         addTerms(conditions, p, haystack, f.exclude(), false);
+        if (course != null) {
+            conditions.append(" AND EXISTS (SELECT 1 FROM opportunity_course_scores picked "
+                + "WHERE picked.opportunity_id = o.id AND picked.course_id = :course) ");
+        }
         if (score > 0) {
             conditions.append(" AND ").append(affinityExpr).append(" >= :minScore ");
         }
@@ -132,7 +136,7 @@ public class AdvancedSearchService {
         String order = switch (sort) {
             case "relevance" -> " ORDER BY affinity DESC, o.updated_at DESC, o.id";
             case "title" -> " ORDER BY o.title COLLATE NOCASE ASC, o.id";
-            default -> " ORDER BY o.updated_at DESC, o.id";
+            default -> " ORDER BY o.published_at DESC, o.updated_at DESC, o.id";
         };
 
         List<Candidate> candidates;
@@ -167,7 +171,7 @@ public class AdvancedSearchService {
                     .thenComparing(Candidate::distanceKm, Comparator.nullsLast(Double::compareTo));
                 case "title" -> Comparator.comparing(Candidate::title,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-                default -> Comparator.comparing(Candidate::updatedAt,
+                default -> Comparator.comparing(Candidate::publishedAt,
                     Comparator.nullsFirst(String::compareTo)).reversed();
             };
             candidates.sort(orderBy.thenComparing(Candidate::id));

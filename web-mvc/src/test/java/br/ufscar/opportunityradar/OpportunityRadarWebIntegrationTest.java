@@ -263,6 +263,31 @@ class OpportunityRadarWebIntegrationTest {
                 org.hamcrest.Matchers.containsString("HttpOnly")));
     }
 
+
+    @Test
+    void recoveryCodeRestoresBrowserCollectionsAcrossTunnelHostnames() throws Exception {
+        mvc.perform(post("/favorites/" + ID).cookie(browser(DEVICE_A)).with(csrf()))
+            .andExpect(status().is3xxRedirection());
+        mvc.perform(get("/profile").cookie(browser(DEVICE_A)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString(DEVICE_A)));
+        mvc.perform(post("/profile/restore").cookie(browser(DEVICE_B)).with(csrf())
+            .param("recoveryCode", DEVICE_A))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Set-Cookie",
+                org.hamcrest.Matchers.containsString("radar_visitor=" + DEVICE_A)));
+        mvc.perform(get("/favorites").cookie(browser(DEVICE_A)))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Estágio em engenharia")));
+        mvc.perform(post("/profile/new").cookie(browser(DEVICE_A)).with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Set-Cookie",
+                org.hamcrest.Matchers.containsString("radar_visitor=")));
+        mvc.perform(post("/profile/restore").cookie(browser(DEVICE_B)).with(csrf())
+            .param("recoveryCode","short"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/profile"));
+    }
+
     @Test
     void sqliteUsesIndexForActivePostingLookupOnCatalog() {
         var indexes = jdbc.queryForList(

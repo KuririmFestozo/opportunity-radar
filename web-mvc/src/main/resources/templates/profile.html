@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu perfil | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/profile.css}"></head>
+<body><div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container subsection">
+  <div class="eyebrow">PREFERÊNCIAS LOCAIS</div><h1>Meu <em>perfil.</em></h1>
+  <p class="muted">Cada navegador possui seus próprios favoritos e acompanhamentos. Eles ficam no SQLite do notebook, mas são separados por um código privado.</p>
+  <div class="flash" th:if="${message}" th:text="${message}"></div>
+  <div class="geo-note" th:if="${error}" th:text="${error}"></div>
+  <div class="profile-grid">
+    <section class="panel">
+      <div class="eyebrow">CÓDIGO DE RECUPERAÇÃO</div><h2>Não perca suas listas</h2>
+      <p>O endereço temporário da Cloudflare muda. Guarde seu código para recuperar os favoritos em um novo endereço ou em outro aparelho.</p>
+      <label class="field">Seu código privado
+        <input id="recovery-key" type="password" readonly th:value="${recoveryCode}" autocomplete="off">
+      </label>
+      <div class="actions">
+        <button class="button button-outline" id="show-code" type="button">Mostrar código</button>
+        <button class="button button-primary" id="copy-code" type="button">Copiar código</button>
+      </div>
+      <p class="geo-privacy">Quem tiver esse código poderá acessar suas listas e anotações. Guarde como senha; não publique nem envie prints dele.</p>
+    </section>
+    <section class="panel">
+      <div class="eyebrow">TROCAR PERFIL</div><h2>Restaurar ou começar de novo</h2>
+      <form th:action="@{/profile/restore}" method="post">
+        <label class="field">Código de outro navegador
+          <input name="recoveryCode" required minlength="64" maxlength="64" autocomplete="off" placeholder="Cole os 64 caracteres">
+        </label>
+        <button class="button button-primary" type="submit">Restaurar listas</button>
+      </form>
+      <p class="muted">Quer favoritos diferentes neste dispositivo? Crie um perfil vazio. O perfil anterior não é apagado.</p>
+      <form th:action="@{/profile/new}" method="post">
+        <button class="button button-outline" type="submit">Criar novo perfil independente</button>
+      </form>
+    </section>
+  </div>
+</main><footer class="container footer">Opportunity Radar · Identificação anônima por navegador.</footer>
+<script>
+  const code = document.getElementById('recovery-key');
+  document.getElementById('show-code').addEventListener('click', () => {
+    code.type = code.type === 'password' ? 'text' : 'password';
+  });
+  document.getElementById('copy-code').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(code.value);
+      document.getElementById('copy-code').textContent = 'Copiado!';
+    } catch (error) {
+      code.type = 'text'; code.select();
+      document.getElementById('copy-code').textContent = 'Selecione e copie';
+    }
+  });
+</script>
+</body></html>
