@@ -18,14 +18,14 @@ Python seguem independentes.
 
 Na raiz do repositório, no PowerShell:
 
-    Copy-Item data/opportunity_radar.db web-mvc/radar-web.db
+    python web-mvc/tools/prepare_sqlite_snapshot.py data/opportunity_radar.db web-mvc/radar-web.db
     $env:RADAR_DB_PATH = (Resolve-Path web-mvc/radar-web.db).Path
     cd web-mvc
     mvn spring-boot:run
 
 Abra http://localhost:8080.
 
-A cópia deve conter as tabelas relacionais do Checkpoint 4:
+A cópia é feita usando a API de backup do SQLite (consistente mesmo se a origem usar WAL); o script nunca substitui um arquivo existente. Use um nome novo caso já tenha uma cópia. A cópia deve conter as tabelas relacionais do Checkpoint 4:
 opportunities, source_postings e opportunity_course_scores. Se o banco local
 ainda não tiver essas tabelas, migre uma **cópia** usando as instruções CP4,
 não a base principal. O módulo verifica o arquivo e o esquema durante o
