@@ -38,7 +38,8 @@ def create_demo(path: Path) -> None:
           id TEXT PRIMARY KEY, company TEXT NOT NULL, title TEXT NOT NULL,
           description TEXT NOT NULL, location_text TEXT NOT NULL,
           workplace_type TEXT, employment_type TEXT, published_at TEXT,
-          canonical_url TEXT, updated_at TEXT NOT NULL
+          canonical_url TEXT, updated_at TEXT NOT NULL,
+          latitude REAL, longitude REAL
         );
         CREATE TABLE source_postings (
           source TEXT NOT NULL, source_job_id TEXT NOT NULL,
@@ -52,17 +53,28 @@ def create_demo(path: Path) -> None:
           course_id TEXT NOT NULL, score INTEGER NOT NULL,
           PRIMARY KEY(opportunity_id, course_id)
         );
+        CREATE TABLE opportunity_intents (
+          opportunity_id TEXT NOT NULL REFERENCES opportunities(id),
+          intent_id TEXT NOT NULL,
+          PRIMARY KEY(opportunity_id, intent_id)
+        );
         """)
+        coordinates = [
+            (-22.01, -47.89), (-22.91, -47.06), (-23.55, -46.63),
+            (-21.18, -47.81), (-23.50, -47.46), (-21.79, -48.18),
+        ]
         for index, (company, title, location, kind, workplace, score) in enumerate(DEMO, 1):
             oid = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"radar-mvc-demo:{index}"))
             url = f"https://example.org/oportunidade/{index}"
             conn.execute(
                 """INSERT INTO opportunities (
                   id, company, title, description, location_text, workplace_type,
-                  employment_type, published_at, canonical_url, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                  employment_type, published_at, canonical_url, updated_at,
+                  latitude, longitude
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (oid, company, title, "Dado ilustrativo para demonstração acadêmica.",
-                 location, workplace, kind, "2026-11-01T12:00:00Z", url, "2026-11-05T12:00:00Z"),
+                 location, workplace, kind, "2026-11-01T12:00:00Z", url, "2026-11-05T12:00:00Z",
+                 *coordinates[index - 1]),
             )
             conn.execute(
                 "INSERT INTO source_postings VALUES (?, ?, ?, ?, ?, ?)",
@@ -72,6 +84,10 @@ def create_demo(path: Path) -> None:
                 "INSERT INTO opportunity_course_scores VALUES (?, ?, ?)",
                 (oid, "engenharia_eletrica", score),
             )
+            intent = ("internship" if "Estágio" in title else
+                      "trainee" if "Trainee" in title else
+                      "research" if "Pesquisa" in title else "entry_level")
+            conn.execute("INSERT INTO opportunity_intents VALUES (?,?)", (oid, intent))
         conn.commit()
     except Exception:
         path.unlink(missing_ok=True)

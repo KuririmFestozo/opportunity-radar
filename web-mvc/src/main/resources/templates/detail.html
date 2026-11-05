@@ -44,7 +44,7 @@
     <aside class="detail-side">
       <section class="panel sticky">
         <div class="eyebrow">ACOMPANHAMENTO</div><h2>Minha candidatura</h2>
-        <p class="muted">Organize sua busca sem precisar de uma conta externa.</p>
+        <p class="muted">Organize sua busca neste navegador. Recupere as listas em Meu perfil.</p>
         <form th:action="@{/applications/{id}(id=${opportunity.id})}" method="post">
           <label class="field">Situação<select name="status" required><option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.label}" th:selected="${application != null && application.status == s}"></option></select></label>
           <label class="field">Anotações<textarea name="notes" rows="6" maxlength="2000" placeholder="Próximos passos, datas ou observações..." th:text="${application != null ? application.notes : ''}"></textarea></label>

@@ -29,3 +29,29 @@ CREATE INDEX IF NOT EXISTS idx_web_opportunities_updated
 -- The course drop-down otherwise scans/sorts all course-score rows.
 CREATE INDEX IF NOT EXISTS idx_web_course_scores_course_score
   ON opportunity_course_scores(course_id, score, opportunity_id);
+
+
+-- New browser-specific collections: legacy global web_* tables are preserved
+-- untouched because there is no safe way to infer their original owner.
+CREATE TABLE IF NOT EXISTS web_device_favorites (
+  id TEXT PRIMARY KEY NOT NULL,
+  owner_id TEXT NOT NULL,
+  opportunity_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (owner_id, opportunity_id),
+  FOREIGN KEY (opportunity_id) REFERENCES opportunities(id)
+);
+CREATE INDEX IF NOT EXISTS idx_web_device_favorites_owner
+  ON web_device_favorites(owner_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS web_device_applications (
+  id TEXT PRIMARY KEY NOT NULL,
+  owner_id TEXT NOT NULL,
+  opportunity_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('PLANNED','APPLIED','INTERVIEW','OFFER','REJECTED')),
+  notes TEXT NOT NULL DEFAULT '',
+  updated_at TEXT NOT NULL,
+  UNIQUE (owner_id, opportunity_id),
+  FOREIGN KEY (opportunity_id) REFERENCES opportunities(id)
+);
+CREATE INDEX IF NOT EXISTS idx_web_device_applications_owner
+  ON web_device_applications(owner_id, updated_at DESC);

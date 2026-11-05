@@ -5,7 +5,6 @@ import br.ufscar.opportunityradar.domain.ApplicationStatus;
 import br.ufscar.opportunityradar.domain.Favorite;
 import br.ufscar.opportunityradar.repository.ApplicationRepository;
 import br.ufscar.opportunityradar.repository.FavoriteRepository;
-
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -27,22 +26,26 @@ public class TrackingService {
     }
 
     @Transactional
-    public void toggleFavorite(String opportunityId) {
+    public void toggleFavorite(String ownerId, String opportunityId) {
         catalog.require(opportunityId);
-        favorites.findByOpportunityId(opportunityId)
-            .ifPresentOrElse(favorites::delete, () -> favorites.save(new Favorite(opportunityId)));
+        favorites.findByOwnerIdAndOpportunityId(ownerId, opportunityId)
+            .ifPresentOrElse(favorites::delete, () -> favorites.save(new Favorite(ownerId, opportunityId)));
     }
-    public boolean isFavorite(String opportunityId) {
-        return favorites.findByOpportunityId(opportunityId).isPresent();
+    public boolean isFavorite(String ownerId, String opportunityId) {
+        return favorites.findByOwnerIdAndOpportunityId(ownerId, opportunityId).isPresent();
     }
-    public List<Favorite> favorites() { return favorites.findAllByOrderByCreatedAtDesc(); }
-    public List<ApplicationEntry> applications() { return applications.findAllByOrderByUpdatedAtDesc(); }
-    public Optional<ApplicationEntry> applicationFor(String opportunityId) {
-        return applications.findByOpportunityId(opportunityId);
+    public List<Favorite> favorites(String ownerId) {
+        return favorites.findAllByOwnerIdOrderByCreatedAtDesc(ownerId);
+    }
+    public List<ApplicationEntry> applications(String ownerId) {
+        return applications.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId);
+    }
+    public Optional<ApplicationEntry> applicationFor(String ownerId, String opportunityId) {
+        return applications.findByOwnerIdAndOpportunityId(ownerId, opportunityId);
     }
 
     @Transactional
-    public void saveApplication(String opportunityId, String statusValue, String notes) {
+    public void saveApplication(String ownerId, String opportunityId, String statusValue, String notes) {
         catalog.require(opportunityId);
         ApplicationStatus status;
         try {
@@ -54,14 +57,15 @@ public class TrackingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Notas excedem 2000 caracteres");
         }
         String safeNotes = notes == null ? "" : notes.strip();
-        ApplicationEntry entry = applications.findByOpportunityId(opportunityId)
-            .orElseGet(() -> new ApplicationEntry(opportunityId, status, safeNotes));
+        ApplicationEntry entry = applications.findByOwnerIdAndOpportunityId(ownerId, opportunityId)
+            .orElseGet(() -> new ApplicationEntry(ownerId, opportunityId, status, safeNotes));
         entry.update(status, safeNotes);
         applications.save(entry);
     }
 
     @Transactional
-    public void deleteApplication(String opportunityId) {
-        applications.findByOpportunityId(opportunityId).ifPresent(applications::delete);
+    public void deleteApplication(String ownerId, String opportunityId) {
+        applications.findByOwnerIdAndOpportunityId(ownerId, opportunityId)
+            .ifPresent(applications::delete);
     }
 }

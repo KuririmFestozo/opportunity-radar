@@ -8,12 +8,16 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "web_applications")
+@Table(name = "web_device_applications",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"owner_id", "opportunity_id"}))
 public class ApplicationEntry {
     @Id private String id;
-    @Column(name = "opportunity_id", unique = true, nullable = false)
+    @Column(name = "owner_id", nullable = false, length = 64)
+    private String ownerId;
+    @Column(name = "opportunity_id", nullable = false)
     private String opportunityId;
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
@@ -23,8 +27,9 @@ public class ApplicationEntry {
     private String updatedAt;
 
     protected ApplicationEntry() {}
-    public ApplicationEntry(String opportunityId, ApplicationStatus status, String notes) {
+    public ApplicationEntry(String ownerId, String opportunityId, ApplicationStatus status, String notes) {
         this.id = UUID.randomUUID().toString();
+        this.ownerId = ownerId;
         this.opportunityId = opportunityId;
         update(status, notes);
     }
@@ -34,6 +39,7 @@ public class ApplicationEntry {
         updatedAt = Instant.now().toString();
     }
     public String getId() { return id; }
+    public String getOwnerId() { return ownerId; }
     public String getOpportunityId() { return opportunityId; }
     public ApplicationStatus getStatus() { return status; }
     public String getNotes() { return notes; }
