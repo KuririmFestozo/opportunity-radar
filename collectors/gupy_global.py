@@ -184,7 +184,10 @@ def _collect_segment(
     jobs: list[Job] = []
     stopper = KnownPageStopper(known_source_job_ids, early_stop_known_pages)
 
-    for page_index in range(max_pages):
+    # The public search limits the offset window to the newest 10,000 jobs.
+    # Reaching beyond it produces HTTP 400, discarding the collected segment.
+    bounded_pages = min(max_pages, max(1, (10_000 + page_size - 1) // page_size))
+    for page_index in range(bounded_pages):
         params = _build_params(
             offset=page_index * page_size,
             limit=page_size,
@@ -220,6 +223,10 @@ def _collect_segment(
         # pagination.total has behaved inconsistently across versions of the
         # public portal. A short page is the safest end-of-list signal.
         if len(items) < page_size:
+            break
+        if page_index + 1 == bounded_pages:
+            print("  [AVISO] Gupy: limite do portal (10 mil vagas por busca); "
+                  "cobertura pode ser parcial.")
             break
 
         time.sleep(PUBLIC_DELAY)

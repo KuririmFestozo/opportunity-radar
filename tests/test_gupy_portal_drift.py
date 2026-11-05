@@ -37,3 +37,21 @@ def test_404_does_not_retry_an_unavailable_endpoint(monkeypatch):
     with pytest.raises(requests.HTTPError):
         _get_payload_with_type_fallback({"type": "vacancy_type_summer"}, "vacancy_type_summer")
     assert len(calls) == 1
+
+
+def test_portal_never_requests_offset_beyond_10000(monkeypatch, capsys):
+    from collectors.gupy_global import _collect_segment
+    requests = []
+
+    def fake_json(url, params, headers):
+        requests.append(params["offset"])
+        return {"data": [{}] * 100}
+
+    monkeypatch.setattr("collectors.gupy_global.get_json", fake_json)
+    monkeypatch.setattr("collectors.gupy_global.job_from_item", lambda item: None)
+    monkeypatch.setattr("collectors.gupy_global.time.sleep", lambda seconds: None)
+
+    assert _collect_segment(page_size=100, max_pages=500) == []
+    assert len(requests) == 100
+    assert max(requests) == 9900
+    assert "cobertura pode ser parcial" in capsys.readouterr().out

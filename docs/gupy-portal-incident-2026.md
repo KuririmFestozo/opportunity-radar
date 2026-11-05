@@ -21,3 +21,7 @@ o erro permanece explícito; não marcar vagas como encerradas só pela falha.
 A falha isolada HTTP 504 no Vagas.com em 05/11 é transiente do servidor.
 O módulo collectors/common.py já faz retries limitados para 504.
 Evitar fixes que transformem timeout em sucesso/catálogo vazio.
+
+A janela de resultados do portal tem limite aproximado de 10 mil vagas. A
+paginação foi limitada antes do offset 10000; se esse limite for atingido sem
+página curta, o coletor emite aviso de cobertura potencialmente parcial.
