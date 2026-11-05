@@ -20,10 +20,13 @@ import org.springframework.web.server.ResponseStatusException;
 public class AccountService implements UserDetailsService {
     private final UserAccountRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService attempts;
 
-    public AccountService(UserAccountRepository users, PasswordEncoder passwordEncoder) {
+    public AccountService(UserAccountRepository users, PasswordEncoder passwordEncoder,
+                          LoginAttemptService attempts) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
+        this.attempts = attempts;
     }
 
     @Transactional
@@ -61,6 +64,9 @@ public class AccountService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String rawUsername) throws UsernameNotFoundException {
+        if (attempts.blocked(rawUsername)) {
+            throw new UsernameNotFoundException("Usuário ou senha incorretos ou temporariamente bloqueados.");
+        }
         return users.findByUsername(normalize(rawUsername))
             .map(u -> User.withUsername(u.getUsername())
                 .password(u.getPasswordHash())

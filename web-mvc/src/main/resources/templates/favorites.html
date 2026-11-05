@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Favoritos | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
 <body><div th:replace="~{fragments/nav :: nav}"></div>
 <main class="container subsection">
-  <div class="eyebrow">SUA LISTA</div><h1>Vagas <em>favoritas.</em></h1><p class="muted">Oportunidades salvas apenas neste perfil de navegador. Em outro dispositivo, use Meu perfil para restaurar ou manter listas diferentes.</p>
+  <div class="eyebrow">SUA LISTA</div><h1>Vagas <em>favoritas.</em></h1><p class="muted">Oportunidades da sua conta, disponíveis em qualquer aparelho após o login.</p>
   <div th:if="${message}" class="flash" th:text="${message}"></div>
   <div class="job-grid" th:if="${!favorites.isEmpty()}">
     <th:block th:each="f : ${favorites}" th:with="o=${opportunities[f.opportunityId]}">

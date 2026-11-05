@@ -8,7 +8,8 @@
       <a th:href="@{/opportunities}">Oportunidades</a>
       <a th:href="@{/favorites}">Favoritos</a>
       <a th:href="@{/applications}">Candidaturas</a>
-      <a th:href="@{/profile}">Meu perfil</a>
+      <a th:href="@{/profile}" th:if="${#authorization.expression('isAuthenticated()')}">Minha conta</a>
+      <a th:href="@{/login}" th:unless="${#authorization.expression('isAuthenticated()')}">Entrar</a>
     </nav>
   </div>
 </header>

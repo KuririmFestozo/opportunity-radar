@@ -1,54 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Meu perfil | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/profile.css}"></head>
+<title>Minha conta | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/auth.css}"></head>
 <body><div th:replace="~{fragments/nav :: nav}"></div>
 <main class="container subsection">
-  <div class="eyebrow">PREFERÊNCIAS LOCAIS</div><h1>Meu <em>perfil.</em></h1>
-  <p class="muted">Cada navegador possui seus próprios favoritos e acompanhamentos. Eles ficam no SQLite do notebook, mas são separados por um código privado.</p>
-  <div class="flash" th:if="${message}" th:text="${message}"></div>
-  <div class="geo-note" th:if="${error}" th:text="${error}"></div>
-  <div class="profile-grid">
-    <section class="panel">
-      <div class="eyebrow">CÓDIGO DE RECUPERAÇÃO</div><h2>Não perca suas listas</h2>
-      <p>O endereço temporário da Cloudflare muda. Guarde seu código para recuperar os favoritos em um novo endereço ou em outro aparelho.</p>
-      <label class="field">Seu código privado
-        <input id="recovery-key" type="password" readonly th:value="${recoveryCode}" autocomplete="off">
-      </label>
-      <div class="actions">
-        <button class="button button-outline" id="show-code" type="button">Mostrar código</button>
-        <button class="button button-primary" id="copy-code" type="button">Copiar código</button>
-      </div>
-      <p class="geo-privacy">Quem tiver esse código poderá acessar suas listas e anotações. Guarde como senha; não publique nem envie prints dele.</p>
-    </section>
-    <section class="panel">
-      <div class="eyebrow">TROCAR PERFIL</div><h2>Restaurar ou começar de novo</h2>
-      <form th:action="@{/profile/restore}" method="post">
-        <label class="field">Código de outro navegador
-          <input name="recoveryCode" required minlength="64" maxlength="64" autocomplete="off" placeholder="Cole os 64 caracteres">
-        </label>
-        <button class="button button-primary" type="submit">Restaurar listas</button>
-      </form>
-      <p class="muted">Quer favoritos diferentes neste dispositivo? Crie um perfil vazio. O perfil anterior não é apagado.</p>
-      <form th:action="@{/profile/new}" method="post">
-        <button class="button button-outline" type="submit">Criar novo perfil independente</button>
-      </form>
-    </section>
+  <div class="eyebrow">SUAS PREFERÊNCIAS</div><h1>Minha <em>conta.</em></h1>
+  <div class="panel account-card">
+    <div class="account-avatar">✦</div>
+    <div><div class="eyebrow">LOGADO COMO</div><h2 th:text="${username}">Usuário</h2>
+      <p class="muted">Seus favoritos e candidaturas ficam vinculados a esta conta, inclusive em outros aparelhos.</p>
+    </div>
   </div>
-</main><footer class="container footer">Opportunity Radar · Identificação anônima por navegador.</footer>
-<script>
-  const code = document.getElementById('recovery-key');
-  document.getElementById('show-code').addEventListener('click', () => {
-    code.type = code.type === 'password' ? 'text' : 'password';
-  });
-  document.getElementById('copy-code').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(code.value);
-      document.getElementById('copy-code').textContent = 'Copiado!';
-    } catch (error) {
-      code.type = 'text'; code.select();
-      document.getElementById('copy-code').textContent = 'Selecione e copie';
-    }
-  });
-</script>
+  <p th:if="${migrationWarning}" role="alert" class="auth-error">Você entrou, mas não foi possível importar seus antigos favoritos deste navegador. Eles não foram apagados. Confira o terminal do Spring para o erro.</p>
+  <div class="account-actions">
+    <a class="button button-outline" th:href="@{/favorites}">Ver favoritos</a>
+    <a class="button button-outline" th:href="@{/applications}">Minhas candidaturas</a>
+    <form th:action="@{/logout}" method="post"><button class="button button-primary" type="submit">Sair da conta</button></form>
+  </div>
+  <div class="panel account-notice">
+    <h3>Sobre seus dados</h3><p>As contas estão armazenadas no SQLite do notebook com senhas protegidas por hash BCrypt. O túnel Cloudflare é temporário: o notebook precisa permanecer ligado para entrar no site.</p>
+    <p>Se este for seu primeiro login no mesmo navegador que você já utilizava, os favoritos e candidaturas anônimos serão importados automaticamente.</p>
+    <p>Não há redefinição automática de senha ou verificação por e-mail neste protótipo. Não o publique como serviço permanente sem proteções adicionais.</p>
+  </div>
+</main><footer class="container footer">Opportunity Radar · Sua conta, seus dados.</footer>
 </body></html>

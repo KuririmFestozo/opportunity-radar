@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Candidaturas | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
 <body><div th:replace="~{fragments/nav :: nav}"></div>
 <main class="container subsection">
-  <div class="eyebrow">ORGANIZAÇÃO PESSOAL</div><h1>Minhas <em>candidaturas.</em></h1><p class="muted">Acompanhe o andamento por perfil de navegador; seus registros continuam no SQLite local.</p>
+  <div class="eyebrow">ORGANIZAÇÃO PESSOAL</div><h1>Minhas <em>candidaturas.</em></h1><p class="muted">Acompanhe suas candidaturas em qualquer dispositivo usando o mesmo usuário e senha.</p>
   <div th:if="${message}" class="flash" th:text="${message}"></div>
   <section class="panel" th:if="${!entries.isEmpty()}">
     <th:block th:each="entry : ${entries}" th:with="o=${opportunities[entry.opportunityId]}">

@@ -16,7 +16,8 @@
     </div>
     <div class="actions">
       <a class="button button-primary" th:if="${safeUrl != null}" th:href="${safeUrl}" target="_blank" rel="noopener noreferrer">Abrir vaga original ↗</a>
-      <form th:action="@{/favorites/{id}(id=${opportunity.id})}" method="post"><button class="button button-outline" type="submit" th:text="${favorite ? '★ Remover dos favoritos' : '☆ Salvar nos favoritos'}"></button></form>
+      <form th:if="${signedIn}" th:action="@{/favorites/{id}(id=${opportunity.id})}" method="post"><button class="button button-outline" type="submit" th:text="${favorite ? '★ Remover dos favoritos' : '☆ Salvar nos favoritos'}"></button></form>
+      <a th:if="${!signedIn}" class="button button-outline" th:href="@{/login}">Entre para salvar favoritos</a>
     </div>
   </section>
   <div class="detail-columns">
@@ -42,9 +43,9 @@
       </section>
     </div>
     <aside class="detail-side">
-      <section class="panel sticky">
+      <section class="panel sticky" th:if="${signedIn}">
         <div class="eyebrow">ACOMPANHAMENTO</div><h2>Minha candidatura</h2>
-        <p class="muted">Organize sua busca neste navegador. Recupere as listas em Meu perfil.</p>
+        <p class="muted">Suas anotações ficam associadas à sua conta e aparecem em outros aparelhos.</p>
         <form th:action="@{/applications/{id}(id=${opportunity.id})}" method="post">
           <label class="field">Situação<select name="status" required><option th:each="s : ${statuses}" th:value="${s.name()}" th:text="${s.label}" th:selected="${application != null && application.status == s}"></option></select></label>
           <label class="field">Anotações<textarea name="notes" rows="6" maxlength="2000" placeholder="Próximos passos, datas ou observações..." th:text="${application != null ? application.notes : ''}"></textarea></label>
@@ -52,6 +53,7 @@
         </form>
         <form th:if="${application != null}" th:action="@{/applications/{id}/delete(id=${opportunity.id})}" method="post"><button type="submit" class="button button-quiet full-width">Remover acompanhamento</button></form>
       </section>
+      <section class="panel" th:if="${!signedIn}"><h2>Seu acompanhamento</h2><p>Entre ou crie uma conta para guardar candidaturas, status e notas.</p><a class="button button-primary" th:href="@{/login}">Fazer login</a></section>
     </aside>
   </div>
 </main>

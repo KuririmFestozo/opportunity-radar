@@ -1,6 +1,7 @@
 package br.ufscar.opportunityradar.controller;
 
-import br.ufscar.opportunityradar.config.VisitorIdentityFilter;
+import br.ufscar.opportunityradar.service.AccountService;
+import java.security.Principal;
 import br.ufscar.opportunityradar.domain.ApplicationStatus;
 import br.ufscar.opportunityradar.service.AdvancedSearchService;
 import br.ufscar.opportunityradar.service.CatalogService;
@@ -17,12 +18,14 @@ public class OpportunityController {
     private final CatalogService catalog;
     private final TrackingService tracking;
     private final AdvancedSearchService advanced;
+    private final AccountService accounts;
 
     public OpportunityController(CatalogService catalog, TrackingService tracking,
-                                 AdvancedSearchService advanced) {
+                                 AdvancedSearchService advanced, AccountService accounts) {
         this.catalog = catalog;
         this.tracking = tracking;
         this.advanced = advanced;
+        this.accounts = accounts;
     }
 
     @GetMapping("/")
@@ -77,14 +80,22 @@ public class OpportunityController {
 
     @GetMapping("/opportunities/{id}")
     public String detail(@PathVariable String id,
-                         @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                         Principal principal,
                          Model model) {
         var opportunity = catalog.require(id);
         model.addAttribute("opportunity", opportunity);
         model.addAttribute("postings", catalog.postings(id));
         model.addAttribute("scores", catalog.scores(id));
-        model.addAttribute("favorite", tracking.isFavorite(visitor, id));
-        model.addAttribute("application", tracking.applicationFor(visitor, id).orElse(null));
+        boolean signedIn = principal != null;
+        model.addAttribute("signedIn", signedIn);
+        if (signedIn) {
+            String ownerId = accounts.ownerId(principal);
+            model.addAttribute("favorite", tracking.isFavorite(ownerId, id));
+            model.addAttribute("application", tracking.applicationFor(ownerId, id).orElse(null));
+        } else {
+            model.addAttribute("favorite", false);
+            model.addAttribute("application", null);
+        }
         model.addAttribute("statuses", ApplicationStatus.values());
         model.addAttribute("safeUrl", CatalogService.safeUrl(opportunity.getCanonicalUrl()));
         return "detail";
