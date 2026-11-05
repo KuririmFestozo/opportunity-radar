@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Favoritos | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container subsection">
+  <div class="eyebrow">SUA LISTA</div><h1>Vagas <em>favoritas.</em></h1><p class="muted">Oportunidades salvas para consultar mais tarde.</p>
+  <div th:if="${message}" class="flash" th:text="${message}"></div>
+  <div class="job-grid" th:if="${!favorites.isEmpty()}">
+    <th:block th:each="f : ${favorites}" th:with="o=${opportunities[f.opportunityId]}">
+    <article class="job-card" th:if="${o != null}">
+      <span class="tag">★ Favorita</span><div class="company" th:text="${o.company}"></div><h3 th:text="${o.title}"></h3><p class="location" th:text="${o.locationText}"></p><a class="detail-link" th:href="@{/opportunities/{id}(id=${o.id})}">Ver detalhes →</a>
+    </article>
+    </th:block>
+  </div>
+  <div th:if="${favorites.isEmpty()}" class="empty-state"><h2>Nenhuma favorita por enquanto</h2><p>Abra uma oportunidade e clique em “Salvar nos favoritos”.</p><a class="button button-primary" th:href="@{/opportunities}">Explorar vagas</a></div>
+</main><footer class="container footer">Opportunity Radar · MVC · JPA</footer></body></html>

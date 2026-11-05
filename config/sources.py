@@ -60,6 +60,7 @@ PUBLIC_SOURCES = {
     # Kept only as an emergency fallback if the public portal API changes.
     "gupy_public_fallback": {
         "enabled": False,
+        "on_global_failure": True,  # auto-run bounded company pages if global portal fails
     },
     "vagas_com": {
         "enabled": True,

@@ -581,3 +581,44 @@ flowchart TD
 ```
 
 A ideia é que o Opportunity Radar deixe de ser apenas um script de agregação e evolua para uma plataforma pessoal de descoberta e acompanhamento de oportunidades.
+
+
+---
+
+## Entrega 2 — Protótipo web Spring MVC (13/11/2026)
+
+O projeto inclui uma interface Java independente em
+[web-mvc/](web-mvc/README.md), criada para a disciplina. O Python continua
+responsável por coletar e classificar as vagas. O Java lê uma cópia consistente
+do banco SQLite e utiliza Spring Boot, Thymeleaf, Spring Data JPA e Hibernate
+SQLiteDialect.
+
+Funcionalidades: catálogo paginado, busca e filtros, detalhes, pontuações,
+favoritos e acompanhamento CRUD de candidaturas persistidos via JPA.
+
+Para preparar uma cópia segura e iniciar a versão web no Windows:
+
+~~~powershell
+python web-mvc/tools/prepare_sqlite_snapshot.py data/opportunity_radar.db web-mvc/radar-web.db
+$env:RADAR_DB_PATH = (Resolve-Path web-mvc/radar-web.db).Path
+cd web-mvc
+mvn spring-boot:run
+~~~
+
+Abra http://localhost:8080. Requer JDK 17 e Maven.
+O gerador de snapshot **não substitui** um arquivo já existente; para repetir,
+informe outro nome de destino.
+
+Sem o SQLite de produção, há um gerador de dados claramente fictícios
+([instruções](web-mvc/README.md)) para demonstração offline.
+
+Testes:
+
+~~~powershell
+python -m pytest -q
+mvn -B -ntp -f web-mvc/pom.xml test
+~~~
+
+A interface é **monousuário, local e sem autenticação**. Não exponha na internet
+sem implementar controle de acesso, CSRF e demais proteções. O módulo não usa
+Supabase nem modifica tabelas de coleta/lifecycle.

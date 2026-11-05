@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oportunidades | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container">
+  <section class="hero">
+    <div class="eyebrow">DESCUBRA SEU PRÓXIMO PASSO</div>
+    <h1>Oportunidades para <em>ir além.</em></h1>
+    <p>Vagas reais coletadas de múltiplas fontes, organizadas em um único lugar.</p>
+    <div class="hero-stats"><span><strong th:text="${total}">0</strong> oportunidades no catálogo</span><span><strong th:text="${results.totalElements}">0</strong> encontradas</span></div>
+  </section>
+  <section class="search-panel" aria-label="Filtros">
+    <form th:action="@{/opportunities}" method="get">
+      <div class="filters-grid">
+        <label class="field wide">Buscar por vaga ou empresa<input name="q" type="search" maxlength="100" placeholder="Ex.: estágio em engenharia..." th:value="${q}"></label>
+        <label class="field">Localização<input name="location" maxlength="100" placeholder="Ex.: São Carlos" th:value="${location}"></label>
+        <label class="field">Fonte<select name="source"><option value="">Todas as fontes</option><option th:each="s : ${sources}" th:value="${s}" th:text="${s}" th:selected="${s == source}"></option></select></label>
+        <label class="field">Curso / área<select name="course"><option value="">Todos os cursos</option><option th:each="c : ${courses}" th:value="${c}" th:text="${#strings.replace(c,'_',' ')}" th:selected="${c == course}"></option></select></label>
+        <label class="field">Afinidade mínima<input type="number" name="minScore" min="0" max="100" th:value="${minScore}"></label>
+        <label class="field">Disponibilidade<select name="activeOnly"><option value="true" th:selected="${activeOnly}">Somente ativas</option><option value="false" th:selected="${!activeOnly}">Todas, inclusive encerradas</option></select></label>
+        <button class="button button-primary filter-button" type="submit">Filtrar oportunidades <span>↗</span></button>
+      </div>
+    </form>
+  </section>
+  <section class="results-section">
+    <div class="section-heading"><div><div class="eyebrow">CATÁLOGO</div><h2>Resultados <span th:text="'(' + ${results.totalElements} + ')'"></span></h2></div><span class="muted">Ordenadas por atualização</span></div>
+    <div class="job-grid" th:if="${!results.empty}">
+      <article class="job-card" th:each="o : ${results.content}">
+        <div class="card-top"><span class="icon-square">✦</span><span class="tag" th:text="${o.employmentType != null && !o.employmentType.isBlank() ? o.employmentType : 'Oportunidade'}">Oportunidade</span></div>
+        <div class="company" th:text="${o.company}">Empresa</div>
+        <h3 th:text="${o.title}">Título da vaga</h3>
+        <p class="location" th:text="${o.locationText != null && !o.locationText.isBlank() ? o.locationText : 'Local não informado'}">Local</p>
+        <div class="card-bottom"><span class="muted" th:text="${o.workplaceType != null ? o.workplaceType : 'Modalidade não informada'}"></span><a class="detail-link" th:href="@{/opportunities/{id}(id=${o.id})}">Ver detalhes <span>→</span></a></div>
+      </article>
+    </div>
+    <div class="empty-state" th:if="${results.empty}"><div class="empty-icon">⌁</div><h3>Nenhuma oportunidade encontrada</h3><p>Tente ampliar os filtros ou incluir vagas inativas.</p><a th:href="@{/opportunities}" class="button button-primary">Limpar filtros</a></div>
+    <div class="pagination" th:if="${results.totalPages > 1}">
+      <a th:if="${results.hasPrevious()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},minScore=${minScore},activeOnly=${activeOnly},page=${results.number - 1})}">← Anterior</a>
+      <span th:text="'Página ' + ${results.number + 1} + ' de ' + ${results.totalPages}"></span>
+      <a th:if="${results.hasNext()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},minScore=${minScore},activeOnly=${activeOnly},page=${results.number + 1})}">Próxima →</a>
+    </div>
+  </section>
+</main>
+<footer class="container footer">Opportunity Radar · Spring MVC / Thymeleaf / JPA · SQLite local</footer>
+</body>
+</html>

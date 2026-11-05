@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="nav" class="site-header">
+  <div class="container header-inner">
+    <a class="brand" th:href="@{/opportunities}"><span class="brand-mark">✦</span><span>Opportunity <strong>Radar</strong></span></a>
+    <nav aria-label="Navegação principal">
+      <a th:href="@{/opportunities}">Oportunidades</a>
+      <a th:href="@{/favorites}">Favoritos</a>
+      <a th:href="@{/applications}">Candidaturas</a>
+    </nav>
+  </div>
+</header>
+</body>
+</html>
