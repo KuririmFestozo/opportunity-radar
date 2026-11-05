@@ -198,7 +198,7 @@ class OpportunityRadarWebIntegrationTest {
                 WHERE p.opportunity_id = o.id AND p.is_active = 1
             )
             ORDER BY o.updated_at DESC LIMIT 12
-            """, String.class);
+            """).stream().map(row -> String.valueOf(row.get("detail"))).toList();
         assertThat(plan).anyMatch(
             item -> item.contains("idx_web_postings_opp_active_source"));
     }
