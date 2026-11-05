@@ -61,9 +61,14 @@ detalhes, URLs, favoritos, candidaturas e validações.
 - View: páginas HTML Thymeleaf com CSS responsivo;
 - Banco: SQLite existente com tabelas adicionais para a camada web.
 
-A aplicação cria apenas web_favorites e web_applications com script SQL
-idempotente. Hibernate DDL está DESLIGADO para proteger as tabelas Python.
-O site não altera dados nem lifecycle das oportunidades coletadas.
+A aplicação cria web_favorites e web_applications e **índices de consulta**
+sobre as tabelas relacionais na **cópia** do SQLite. O índice composto
+(opportunity_id, is_active, source) evita uma consulta correlacionada muito
+lenta em bancos com dezenas de milhares de registros. O índice de updated_at
+acelera a paginação, e o de course_id acelera os filtros.
+O script SQL é idempotente; Hibernate DDL está DESLIGADO.
+O site não altera registros nem lifecycle das oportunidades coletadas.
+Na primeira inicialização, a criação dos índices pode consumir alguns segundos.
 
 ## Limitações e segurança
 

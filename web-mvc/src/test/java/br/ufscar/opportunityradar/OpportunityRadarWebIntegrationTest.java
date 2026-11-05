@@ -9,6 +9,7 @@ import java.sql.DriverManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -86,6 +87,7 @@ class OpportunityRadarWebIntegrationTest {
     }
 
     @Autowired MockMvc mvc;
+    @Autowired JdbcTemplate jdbc;
     @Autowired FavoriteRepository favorites;
     @Autowired ApplicationRepository applications;
 
@@ -173,5 +175,31 @@ class OpportunityRadarWebIntegrationTest {
             .param("notes","x".repeat(2001)))
             .andExpect(status().isBadRequest());
         assertThat(applications.findAll()).isEmpty();
+    }
+
+
+    @Test
+    void sqliteUsesIndexForActivePostingLookupOnCatalog() {
+        var indexes = jdbc.queryForList(
+            "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_web_%'",
+            String.class);
+        assertThat(indexes).contains(
+            "idx_web_postings_opp_active_source",
+            "idx_web_opportunities_updated",
+            "idx_web_course_scores_course_score");
+
+        // Regression guard: a standalone is_active index used here produces
+        // a correlated full scan per opportunity on real 20k+ snapshots.
+        var plan = jdbc.queryForList("""
+            EXPLAIN QUERY PLAN
+            SELECT o.id FROM opportunities o
+            WHERE EXISTS (
+                SELECT 1 FROM source_postings p
+                WHERE p.opportunity_id = o.id AND p.is_active = 1
+            )
+            ORDER BY o.updated_at DESC LIMIT 12
+            """, String.class);
+        assertThat(plan).anyMatch(
+            item -> item.contains("idx_web_postings_opp_active_source"));
     }
 }
