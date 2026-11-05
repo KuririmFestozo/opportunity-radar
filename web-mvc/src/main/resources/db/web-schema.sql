@@ -55,3 +55,13 @@ CREATE TABLE IF NOT EXISTS web_device_applications (
 );
 CREATE INDEX IF NOT EXISTS idx_web_device_applications_owner
   ON web_device_applications(owner_id, updated_at DESC);
+
+
+-- Registered accounts. UUID ID cannot clash with old 64-character browser tokens.
+-- Never store plaintext passwords; bcrypt hashes are created by Spring Security.
+CREATE TABLE IF NOT EXISTS web_users (
+  id TEXT PRIMARY KEY NOT NULL,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
