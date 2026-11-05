@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criar conta | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/auth.css}"></head>
+<body><div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container auth-layout">
+  <section class="auth-aside">
+    <div class="eyebrow">CONTA GRATUITA</div>
+    <h1>Uma conta. <em>Seus favoritos.</em></h1>
+    <p>Crie seu usuário e acesse suas candidaturas em qualquer dispositivo pelo mesmo site.</p>
+    <div class="auth-figure"><span>★</span><strong>Sem Supabase.</strong><small>Suas listas continuam no SQLite local.</small></div>
+  </section>
+  <section class="panel auth-card">
+    <div class="eyebrow">PRIMEIRO ACESSO</div><h2>Criar conta</h2>
+    <p role="alert" class="auth-error" th:if="${error}" th:text="${error}"></p>
+    <form th:action="@{/register}" method="post" class="auth-form">
+      <label class="field">Nome de usuário
+        <input type="text" name="username" maxlength="40" minlength="3" th:value="${username}" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,39}" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Ex.: kuririm">
+      </label>
+      <label class="field">Senha (mínimo de 10 caracteres)
+        <input type="password" name="password" minlength="10" maxlength="64" autocomplete="new-password" required placeholder="Crie uma senha forte">
+      </label>
+      <label class="field">Confirmar senha
+        <input type="password" name="confirmPassword" minlength="10" maxlength="64" autocomplete="new-password" required placeholder="Repita a senha">
+      </label>
+      <button class="button button-primary full-width" type="submit">Criar minha conta <span>→</span></button>
+    </form>
+    <p class="auth-footnote">Não há recuperação por e-mail nesta versão. Guarde sua senha em um gerenciador de senhas.</p>
+    <p class="auth-bottom">Já tem uma conta? <a th:href="@{/login}">Fazer login</a></p>
+  </section>
+</main><footer class="container footer">Opportunity Radar · Conta local e gratuita.</footer>
+</body></html>

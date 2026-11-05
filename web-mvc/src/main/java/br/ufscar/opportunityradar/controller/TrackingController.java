@@ -1,6 +1,7 @@
 package br.ufscar.opportunityradar.controller;
 
-import br.ufscar.opportunityradar.config.VisitorIdentityFilter;
+import br.ufscar.opportunityradar.service.AccountService;
+import java.security.Principal;
 import br.ufscar.opportunityradar.domain.Opportunity;
 import br.ufscar.opportunityradar.service.CatalogService;
 import br.ufscar.opportunityradar.service.TrackingService;
@@ -19,16 +20,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class TrackingController {
     private final CatalogService catalog;
     private final TrackingService tracking;
+    private final AccountService accounts;
 
-    public TrackingController(CatalogService catalog, TrackingService tracking) {
+    public TrackingController(CatalogService catalog, TrackingService tracking, AccountService accounts) {
         this.catalog = catalog;
         this.tracking = tracking;
+        this.accounts = accounts;
     }
 
     @GetMapping("/favorites")
-    public String favorites(@RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+    public String favorites(Principal principal,
                             Model model) {
-        var favorites = tracking.favorites(visitor);
+        var favorites = tracking.favorites(accounts.ownerId(principal));
         Map<String, Opportunity> opportunities = new LinkedHashMap<>();
         for (var favorite : favorites) {
             try { opportunities.put(favorite.getOpportunityId(), catalog.require(favorite.getOpportunityId())); }
@@ -41,17 +44,17 @@ public class TrackingController {
 
     @PostMapping("/favorites/{id}")
     public String toggle(@PathVariable String id,
-                         @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                         Principal principal,
                          RedirectAttributes flash) {
-        tracking.toggleFavorite(visitor, id);
-        flash.addFlashAttribute("message", "Favoritos atualizados neste navegador.");
+        tracking.toggleFavorite(accounts.ownerId(principal), id);
+        flash.addFlashAttribute("message", "Favoritos atualizados na sua conta.");
         return "redirect:/opportunities/" + id;
     }
 
     @GetMapping("/applications")
-    public String applications(@RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+    public String applications(Principal principal,
                                Model model) {
-        var entries = tracking.applications(visitor);
+        var entries = tracking.applications(accounts.ownerId(principal));
         Map<String, Opportunity> opportunities = new LinkedHashMap<>();
         for (var entry : entries) {
             try { opportunities.put(entry.getOpportunityId(), catalog.require(entry.getOpportunityId())); }
@@ -64,20 +67,20 @@ public class TrackingController {
 
     @PostMapping("/applications/{id}")
     public String save(@PathVariable String id,
-                       @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                       Principal principal,
                        @RequestParam String status,
                        @RequestParam(defaultValue = "") String notes,
                        RedirectAttributes flash) {
-        tracking.saveApplication(visitor, id, status, notes);
-        flash.addFlashAttribute("message", "Acompanhamento salvo neste navegador.");
+        tracking.saveApplication(accounts.ownerId(principal), id, status, notes);
+        flash.addFlashAttribute("message", "Acompanhamento salvo na sua conta.");
         return "redirect:/opportunities/" + id;
     }
 
     @PostMapping("/applications/{id}/delete")
     public String delete(@PathVariable String id,
-                         @RequestAttribute(VisitorIdentityFilter.ATTRIBUTE) String visitor,
+                         Principal principal,
                          RedirectAttributes flash) {
-        tracking.deleteApplication(visitor, id);
+        tracking.deleteApplication(accounts.ownerId(principal), id);
         flash.addFlashAttribute("message", "Acompanhamento removido.");
         return "redirect:/applications";
     }

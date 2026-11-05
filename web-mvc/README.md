@@ -74,10 +74,8 @@ Na primeira inicialização, a criação dos índices pode consumir alguns segun
 
 ## Limitações e segurança
 
-- Protótipo monousuário, ouvindo por padrão apenas em 127.0.0.1.
-  A proteção CSRF está ativa, mas **não há autenticação real**, contas ou
-  controle de permissões. Use Cloudflare Quick Tunnel apenas para testes
-  temporários e evite colocar dados sensíveis no site.
+- O site possui autenticação por usuário e senha, mas continua como protótipo
+  para testes temporários: recuperação de senha e produção ficam para depois.
 - SQLite só aceita uma transação de escrita por vez. Por isso recomendamos uma
   cópia do banco, sem disputar gravações com o processo de coleta.
 - A busca textual usa LIKE, não FTS. Para dezenas de milhares de vagas,
@@ -86,47 +84,31 @@ Na primeira inicialização, a criação dos índices pode consumir alguns segun
   converte o banco e não exige Supabase.
 
 
-## Busca avançada e perfis por navegador (Entrega 2+)
 
-A interface agora traz recursos da versão Python anterior:
+## Login, favoritos e dispositivos
 
-- **Usar minha localização**: após consentimento do navegador (HTTPS ou
-  localhost), arredonda latitude/longitude para **2 casas decimais** e usa
-  Haversine para ordenar todas as oportunidades por distância, antes de
-  paginar. O cálculo só é possível para vagas com coordenadas. Sem latitude/
-  longitude, distância desconhecida aparece por último.
-- **Raio máximo** (1 a 1000 km), com opção de incluir anúncios remotos fora
-  do raio. A localização **não é salva** no banco; por ser enviada em
-  parâmetros de busca, fica visível na URL/histórico e infraestrutura do
-  túnel. Use "Limpar filtros" para removê-la da URL.
-- **Afinidade**: maior pontuação entre os cursos ou pontuação do curso
-  selecionado; filtros por pontuação mínima, tipo, modalidade, fonte,
-  palavras obrigatórias/excluídas e local.
-- **Ordenação**: maior afinidade, mais perto, mais recente e título A–Z.
-  A ordenação não se limita às 12 vagas visíveis: ocorre antes da paginação.
-  Não há coleta ao vivo por localização nesta interface; as buscas usam as
-  oportunidades já presentes no snapshot do SQLite.
-- **Favoritos e candidaturas diferentes por navegador**: o backend emite
-  cookie aleatório de 256 bits, HttpOnly, SameSite=Lax e Secure no túnel
-  HTTPS. O SQLite tem tabelas web_device_favorites e web_device_applications
-  com chave composta (owner_id, opportunity_id); dados são persistidos,
-  porém isolados entre perfis.
-- **Código de recuperação** em "Meu perfil": serve para restaurar as listas
-  quando mudar a URL temporária da Cloudflare ou usar as mesmas listas em
-  outro aparelho. **É um segredo equivalente a senha:** quem tiver o código
-  acessa suas listas/anotações. Se quiser listas diferentes, não compartilhe
-  o código. É possível criar outro perfil sem apagar o anterior.
-- **CSRF em todos os POSTs** usando Spring Security, sem exigir login.
-  O protótipo continua local e monousuário. Não o exponha indefinidamente
-  nem utilize para dados confidenciais sem autenticação real.
+Há cadastro, login e logout com Spring Security. Sem Supabase ou códigos.
+Crie um usuário (3-40 caracteres) e uma senha forte (10-64 caracteres)
+em /register; depois use /login para entrar no computador e no celular.
 
-**Compatibilidade:** as duas antigas tabelas globais web_favorites e
-web_applications são preservadas intactas (sem dono inferível) e não
-aparecem automaticamente nas novas listas isoladas. Nenhuma oportunidade
-é modificada. Uma nova URL trycloudflare.com cria um novo cookie: use
-"Meu perfil" para restaurar o perfil anterior.
+- Os hashes de senha usam BCrypt (custo 12), nunca texto puro.
+- Contas ficam na tabela web_users do SQLite da interface.
+- Favoritos e candidaturas usam owner_id vinculado ao UUID da conta,
+  isolando completamente usuários diferentes.
+- No primeiro login no **mesmo navegador** onde havia listas anônimas, elas
+  são migradas para a conta. Dados de outros navegadores não são adivinhados
+  e permanecem preservados; não são apagados.
+- O túnel Cloudflare muda de domínio, mas as contas continuam no banco:
+  use o mesmo usuário e senha na nova URL.
+- Favoritos, candidaturas e Minha conta exigem login; catálogo e detalhes
+  continuam públicos. POSTs usam CSRF e a sessão é protegida contra fixation.
+- A busca mantém localização mediante consentimento, proximidade por
+  Haversine, afinidade, raio, filtros por curso/tipo/modalidade, texto e fonte.
 
-**Limitações:** presets com múltiplos cursos, filtro de país com metadados
-estruturados, e a busca dinâmica externa do antigo dashboard ainda não
-estão implementados na camada Java. A entrega cobre os recursos principais
-de busca local, distância, afinidade e acompanhamento.
+O site é um **protótipo de teste**. Ainda não possui validação de e-mail,
+recuperação de senha, MFA ou proteção de borda robusta. Mantenha o notebook
+ligado e o túnel temporário. A localização arredondada é enviada na URL,
+mas não é armazenada no SQLite.
+
+**Preserve radar-web.db** após criar usuários: não sobrescreva o arquivo
+com um snapshot novo, pois ele passa a conter suas contas e listas.

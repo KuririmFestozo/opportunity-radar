@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar | Opportunity Radar</title><link rel="stylesheet" th:href="@{/css/app.css}"><link rel="stylesheet" th:href="@{/css/auth.css}"></head>
+<body><div th:replace="~{fragments/nav :: nav}"></div>
+<main class="container auth-layout">
+  <section class="auth-aside">
+    <div class="eyebrow">OPPORTUNITY RADAR</div>
+    <h1>Suas oportunidades, <em>em qualquer lugar.</em></h1>
+    <p>Entre na sua conta para continuar com seus favoritos e candidaturas no computador ou celular.</p>
+    <div class="auth-figure"><span>✦</span><strong>Um radar.</strong><small>Todos os seus dispositivos.</small></div>
+  </section>
+  <section class="panel auth-card">
+    <div class="eyebrow">BEM-VINDO DE VOLTA</div>
+    <h2>Entrar na conta</h2>
+    <p class="muted">Não precisa de código de recuperação.</p>
+    <p role="alert" class="auth-error" th:if="${param.error}">Usuário ou senha inválidos, ou limite de tentativas atingido. Confira seus dados e tente novamente mais tarde.</p>
+    <p role="status" class="flash" th:if="${param.logout}">Você saiu da sua conta.</p>
+    <p role="status" class="flash" th:if="${message}" th:text="${message}"></p>
+    <form th:action="@{/login}" method="post" class="auth-form">
+      <label class="field">Nome de usuário
+        <input type="text" name="username" maxlength="40" minlength="3" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,39}" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Seu usuário">
+      </label>
+      <label class="field">Senha
+        <input type="password" name="password" autocomplete="current-password" required placeholder="Sua senha">
+      </label>
+      <button class="button button-primary full-width" type="submit">Entrar <span>→</span></button>
+    </form>
+    <p class="auth-bottom">Ainda não tem uma conta? <a th:href="@{/register}">Criar uma conta</a></p>
+  </section>
+</main><footer class="container footer">Opportunity Radar · Login com usuário e senha, sem serviços externos.</footer>
+</body></html>

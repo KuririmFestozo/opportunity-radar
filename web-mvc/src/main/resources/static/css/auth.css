@@ -1,0 +1,22 @@
+/* Login, registration and account layouts */
+.auth-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:65px;align-items:center;min-height:calc(100vh - 186px);padding:50px 0}
+.auth-aside h1{font-size:clamp(40px,5vw,62px);max-width:530px}
+.auth-aside>p{font-size:17px;color:#647c75;max-width:430px}
+.auth-figure{margin-top:35px;display:flex;align-items:center;gap:12px;color:#1b695b;border-radius:15px;background:#e9f4e9;padding:22px}
+.auth-figure span{background:#cce6cb;border-radius:12px;display:grid;place-items:center;width:44px;height:44px;font-size:25px}
+.auth-figure strong{font-family:Outfit,sans-serif}
+.auth-figure small{font-size:12px}
+.auth-card{padding:36px;max-width:485px;width:100%;justify-self:end}
+.auth-card h2{font-size:32px}.auth-card>p{margin:4px 0 20px}
+.auth-form{display:flex;flex-direction:column;gap:18px}
+.auth-form .button{margin-top:7px}
+.auth-error{border-radius:9px;background:#fff0ed;border:1px solid #f2c6bc;color:#9f342d;padding:12px 14px;font-size:13px}
+.auth-bottom{border-top:1px solid var(--line);padding-top:24px;margin-top:30px!important;text-align:center;font-size:13px;color:#687c77}
+.auth-bottom a{color:var(--accent);font-weight:800}
+.auth-footnote{font-size:12px;color:#70847e;margin-top:15px!important}
+.account-card{display:flex;gap:22px;align-items:center;margin-top:25px;max-width:650px}
+.account-avatar{font-size:32px;color:#1d7660;display:grid;place-items:center;width:80px;height:80px;background:#e1f3e4;border-radius:20px;flex:none}
+.account-card h2{margin:0}.account-card p{margin-bottom:0}
+.account-actions{display:flex;gap:14px;flex-wrap:wrap;margin:25px 0}
+.account-notice{max-width:800px}
+@media(max-width:850px){.auth-layout{grid-template-columns:1fr;gap:22px;min-height:0;padding:35px 0}.auth-aside h1{font-size:35px}.auth-figure{display:none}.auth-card{max-width:none;justify-self:stretch;padding:25px}.account-card{align-items:start}.account-actions{flex-direction:column}.account-actions form,.account-actions button{width:100%}.account-avatar{height:52px;width:52px;font-size:25px}}
