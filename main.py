@@ -48,6 +48,9 @@ from processing.deduplicate import deduplicate_jobs
 from processing.export import export_all
 from processing.geolocation import enrich_job_location
 from processing.gupy_lifecycle import filter_discoveries
+from processing.source_availability import (
+    audit_sources, closed_posting_keys, suppress_confirmed_closed,
+)
 from processing.matching import match_job
 from processing.deduplicate import deduplicate_source_jobs
 from storage.sqlite_repository import SQLiteOpportunityRepository
@@ -649,6 +652,14 @@ def main():
             f'{gupy_filter_stats["explicit"]} encerradas na API | '
             f'{gupy_filter_stats["previously_closed"]} fechadas já confirmadas.'
         )
+    # Preserve positive closure evidence from all other ATS/platforms.
+    # Source disappearance, outages and login gates are *never* a closure.
+    source_unique, known_closed_filtered = suppress_confirmed_closed(
+        source_unique, closed_posting_keys(store._store.conn)
+    )
+    if known_closed_filtered:
+        print(f"  [DISPONIBILIDADE] {known_closed_filtered} anuncios fechados "
+              "ja confirmados ignorados na coleta.")
     print(f"IDs únicos válidos nesta coleta: {len(source_unique)}")
 
     incremental = Counter()
@@ -680,6 +691,27 @@ def main():
                 f'{audit_stats["unknown"]} inconclusivas | '
                 f'{audit_stats["inactivated"]} inativadas.'
             )
+    store.commit()
+
+    # Audits every configured public ATS/provider in rotating batches; no
+    # source is allowed to monopolize the budget. This is an independent
+    # signal from the discovery lifecycle.
+    if daily_audit:
+        budget = max(0, min(int(os.getenv("SOURCE_AVAILABILITY_AUDIT_LIMIT", "80")), 2000))
+        if budget:
+            source_audit = audit_sources(
+                store._store.conn, limit=budget, workers=6,
+            )
+            print(
+                f'  [DISPONIBILIDADE] {source_audit["checked"]} anuncios '
+                f'em {len(source_audit["by_source"])} fontes | '
+                f'{source_audit["open"]} abertas confirmadas | '
+                f'{source_audit["closed"]} encerradas | '
+                f'{source_audit["unverified"]} inconclusivas | '
+                f'{source_audit["inactivated"]} inativadas.'
+            )
+            for name, values in source_audit["by_source"].items():
+                print(f'    {name}: {values}')
     store.commit()
 
     # CP4-A shadow migration: legacy jobs remain authoritative for now.
