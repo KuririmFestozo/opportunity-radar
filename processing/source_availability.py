@@ -11,6 +11,8 @@ allowing the web UI to separate unverified from unchecked opportunities.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import Counter
 from functools import lru_cache
 import re
 import sqlite3
@@ -397,3 +399,46 @@ def suppress_confirmed_closed(jobs, closed):
     kept = [job for job in jobs if
             (job.source, str(job.source_job_id)) not in closed]
     return kept, len(jobs) - len(kept)
+
+
+
+def audit_sources(conn: sqlite3.Connection, *, limit=100, workers=6,
+                  apply=True, urls=None):
+    """Bounded, fair audit across all collectors, with source-level reporting.
+
+    Network requests run concurrently but SQLite changes occur on the calling
+    thread. Unknown/redirect/login states never close an opportunity.
+    """
+    if not 0 <= limit <= 2000 or not 1 <= workers <= 12:
+        raise ValueError("limit must be 0..2000 and workers 1..12")
+    candidates, unmatched = select_postings(conn, urls=urls, limit=limit)
+    counts = Counter()
+    by_source = {}
+    for x in unmatched:
+        print(f"[NOT FOUND] {x}")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(probe, source, url): (source, job_id, url)
+            for source, job_id, url in candidates
+        }
+        for future in as_completed(futures):
+            source, job_id, url = futures[future]
+            try:
+                verdict, evidence = future.result()
+            except Exception:
+                verdict, evidence = "unverified", "unexpected_check_error"
+            counts[verdict] += 1
+            by_source.setdefault(source, Counter())[verdict] += 1
+            if apply:
+                counts["inactivated"] += apply_result(
+                    conn, source, job_id, verdict, evidence
+                )
+    if apply:
+        conn.commit()
+    return {
+        "checked": len(candidates), "open": counts["open"],
+        "closed": counts["closed"], "unverified": counts["unverified"],
+        "inactivated": counts["inactivated"],
+        "by_source": {k: dict(v) for k, v in sorted(by_source.items())},
+        "unmatched": unmatched,
+    }
