@@ -836,3 +836,43 @@ O verificador automático também reconhece o texto oficial
 "Sorry, this position has been filled" da ZF/SuccessFactors como
 encerramento. Um 404, redirecionamento, bloqueio ou login obrigatório
 continuam sendo inconclusivos; não se afirma que a vaga foi fechada.
+
+
+### Padrões por plataforma e navegação renderizada (HTML + JavaScript)
+
+As mensagens observadas nos sites de emprego agora são aplicadas de forma
+padronizada em **todas as 27 famílias de fontes** do radar. A auditoria
+diferencia:
+
+- **Encerrada:** aviso visível explícito, como "Applications closed" da Gupy,
+  "Sorry, this position has been filled" do SAP SuccessFactors / ZF,
+  "This job is no longer accepting applications", "Vaga expirada" etc.,
+  ou prazo ISO JobPosting.validThrough vencido presente em dados
+  estruturados Schema.org de uma vaga específica.
+- **Abertura confirmada:** aviso visível explícito de inscrições abertas.
+- **Inconclusiva:** descrição antiga ainda acessível, sem prova de candidatura,
+  redirecionamento, 404, bloqueio, login/captcha, ou falhas de rede.
+
+**Não** basta a página existir, existir botão de cadastro, ou exibir a
+descrição da vaga (como acontece nas vagas antigas da Vagas.com).
+Avisos dentro de scripts, templates ocultos, rodapés e textos que apenas
+mencionam encerramentos são ignorados para evitar falsos positivos.
+
+Na auditoria completa do GitHub Actions, **todos** os anúncios ativos seguem
+sendo auditados via HTTP. Além disso, o workflow abre com **Chromium
+(Playwright)** até **35 páginas inconclusivas por shard** (420 por execução
+com 12 shards), distribuídas entre as diversas fontes cadastradas, para
+ler o texto realmente visível depois do JavaScript carregar. Esta segunda
+etapa tem limite para não sobrecarregar portais nem estourar o tempo do
+Actions. O relatório final registra quantas páginas foram abertas no
+browser e quantas tiveram status confirmado. Falhas de renderização,
+redirecionamentos, login obrigatório e captchas continuam *inconclusivos*;
+nunca são uma prova de encerramento.
+
+Esta rotina **não usa OCR, inteligência artificial para adivinhar
+disponibilidade, nem contorna contas privadas**. Mensagens de fechamento
+diferentes em novas plataformas devem ser acrescentadas como regras
+testadas, sempre preservando as vagas históricas e as contas/favoritos do
+SQLite. O workflow de limpeza integral roda automaticamente quando essas
+regras são alteradas na main (ou por execução manual), com backup e
+verificação de cobertura antes de publicar o banco.

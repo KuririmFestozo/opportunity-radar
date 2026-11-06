@@ -230,6 +230,12 @@ def probe_url(url):
             return "unknown", "non_html"
         if explicit_page_closure(response.text):
             return "closed", "explicit_closed_banner"
+        # Reuse the shared (27-source) evidence rules, including JobPosting
+        # structured-data expiry, when the Gupy page has no known banner.
+        from processing.source_availability import classify_html
+        verdict, evidence = classify_html("gupy_global", response.text)
+        if verdict == "closed":
+            return "closed", evidence
         return "unknown", "no_explicit_closed_banner"
     except requests.RequestException as exc:
         return "unknown", f"network_{type(exc).__name__}"
