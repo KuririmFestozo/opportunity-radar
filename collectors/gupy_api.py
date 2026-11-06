@@ -72,7 +72,11 @@ def collect_gupy_api() -> list[Job]:
                     published_at=item.get("publishedAt") or item.get("createdAt"),
                     employment_type=item.get("type"),
                     workplace_type=item.get("workplaceType"),
-                    metadata={"publication_type": item.get("publicationType")},
+                    metadata={
+                        "publication_type": item.get("publicationType"),
+                        "gupy_status": str(item.get("status") or ""),
+                        "gupy_closed_at": str(item.get("closedAt") or ""),
+                    },
                 )
             )
 
