@@ -253,8 +253,12 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
             )
         conn.execute("PRAGMA foreign_keys=ON")
         conn.execute("PRAGMA busy_timeout=12000")
-        conn.execute("ATTACH DATABASE ? AS incoming",
-                     (source.as_uri() + "?mode=ro",))
+        # ATTACH does not reliably accept pathlib's file:///C:/... URI on
+        # Windows (notably on drives, spaces and localized user paths).
+        # Bind the native filesystem path rather than a URI. All writes in
+        # this transaction explicitly target main.*; incoming is read-only
+        # by convention and the original source snapshot is never replaced.
+        conn.execute("ATTACH DATABASE ? AS incoming", (str(source),))
         try:
             if conn.execute("PRAGMA main.quick_check").fetchone() != ("ok",):
                 raise SyncError("O SQLite do site possui problemas de integridade.")
