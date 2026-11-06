@@ -805,3 +805,34 @@ classroom_latest.db. **Não altere o SQLite do site enquanto ele estiver
 aberto pelo Spring.** Para baixar novas vagas no futuro, primeiro use
 python tools/pull_classroom_db.py; depois execute o sync acima, parando
 o Spring entre as etapas. Não é necessário cadastrar uma conta nova.
+
+### Confirmar encerramento e sinalizar links indisponíveis
+
+Alguns portais continuam exibindo uma descrição após o encerramento,
+enquanto outros retornam HTML vazio, 404 ou bloqueio de acesso.
+Agora a auditoria permite corrigir anúncios específicos, sem apagar
+histórico, usuários, favoritos ou candidaturas.
+
+Use --confirm-closed-url LINK para marcar como encerrada uma candidatura
+que foi confirmada; use --flag-unavailable-url LINK para indicar apenas
+que não foi possível confirmar a candidatura (por exemplo, 404). Os dois
+argumentos são repetíveis, só funcionam com --apply, fazem backup antes
+de modificar o banco e não fazem requisições de rede nesse modo.
+
+Exemplo (PowerShell, na raiz do repositório, com Spring Boot parado):
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --confirm-closed-url "https://jobs.zf.com/job/Araraquara-Estágio-Recursos-Humanos-SP-14800-655/1431252033/" --apply
+
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --flag-unavailable-url "https://vagasmaispetoficial.gupy.io/job/eyJqb2JJZCI6MTI0NDQxOTEsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=" --apply
+~~~
+
+Links ausentes do SQLite são informados e não modificam registros.
+URLs novas da Gupy /job/Base64 são associadas às antigas /jobs/ID pelo
+ID comprovado no endereço. A confirmação manual de uma vaga encerrada
+não pode ser revertida por uma falha temporária posterior.
+
+O verificador automático também reconhece o texto oficial
+"Sorry, this position has been filled" da ZF/SuccessFactors como
+encerramento. Um 404, redirecionamento, bloqueio ou login obrigatório
+continuam sendo inconclusivos; não se afirma que a vaga foi fechada.

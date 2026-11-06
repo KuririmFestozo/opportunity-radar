@@ -50,6 +50,7 @@ _EXACT = {
     "lever": {"jobs.lever.co"},
     "greenhouse": {"boards.greenhouse.io", "job-boards.greenhouse.io"},
     "ashby": {"jobs.ashbyhq.com"},
+    "successfactors": {"jobs.zf.com"},
 }
 _SUFFIXES = {
     "gupy_global": ("gupy.io",),
@@ -122,7 +123,10 @@ def source_coverage(conn: sqlite3.Connection) -> list[dict]:
 
 CLOSED = {"inscricoes encerradas", "candidaturas encerradas",
           "esta vaga foi encerrada", "vaga encerrada", "applications closed",
-          "esta oportunidade foi encerrada"}
+          "esta oportunidade foi encerrada",
+          "sorry, this position has been filled",
+          "this position has been filled",
+          "sorry this position has been filled"}
 OPEN = {"inscricoes abertas", "applications open", "applications are open"}
 _DEADLINE = re.compile(
     r"\binscri(?:cao|coes)\b.{0,100}?\b(?:ate|ate o dia)\s*"
@@ -187,8 +191,15 @@ def normalize_url(raw: str) -> str:
     """Match a supplied URL to the catalog, ignoring only tracking params."""
     try:
         p = urlsplit(str(raw or ""))
+        from urllib.parse import unquote
+
         host = (p.hostname or "").lower().removeprefix("www.")
-        return f"{host}{p.path.rstrip('/').casefold()}"
+        path = unquote(p.path).rstrip("/")
+        # Gupy Base64 tokens are case-sensitive; ordinary vacancy slugs
+        # can be normalized to compare percent-encoded Unicode URLs.
+        if not (host.endswith(".gupy.io") and path.startswith("/job/")):
+            path = path.casefold()
+        return f"{host}{path}"
     except (TypeError, ValueError):
         return ""
 
@@ -285,18 +296,36 @@ def select_postings(conn: sqlite3.Connection, *, urls=None, limit=150):
     unregistered/unsafe URLs are never fetched.
     """
     if urls:
-        wanted = {normalize_url(url) for url in urls}
-        if not wanted or not all(wanted):
+        from processing.gupy_lifecycle import GUPY_SOURCES, gupy_job_id
+
+        requested = {normalize_url(url): str(url) for url in urls}
+        if not requested or not all(requested):
             raise ValueError("URL de consulta invalida")
-        matches = []
+        # New Gupy /job/Base64 URLs may point to an existing /jobs/123
+        # posting, which has the same validated numeric Gupy job ID.
+        gupy_ids = {
+            norm: numeric
+            for norm, raw in requested.items()
+            if (numeric := gupy_job_id(raw)) is not None
+        }
+        matches, matched = [], set()
         for source, job_id, url in conn.execute("""
             SELECT source, source_job_id, url FROM source_postings
         """):
-            if normalize_url(url) in wanted:
+            stored = normalize_url(url)
+            target = stored if stored in requested else None
+            if target is None and source in GUPY_SOURCES and gupy_ids:
+                stored_id = gupy_job_id(url)
+                if stored_id is None and str(job_id).isdecimal():
+                    stored_id = str(job_id)
+                for requested_url, numeric_id in gupy_ids.items():
+                    if stored_id == numeric_id:
+                        target = requested_url
+                        break
+            if target is not None:
                 matches.append((source, job_id, url))
-        unmatched = sorted(wanted - {
-            normalize_url(row[2]) for row in matches
-        })
+                matched.add(target)
+        unmatched = sorted(requested[k] for k in requested.keys() - matched)
         return matches, unmatched
     if limit <= 0:
         return [], []
