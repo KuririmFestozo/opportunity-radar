@@ -65,3 +65,17 @@ CREATE TABLE IF NOT EXISTS web_users (
   password_hash TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+
+-- Source availability is an independent verification signal. Presence in
+-- source_postings alone is not proof that applications remain open.
+CREATE TABLE IF NOT EXISTS source_availability_checks (
+  source TEXT NOT NULL,
+  source_job_id TEXT NOT NULL,
+  verdict TEXT NOT NULL CHECK (verdict IN ('open','closed','unverified')),
+  evidence TEXT NOT NULL,
+  checked_at TEXT NOT NULL,
+  PRIMARY KEY (source, source_job_id)
+);
+CREATE INDEX IF NOT EXISTS idx_source_availability_verdict
+  ON source_availability_checks(verdict, checked_at);

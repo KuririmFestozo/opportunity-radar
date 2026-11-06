@@ -12,8 +12,8 @@
   <section class="hero">
     <div class="eyebrow">SEU PRÓXIMO PASSO COMEÇA AQUI</div>
     <h1>Oportunidades para <em>ir além.</em></h1>
-    <p>Encontre oportunidades por afinidade com seu curso, região e tipo de vaga.</p>
-    <div class="hero-stats"><span><strong th:text="${total}">0</strong> no catálogo</span><span><strong th:text="${results.totalElements}">0</strong> com estes filtros</span></div>
+    <p>Encontre oportunidades por afinidade com seu curso, região e tipo de vaga. Estar no catálogo não garante inscrições abertas.</p>
+    <div class="hero-stats"><span><strong th:text="${total}">0</strong> no histórico</span><span><strong th:text="${results.totalElements}">0</strong> com estes filtros</span></div>
   </section>
 
   <section class="search-panel" aria-label="Busca e filtros">
@@ -63,6 +63,14 @@
             <option value="false" th:selected="${!activeOnly}">Incluir encerradas</option>
           </select>
         </label>
+        <label class="field">Verificação da inscrição
+          <select name="availability">
+            <option value="current" th:selected="${availability == 'current'}">Ativas (sem inconclusivas)</option>
+            <option value="verified" th:selected="${availability == 'verified'}">Abertura confirmada</option>
+            <option value="unverified" th:selected="${availability == 'unverified'}">Não verificadas</option>
+            <option value="all" th:selected="${availability == 'all'}">Mostrar todas</option>
+          </select>
+        </label>
         <label class="field wide">Deve conter (separe por vírgula)<input name="include" maxlength="100" th:value="${include}" placeholder="Ex.: automação, estágio"></label>
         <label class="field wide">Excluir palavras<input name="exclude" maxlength="100" th:value="${exclude}" placeholder="Ex.: sênior, vendas"></label>
       </div>
@@ -97,6 +105,7 @@
       </span>
     </div>
     <p class="geo-note" th:if="${sort == 'distance' && !hasLocation}">Para ordenar por proximidade, clique em “Usar minha localização”. Até lá, a lista usa a ordem de atualização.</p>
+    <p class="muted">“Ativa” significa que o anúncio está no catálogo, não que a inscrição foi confirmada. Vagas verificadas como inconclusivas ficam ocultas no filtro padrão.</p>
     <div class="job-grid" th:if="${!results.empty}">
       <article class="job-card" th:each="o : ${results.content}">
         <div class="card-top">
@@ -104,6 +113,12 @@
           <span class="score-chip" th:if="${affinity[o.id] != null && affinity[o.id] > 0}" th:text="${affinity[o.id]} + '% afinidade'">90% afinidade</span>
           <span class="tag" th:if="${affinity[o.id] == null || affinity[o.id] == 0}">Sem pontuação</span>
         </div>
+        <p class="availability-tag" th:switch="${verification[o.id]}">
+          <span th:case="'open'">Inscrições confirmadas</span>
+          <span th:case="'unverified'">Disponibilidade não confirmada</span>
+          <span th:case="'closed'">Encerramento confirmado</span>
+          <span th:case="*">Ainda não verificada</span>
+        </p>
         <div class="company" th:text="${o.company}">Empresa</div>
         <h3 th:text="${o.title}">Título da vaga</h3>
         <p class="location" th:text="${o.locationText != null && !o.locationText.isBlank() ? o.locationText : 'Local não informado'}">Local</p>
@@ -118,9 +133,9 @@
     </div>
     <div class="empty-state" th:if="${results.empty}"><div class="empty-icon">⌁</div><h3>Nenhuma oportunidade encontrada</h3><p>Tente aumentar o raio, reduzir a afinidade mínima ou remover filtros.</p><a th:href="@{/opportunities}" class="button button-primary">Limpar filtros</a></div>
     <div class="pagination" th:if="${results.totalPages > 1}">
-      <a th:if="${results.hasPrevious()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number - 1})}">← Anterior</a>
+      <a th:if="${results.hasPrevious()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},availability=${availability},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number - 1})}">← Anterior</a>
       <span th:text="'Página ' + ${results.number + 1} + ' de ' + ${results.totalPages}"></span>
-      <a th:if="${results.hasNext()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number + 1})}">Próxima →</a>
+      <a th:if="${results.hasNext()}" th:href="@{/opportunities(q=${q},location=${location},source=${source},course=${course},intent=${intent},workplace=${workplace},include=${include},exclude=${exclude},minScore=${minScore},activeOnly=${activeOnly},availability=${availability},sort=${sort},latitude=${latitude},longitude=${longitude},radiusKm=${radiusKm},includeRemote=${includeRemote},page=${results.number + 1})}">Próxima →</a>
     </div>
   </section>
 </main>
