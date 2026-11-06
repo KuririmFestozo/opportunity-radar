@@ -27,20 +27,20 @@ public class AdvancedSearchService {
     public record Filters(
         String q, String location, String source, String course, String intent,
         String workplace, String include, String exclude, int minScore,
-        boolean activeOnly, String sort, Double latitude, Double longitude,
+        boolean activeOnly, String availability, String sort, Double latitude, Double longitude,
         Integer radiusKm, boolean includeRemote, int page
     ) {}
 
     public record SearchPage(Page<Opportunity> page, Map<String, Integer> affinity,
-                             Map<String, Double> distances, String appliedSort,
+                             Map<String, Double> distances, Map<String, String> verification, String appliedSort,
                              boolean hasLocation) {}
 
     private record Candidate(String id, String title, String publishedAt, String updatedAt,
                              String workplace, int score, Double latitude, Double longitude,
-                             Double distanceKm) {
+                             Double distanceKm, String verification) {
         Candidate withDistance(Double distance) {
             return new Candidate(id, title, publishedAt, updatedAt, workplace,
-                score, latitude, longitude, distance);
+                score, latitude, longitude, distance, verification);
         }
     }
 
@@ -73,6 +73,10 @@ public class AdvancedSearchService {
             ? "COALESCE((SELECT MAX(sc.score) FROM opportunity_course_scores sc WHERE sc.opportunity_id = o.id), 0)"
             : "COALESCE((SELECT sc.score FROM opportunity_course_scores sc WHERE sc.opportunity_id = o.id AND sc.course_id = :course), 0)";
 
+        String availability = switch (f.availability() == null ? "" : f.availability()) {
+            case "all", "verified", "unverified" -> f.availability();
+            default -> "current";
+        };
         StringBuilder conditions = new StringBuilder(" WHERE 1=1 ");
         String q = safe(f.q());
         if (q != null) {
@@ -88,10 +92,20 @@ public class AdvancedSearchService {
             p.addValue("location", pattern(location));
             conditions.append(" AND lower(o.location_text) LIKE :location ESCAPE '\\' ");
         }
-        if (f.activeOnly() || safe(f.source()) != null) {
+        if (f.activeOnly() || safe(f.source()) != null || !availability.equals("all")) {
             StringBuilder posting = new StringBuilder(
-                " AND EXISTS (SELECT 1 FROM source_postings sp WHERE sp.opportunity_id=o.id");
+                " AND EXISTS (SELECT 1 FROM source_postings sp "
+                + "LEFT JOIN source_availability_checks av "
+                + "ON av.source=sp.source AND av.source_job_id=sp.source_job_id "
+                + "WHERE sp.opportunity_id=o.id");
             if (f.activeOnly()) posting.append(" AND sp.is_active=1");
+            switch (availability) {
+                case "current" -> posting.append(
+                    " AND COALESCE(av.verdict,'unchecked') NOT IN ('unverified','closed')");
+                case "verified" -> posting.append(" AND av.verdict='open'");
+                case "unverified" -> posting.append(" AND av.verdict='unverified'");
+                default -> { }
+            }
             String source = safe(f.source());
             if (source != null) {
                 p.addValue("source", source);
@@ -131,8 +145,33 @@ public class AdvancedSearchService {
         }
 
         String from = " FROM opportunities o " + conditions;
+        String verificationExpr = """
+          CASE
+            WHEN EXISTS (
+              SELECT 1 FROM source_postings pv
+              JOIN source_availability_checks v
+              ON v.source=pv.source AND v.source_job_id=pv.source_job_id
+              WHERE pv.opportunity_id=o.id AND pv.is_active=1 AND v.verdict='open'
+            ) THEN 'open'
+            WHEN EXISTS (
+              SELECT 1 FROM source_postings pv
+              JOIN source_availability_checks v
+              ON v.source=pv.source AND v.source_job_id=pv.source_job_id
+              WHERE pv.opportunity_id=o.id AND pv.is_active=1 AND v.verdict='unverified'
+            ) THEN 'unverified'
+            WHEN EXISTS (
+              SELECT 1 FROM source_postings pv
+              JOIN source_availability_checks v
+              ON v.source=pv.source AND v.source_job_id=pv.source_job_id
+              WHERE pv.opportunity_id=o.id AND v.verdict='closed'
+            ) THEN 'closed'
+            ELSE 'unchecked'
+          END
+        """;
         String selection = "SELECT o.id, o.title, o.published_at, o.updated_at, "
-            + "o.workplace_type, o.latitude, o.longitude, " + affinityExpr + " AS affinity " + from;
+            + "o.workplace_type, o.latitude, o.longitude, "
+            + affinityExpr + " AS affinity, "
+            + verificationExpr + " AS verification " + from;
         String order = switch (sort) {
             case "relevance" -> " ORDER BY affinity DESC, o.updated_at DESC, o.id";
             case "title" -> " ORDER BY o.title COLLATE NOCASE ASC, o.id";
@@ -148,7 +187,7 @@ public class AdvancedSearchService {
                 rs.getString("id"), rs.getString("title"), rs.getString("published_at"),
                 rs.getString("updated_at"), rs.getString("workplace_type"),
                 rs.getInt("affinity"), number(rs.getObject("latitude")),
-                number(rs.getObject("longitude")), null));
+                number(rs.getObject("longitude")), null, rs.getString("verification")));
             List<Candidate> near = new ArrayList<>();
             for (Candidate candidate : candidates) {
                 Double distance = candidate.latitude() != null && candidate.longitude() != null
@@ -188,7 +227,7 @@ public class AdvancedSearchService {
                     rs.getString("id"), rs.getString("title"), rs.getString("published_at"),
                     rs.getString("updated_at"), rs.getString("workplace_type"),
                     rs.getInt("affinity"), number(rs.getObject("latitude")),
-                    number(rs.getObject("longitude")), null));
+                    number(rs.getObject("longitude")), null, rs.getString("verification")));
         }
 
         List<String> ids = candidates.stream().map(Candidate::id).toList();
@@ -197,17 +236,19 @@ public class AdvancedSearchService {
         List<Opportunity> ordered = new ArrayList<>();
         Map<String, Integer> scores = new LinkedHashMap<>();
         Map<String, Double> distances = new LinkedHashMap<>();
+        Map<String, String> verification = new LinkedHashMap<>();
         for (Candidate c : candidates) {
             Opportunity item = entityById.get(c.id());
             if (item == null) continue;
             ordered.add(item);
             scores.put(c.id(), c.score());
+            verification.put(c.id(), c.verification());
             if (c.distanceKm() != null) {
                 distances.put(c.id(), Math.round(c.distanceKm() * 10.0) / 10.0);
             }
         }
         return new SearchPage(new PageImpl<>(ordered, PageRequest.of(page, SIZE), total),
-            scores, distances, sort, hasLocation);
+            scores, distances, verification, sort, hasLocation);
     }
 
     public List<String> intents() {

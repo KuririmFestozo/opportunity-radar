@@ -42,6 +42,7 @@ public class OpportunityController {
                        @RequestParam(defaultValue = "") String exclude,
                        @RequestParam(defaultValue = "0") int minScore,
                        @RequestParam(defaultValue = "true") boolean activeOnly,
+                       @RequestParam(defaultValue = "current") String availability,
                        @RequestParam(defaultValue = "relevance") String sort,
                        @RequestParam(required = false) Double latitude,
                        @RequestParam(required = false) Double longitude,
@@ -50,10 +51,11 @@ public class OpportunityController {
                        @RequestParam(defaultValue = "0") int page, Model model) {
         var found = advanced.search(new AdvancedSearchService.Filters(
             q, location, source, course, intent, workplace, include, exclude,
-            minScore, activeOnly, sort, latitude, longitude, radiusKm, includeRemote, page));
+            minScore, activeOnly, availability, sort, latitude, longitude, radiusKm, includeRemote, page));
         model.addAttribute("results", found.page());
         model.addAttribute("affinity", found.affinity());
         model.addAttribute("distances", found.distances());
+        model.addAttribute("verification", found.verification());
         model.addAttribute("appliedSort", found.appliedSort());
         model.addAttribute("hasLocation", found.hasLocation());
         model.addAttribute("q", q);
@@ -66,6 +68,7 @@ public class OpportunityController {
         model.addAttribute("exclude", exclude);
         model.addAttribute("minScore", minScore);
         model.addAttribute("activeOnly", activeOnly);
+        model.addAttribute("availability", availability);
         model.addAttribute("sort", sort);
         model.addAttribute("latitude", latitude);
         model.addAttribute("longitude", longitude);
