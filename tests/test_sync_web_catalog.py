@@ -156,3 +156,46 @@ def test_requires_explicit_account_import(tmp_path):
     sync_catalog(src, dst)
     with sqlite3.connect(dst) as conn:
         assert conn.execute("SELECT COUNT(*) FROM web_users").fetchone() == (1,)
+
+
+
+def test_merges_all_source_availability_evidence_without_reopening_closures(tmp_path):
+    from processing.source_availability import ensure_schema as source_schema
+
+    src, dst = tmp_path/"classroom_latest.db", tmp_path/"radar-web.db"
+    make_db(src, latest=True)
+    make_db(dst, account=True)
+
+    with sqlite3.connect(src) as conn:
+        source_schema(conn)
+        conn.execute("""
+            INSERT INTO source_availability_checks
+            VALUES ('gupy_global','123','unverified','http_429','2026-11-06')
+        """)
+        conn.execute("""
+            INSERT INTO source_availability_checks
+            VALUES ('workday','987','open','explicit_applications_open','2026-11-06')
+        """)
+    with sqlite3.connect(dst) as conn:
+        source_schema(conn)
+        conn.execute("""
+            INSERT INTO source_availability_checks
+            VALUES ('gupy_global','123','closed','manual_confirmation','2026-11-05')
+        """)
+
+    output = sync_catalog(src, dst)
+    assert output["verification_imported"] == 1
+    assert output["confirmed_closures_preserved"] == 1
+    with sqlite3.connect(dst) as conn:
+        assert conn.execute("""
+            SELECT verdict,evidence FROM source_availability_checks
+            WHERE source='gupy_global'
+        """).fetchone() == ("closed", "manual_confirmation")
+        assert conn.execute("""
+            SELECT verdict FROM source_availability_checks
+            WHERE source='workday'
+        """).fetchone() == ("open",)
+        assert conn.execute("""
+            SELECT is_active FROM source_postings WHERE source_job_id='123'
+        """).fetchone() == (0,)
+        assert conn.execute("SELECT COUNT(*) FROM web_users").fetchone() == (1,)
