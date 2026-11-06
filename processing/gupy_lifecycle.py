@@ -54,9 +54,11 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
 def closed_keys(conn) -> set[tuple[str, str]]:
     ensure_schema(conn)
-    return set(conn.execute(
-        "SELECT source, source_job_id FROM gupy_url_checks WHERE verdict='closed'"
-    ).fetchall())
+    return {
+        (str(row[0]), str(row[1])) for row in conn.execute(
+            "SELECT source, source_job_id FROM gupy_url_checks WHERE verdict='closed'"
+        )
+    }
 
 
 def filter_discoveries(jobs, permanently_closed):
