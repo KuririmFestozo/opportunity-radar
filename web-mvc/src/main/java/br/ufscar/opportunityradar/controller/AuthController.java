@@ -2,6 +2,8 @@ package br.ufscar.opportunityradar.controller;
 
 import br.ufscar.opportunityradar.service.AccountService;
 import java.security.Principal;
+import java.nio.file.Path;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,15 +14,23 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class AuthController {
     private final AccountService accounts;
-    public AuthController(AccountService accounts) { this.accounts = accounts; }
+    private final boolean temporaryCatalogDatabase;
+    public AuthController(AccountService accounts,
+                          @Value("${radar.db.path}") String configuredDb) {
+        this.accounts = accounts;
+        this.temporaryCatalogDatabase = "classroom_latest.db".equalsIgnoreCase(
+            Path.of(configuredDb).getFileName().toString());
+    }
 
     @GetMapping("/login")
-    public String login(Principal principal) {
+    public String login(Principal principal, Model model) {
+        model.addAttribute("temporaryCatalogDatabase", temporaryCatalogDatabase);
         return principal == null ? "auth/login" : "redirect:/favorites";
     }
 
     @GetMapping("/register")
-    public String register(Principal principal) {
+    public String register(Principal principal, Model model) {
+        model.addAttribute("temporaryCatalogDatabase", temporaryCatalogDatabase);
         return principal == null ? "auth/register" : "redirect:/favorites";
     }
 
