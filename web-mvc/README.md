@@ -112,3 +112,54 @@ mas não é armazenada no SQLite.
 
 **Preserve radar-web.db** após criar usuários: não sobrescreva o arquivo
 com um snapshot novo, pois ele passa a conter suas contas e listas.
+
+
+## Baixar o banco de vagas mais recente para a aula
+
+O GitHub Actions publica diariamente um snapshot privado do SQLite no
+release radar-state-latest. O git pull baixa código, não dados SQLite.
+
+A partir da raiz do repositório, instale o GitHub CLI (uma única vez), caso
+não esteja instalado:
+
+~~~powershell
+winget install --id GitHub.cli -e
+gh auth login
+~~~
+
+Depois, sempre que quiser atualizar as vagas para uma demonstração:
+
+~~~powershell
+git pull --ff-only origin main
+python tools/pull_classroom_db.py
+~~~
+
+O comando usa a autenticação do gh para baixar o snapshot main,
+confere os SHA-256 do gzip e do banco, valida integridade/tabelas/contagem
+e grava em data/classroom_latest.db. Em uma atualização, faz backup do
+arquivo anterior em data/backups/. Se o arquivo tiver usuários ou favoritos,
+**recusa sobrescrever** (use --output data/classroom_outra_data.db).
+
+Para **demonstrar o Java com a versão baixada** (PowerShell, na raiz):
+
+~~~powershell
+$env:RADAR_DB_PATH = (Resolve-Path .\data\classroom_latest.db).Path
+cd web-mvc
+mvn spring-boot:run
+~~~
+
+**Muito importante:** data/classroom_latest.db é um banco separado
+**para a aula**. Contas e favoritos existentes em web-mvc/radar-web.db
+não são apagados nem aparecem automaticamente nesse outro arquivo.
+Se você fizer cadastro/login no snapshot da aula, ele receberá contas
+próprias e o próximo pull se recusará a substituí-lo. Pare o Spring antes
+de atualizar o arquivo; para manter as contas entre refreshes, será
+necessária uma sincronização incremental de catálogo (etapa futura).
+
+Se desejar continuar usando sua conta e favoritos habituais, mantenha
+RADAR_DB_PATH apontado para web-mvc/radar-web.db; baixar a base nova
+**não altera automaticamente as vagas desse arquivo**.
+
+O arquivo remoto contém dezenas de milhares de vagas e pode ser grande:
+o .db.gz principal ocupa aproximadamente 100 MB em 6/11/2026. A API
+do GitHub exige permissão de acesso ao repositório privado.
