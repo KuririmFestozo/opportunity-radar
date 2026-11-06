@@ -447,8 +447,10 @@ class SQLiteOpportunityRepository:
     def mark_gupy_closed(self, keys: set[tuple[str, str]]) -> int:
         return _mark_gupy_closed(self._store.conn, keys)
 
-    def audit_gupy(self, *, limit: int = 150, workers: int = 6, apply: bool = True) -> dict:
-        return _audit_gupy(self._store.conn, limit=limit, workers=workers, apply=apply)
+    def audit_gupy(self, *, limit: int = 150, workers: int = 6,
+                   apply: bool = True, urls=None) -> dict:
+        return _audit_gupy(self._store.conn, limit=limit, workers=workers,
+                           apply=apply, urls=urls)
 
     def lifecycle_stats(self) -> dict:
         return _lifecycle_stats(self._store)

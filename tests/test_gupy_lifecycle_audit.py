@@ -136,3 +136,80 @@ def test_unverified_absence_cannot_inactivate_gupy(tmp_path):
         assert repo._store.conn.execute(
             "SELECT is_active FROM jobs WHERE source_job_id='123'"
         ).fetchone()["is_active"] == 1
+
+
+# Reported closed opportunities from real Gupy candidate pages (Nov 2026).
+COPLANA_URL = "https://coplana.gupy.io/job/eyJqb2JJZCI6MTIzMTQwNzcsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal"
+SIDI_URL = "https://sidi.gupy.io/job/eyJqb2JJZCI6MTIyNzA4ODcsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal"
+
+
+def test_real_gupy_portal_urls_extract_the_expected_ids():
+    assert gl.gupy_job_id(COPLANA_URL) == "12314077"
+    assert gl.gupy_job_id(SIDI_URL) == "12270887"
+    assert gl.safe_url(COPLANA_URL) == COPLANA_URL.split("?")[0]
+    assert gl.safe_url(SIDI_URL) == SIDI_URL.split("?")[0]
+
+
+def test_real_gupy_english_closure_banners_and_paused_status():
+    assert gl.explicit_page_closure(
+        "<div class='status'><span>Applications closed</span></div>"
+        "<h1>Estagiário (a) - Engenharia Industrial</h1>"
+        "<p>Esta vaga está na equipe industrial.</p>"
+    )
+    assert gl.explicit_page_closure(
+        "<div>This position has been paused by the company.</div>"
+        "<span>Applications closed</span>"
+    )
+    assert not gl.explicit_page_closure(
+        "<h2>Applications OPEN</h2><p>Experience with applications closed "
+        "in a previous project.</p><script>var text='Applications closed'</script>"
+    )
+
+
+def test_invalid_encoded_urls_are_never_fetched():
+    assert gl.gupy_job_id("https://example.com/job/eyJqb2JJZCI6MTIzMTQwNzc=") is None
+    assert gl.gupy_job_id("https://sidi.gupy.io/job/AAAAAAAAAAAAAAAB=") is None
+    assert gl.gupy_job_id("https://sidi.gupy.io/job/eyJqb2JJZCI6Mn0=") is None
+    assert gl.gupy_job_id("https://sidi.gupy.io/job/eyJqb2JJZCI6MTIzLCJzb3VyY2UiOiJldmlsIn0=") is None
+
+
+def test_audits_reported_encoded_urls_regardless_of_scan_order(tmp_path, monkeypatch):
+    with SQLiteOpportunityRepository(tmp_path / "radar.db") as repo:
+        job1 = example_job(job_id="12314077")
+        job1.url = COPLANA_URL
+        job2 = example_job(job_id="12270887")
+        job2.url = SIDI_URL
+        unrelated = example_job(job_id="999999")
+        for job in (unrelated, job1, job2):
+            add_job(repo, job)
+        probed = []
+        def fake_probe(url):
+            probed.append(url)
+            return ("closed", "explicit_closed_banner")
+        monkeypatch.setattr(gl, "probe_url", fake_probe)
+        stats = repo.audit_gupy(limit=1, workers=1, urls=[COPLANA_URL, SIDI_URL])
+        assert stats["checked"] == 2
+        assert stats["closed"] == 2
+        assert stats["inactivated"] == 2
+        assert set(probed) == {gl.safe_url(COPLANA_URL), gl.safe_url(SIDI_URL)}
+        assert repo._store.conn.execute(
+            "SELECT COUNT(*) FROM jobs WHERE is_active=0"
+        ).fetchone()[0] == 2
+        assert repo._store.conn.execute(
+            "SELECT COUNT(*) FROM jobs"
+        ).fetchone()[0] == 3
+        repo.sync_unified_schema()
+        assert repo._store.conn.execute(
+            "SELECT COUNT(*) FROM source_postings WHERE is_active=0"
+        ).fetchone()[0] == 2
+
+
+def test_unmatched_specific_job_is_not_assumed_to_be_closed(tmp_path, monkeypatch):
+    with SQLiteOpportunityRepository(tmp_path / "radar.db") as repo:
+        add_job(repo, example_job())
+        monkeypatch.setattr(gl, "probe_url", lambda url: ("closed", "explicit_closed_banner"))
+        stats = repo.audit_gupy(urls=[COPLANA_URL], apply=True)
+        assert stats["checked"] == 0 and stats["inactivated"] == 0
+        assert repo._store.conn.execute(
+            "SELECT COUNT(*) FROM jobs WHERE is_active=1"
+        ).fetchone()[0] == 1
