@@ -726,3 +726,45 @@ A saída [ANTES] informa quantos anúncios permanecem no histórico, quantos
 estão ativos e quantos são da Gupy. Não misture os dois bancos: o
 arquivo do site mantém usuários/favoritos, enquanto o banco baixado do
 Actions é uma cópia independente do catálogo.
+
+
+#### Cobertura de TODAS as fontes (não só as reclamações)
+
+O verificador genérico lê a tabela source_postings e usa as famílias
+**gupy_global, gupy_api, gupy_public, 99jobs, vagas_com, ciee, cargill,
+ashby, lever, greenhouse, workday, smartrecruiters, inhire, izirh,
+eightfold, teamtailor, totvs, successfactors, walljobs, cia_estagios,
+nube, iel, superestagios, taqe, bettha, matchbox e cia_talentos**.
+Inclui fontes atualmente desabilitadas, pois seus registros históricos
+continuam na base. A validação de URLs aplica hosts fixos por plataforma e
+hosts corporativos extraídos do cadastro oficial de tenants; links externos
+desconhecidos não são acessados e ficam como não verificados.
+
+Inspecione a situação **de todas as fontes existentes no seu SQLite**,
+sem redes nem modificações:
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --report
+~~~
+
+Para auditar um lote distribuído pelas fontes (prévia primeiro):
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 500
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 500 --apply
+~~~
+
+O modo --apply faz backup e mantém conta/favoritos. Também salva
+inconclusivas separadamente sem fechá-las. Pode ser repetido; a fila
+prioriza verificações antigas e percorre todas as fontes (limite máximo
+de 1000 por execução). Para a base da aula, use --db data/classroom_latest.db.
+
+Nas coletas com DAILY_AUDIT, um lote de até 80 anúncios entre plataformas
+é automaticamente verificado por execução, ajustável pela variável de
+ambiente SOURCE_AVAILABILITY_AUDIT_LIMIT (0 a 2000). Nenhuma vaga
+não verificada é divulgada como "abertura confirmada".
+
+**Importante:** nem todos os ATS expõem publicamente o formulário e o
+estado das inscrições. Uma URL segura mas sem status claro recebe resultado
+inconclusivo; não é possível prometer verificação 100% sem credenciais ou
+APIs contratadas. A fila aponta também fontes ainda não reconhecidas.
