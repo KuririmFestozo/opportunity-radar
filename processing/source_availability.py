@@ -19,14 +19,97 @@ from urllib.parse import urlsplit
 import requests
 from bs4 import BeautifulSoup
 
-SUPPORTED = {"99jobs", "bettha", "cargill", "cia_estagios", "iel"}
-_ALLOWED = {
-    "99jobs": ("99jobs.com",),
-    "bettha": ("admin-vagas.bettha.com", "bettha.com"),
-    "cargill": ("careers.cargill.com",),
-    "cia_estagios": ("www.ciadeestagios.com.br",),
-    "iel": ("carreiras.iel.org.br",),
+# Every source family that can appear in the current collector registry.
+# Disabled collectors are retained for historical postings.
+SUPPORTED = frozenset({
+    "gupy_global", "gupy_api", "gupy_public", "99jobs", "vagas_com",
+    "ciee", "cargill", "ashby", "lever", "greenhouse", "workday",
+    "smartrecruiters", "inhire", "izirh", "eightfold", "teamtailor",
+    "totvs", "successfactors", "walljobs", "cia_estagios", "nube",
+    "iel", "superestagios", "taqe", "bettha", "matchbox", "cia_talentos",
+})
+_EXACT = {
+    "99jobs": {"99jobs.com", "www.99jobs.com"},
+    "vagas_com": {"vagas.com.br", "www.vagas.com.br"},
+    "ciee": {"portal.ciee.org.br"},
+    "cargill": {"careers.cargill.com"},
+    "totvs": {"atracaodetalentos.totvs.app"},
+    "walljobs": {"app.walljobs.com.br"},
+    "cia_estagios": {"ciadeestagios.com.br", "www.ciadeestagios.com.br"},
+    "nube": {"nube.com.br", "www.nube.com.br"},
+    "iel": {"carreiras.iel.org.br"},
+    "superestagios": {"superestagios.com.br", "www.superestagios.com.br"},
+    "taqe": {"vagas.taqe.com.br"},
+    "bettha": {"admin-vagas.bettha.com", "www.bettha.com", "bettha.com"},
+    "matchbox": {"matchboxbrasil.com", "www.matchboxbrasil.com"},
+    "cia_talentos": {"ciadetalentos.com.br", "www.ciadetalentos.com.br"},
+    "smartrecruiters": {"jobs.smartrecruiters.com"},
+    "lever": {"jobs.lever.co"},
+    "greenhouse": {"boards.greenhouse.io", "job-boards.greenhouse.io"},
+    "ashby": {"jobs.ashbyhq.com"},
 }
+_SUFFIXES = {
+    "gupy_global": ("gupy.io",),
+    "gupy_public": ("gupy.io",),
+    "gupy_api": ("gupy.io",),
+    "workday": ("myworkdayjobs.com",),
+    "inhire": ("inhire.app",),
+    "izirh": ("izirh.io",),
+    "eightfold": ("eightfold.ai",),
+    "teamtailor": ("teamtailor.com",),
+    "greenhouse": ("greenhouse.io",),
+    "ashby": ("ashbyhq.com",),
+}
+
+
+def _configured_hosts() -> dict[str, set[str]]:
+    """Configured corporate domains, not arbitrary addresses from a DB."""
+    from config.successfactors import SUCCESSFACTORS_PORTALS
+    from config.eightfold import EIGHTFOLD_TENANTS
+    from config.additional_ats import TEAMTAILOR_BOARDS
+
+    result = {"successfactors": set(), "eightfold": set(),
+              "teamtailor": set()}
+    for entry in SUCCESSFACTORS_PORTALS:
+        urls = ([entry.get("career_url")] +
+                list(entry.get("listing_urls") or []))
+        for url in urls:
+            host = urlsplit(str(url or "")).hostname
+            if host:
+                result["successfactors"].add(host.lower())
+    for source, collection in (("eightfold", EIGHTFOLD_TENANTS),
+                               ("teamtailor", TEAMTAILOR_BOARDS)):
+        for item in collection:
+            host = urlsplit(str(item.get("career_url") or "")).hostname
+            if host:
+                result[source].add(host.lower())
+    return result
+
+
+def source_families() -> tuple[str, ...]:
+    """All possible source values currently emitted by collector modules."""
+    return tuple(sorted(SUPPORTED))
+
+
+def source_coverage(conn: sqlite3.Connection) -> list[dict]:
+    """Per-source historical/active + verification counts; no network."""
+    ensure_schema(conn)
+    records = conn.execute("""
+        SELECT p.source, COUNT(*) historical,
+            SUM(CASE WHEN p.is_active=1 THEN 1 ELSE 0 END) active,
+            SUM(CASE WHEN c.verdict='open' THEN 1 ELSE 0 END) verified_open,
+            SUM(CASE WHEN c.verdict='closed' THEN 1 ELSE 0 END) verified_closed,
+            SUM(CASE WHEN c.verdict='unverified' THEN 1 ELSE 0 END) unverified,
+            SUM(CASE WHEN c.verdict IS NULL THEN 1 ELSE 0 END) unchecked
+        FROM source_postings p
+        LEFT JOIN source_availability_checks c
+        ON c.source=p.source AND c.source_job_id=p.source_job_id
+        GROUP BY p.source ORDER BY p.source
+    """).fetchall()
+    return [dict(zip(("source", "historical", "active", "verified_open",
+                      "verified_closed", "unverified", "unchecked"), row))
+            for row in records]
+
 CLOSED = {"inscricoes encerradas", "candidaturas encerradas",
           "esta vaga foi encerrada", "vaga encerrada", "applications closed",
           "esta oportunidade foi encerrada"}
@@ -43,18 +126,32 @@ def plain(raw: str) -> str:
 
 
 def safe_url(source: str, raw: str) -> str | None:
-    """Restrict network requests to exact expected provider hosts (no SSRF)."""
+    """Fetch only HTTPS vacancies from provider-owned or configured hosts.
+
+    This is a defense-in-depth host allowlist. 3xx redirects are *never*
+    followed, so even an owned site redirecting to another host is not fetched.
+    """
     try:
-        parts = urlsplit(str(raw or ""))
-        host = (parts.hostname or "").lower()
-        allowed = _ALLOWED.get(source, ())
-        if (parts.scheme != "https" or
-            (host not in allowed and not (
-                source == "99jobs" and host.endswith(".99jobs.com")
-            )) or parts.username is not None or parts.password is not None
-            or parts.port not in (None, 443)):
+        if source not in SUPPORTED:
             return None
+        parts = urlsplit(str(raw or ""))
+        host = (parts.hostname or "").lower().rstrip(".")
+        if (parts.scheme != "https" or not host or parts.username is not None
+                or parts.password is not None or parts.port not in (None, 443)
+                or any(ch in host for ch in (":", "%", ".."))):
+            return None
+        exact = host in _EXACT.get(source, set())
+        vendor = any(host == suffix or host.endswith("." + suffix)
+                     for suffix in _SUFFIXES.get(source, ()))
+        configured = host in _configured_hosts().get(source, set())
+        if not (exact or vendor or configured):
+            return None
+
         path = parts.path or "/"
+        # Generic careers home pages, listing and search pages are not job
+        # application pages; never infer the state of a specific posting there.
+        if path in {"/", "/jobs", "/vagas", "/search", "/careers"}:
+            return None
         if source == "cargill" and "/job/" not in path:
             return None
         if source == "bettha" and not path.startswith("/hotsite/"):
@@ -65,7 +162,13 @@ def safe_url(source: str, raw: str) -> str | None:
             return None
         if source == "99jobs" and not re.search(r"/(?:jobs|vagas)/\d+", path):
             return None
-        return f"https://{host}{path}"
+        # SuccessFactors may have a query-encoded unique job. Keep only those
+        # known identifier fields and strip tracking parameters.
+        safe_queries = ("job", "jobId", "jobid", "reqId", "reqid", "jobID")
+        from urllib.parse import parse_qsl, urlencode, urlunsplit
+        kept = [(key, val) for key, val in parse_qsl(parts.query)
+                if key in safe_queries and 0 < len(val) <= 120]
+        return urlunsplit(("https", host, path, urlencode(kept), ""))
     except (ValueError, TypeError):
         return None
 
@@ -86,7 +189,7 @@ def classify_html(source: str, html: str, *, today: date | None = None):
     for node in soup(["script", "style", "noscript", "template"]):
         node.decompose()
     text = plain(soup.get_text(" ", strip=True))
-    if len(text) < 70:
+    if len(text) < 35:
         return "unverified", "no_readable_job_content"
 
     for node in soup.select("h1,h2,h3,h4,p,div,span,[role='alert']"):
