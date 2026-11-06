@@ -11,6 +11,7 @@ allowing the web UI to separate unverified from unchecked opportunities.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import Counter
 from functools import lru_cache
@@ -127,7 +128,90 @@ CLOSED = {"inscricoes encerradas", "candidaturas encerradas",
           "sorry, this position has been filled",
           "this position has been filled",
           "sorry this position has been filled"}
+# These are full, standalone status notices found on official job pages.
+# Never match fragments inside a job description, job title or generic footer.
+CLOSED.update({
+    "applications are closed",
+    "this job is closed",
+    "this job has closed",
+    "this job is no longer available",
+    "this position is no longer available",
+    "this position has been closed",
+    "this position is closed",
+    "this vacancy has been filled",
+    "this posting is no longer available",
+    "this job is no longer accepting applications",
+    "we are no longer accepting applications for this position",
+    "job posting expired",
+    "job expired",
+    "vaga expirada",
+    "esta vaga expirou",
+    "esta vaga nao esta mais disponivel",
+    "essa vaga nao esta mais disponivel",
+    "as inscricoes foram encerradas",
+    "o prazo de inscricoes foi encerrado",
+    "processo seletivo encerrado",
+    "o periodo de candidaturas foi encerrado",
+})
 OPEN = {"inscricoes abertas", "applications open", "applications are open"}
+
+def _jobposting_expiration(soup: BeautifulSoup, today: date) -> str | None:
+    """Read JobPosting.validThrough only from trusted structured-data *shape*.
+
+    A date in unrelated descriptions, employer policies or JSON-LD of
+    Organization must never deactivate an opportunity.
+    """
+    for script in soup.find_all("script", attrs={"type": re.compile(
+            r"^application/ld\+json", re.I)}):
+        raw = script.string or script.get_text()
+        if not raw or len(raw) > 750_000:
+            continue
+        try:
+            value = json.loads(raw)
+        except (ValueError, TypeError):
+            continue
+        pending = [value]
+        while pending:
+            current = pending.pop()
+            if isinstance(current, list):
+                pending.extend(current)
+                continue
+            if not isinstance(current, dict):
+                continue
+            typ = current.get("@type") or current.get("type")
+            types = [typ] if isinstance(typ, str) else (typ if isinstance(typ, list) else [])
+            if any(str(t).split("/")[-1].casefold() == "jobposting" for t in types):
+                valid_through = current.get("validThrough")
+                if isinstance(valid_through, str):
+                    # ISO 8601, with optional time/timezone. Unknown or ambiguous
+                    # formats are inconclusive; we only use a complete date.
+                    match = re.match(r"^(\d{4}-\d{2}-\d{2})(?:$|T|t)", valid_through)
+                    if match:
+                        try:
+                            deadline = date.fromisoformat(match.group(1))
+                            if deadline < today:
+                                return f"jobposting_valid_through_{deadline.isoformat()}"
+                        except ValueError:
+                            pass
+            if "@graph" in current:
+                pending.append(current["@graph"])
+    return None
+
+
+def _visible_status(soup: BeautifulSoup, statuses: set[str], *,
+                    include_text_nodes: bool = True) -> bool:
+    """Look for precise standalone notices, including div/span text nodes."""
+    for node in soup.select("h1,h2,h3,h4,p,[role='alert'],[role='status'],[aria-live='assertive']"):
+        if len(node.get_text(" ", strip=True)) > 180:
+            continue
+        if plain(node.get_text(" ", strip=True)).strip(" .!:") in statuses:
+            return True
+    if include_text_nodes:
+        for node in soup.stripped_strings:
+            phrase = plain(str(node)).strip(" .!:")
+            if len(phrase) <= 180 and phrase in statuses:
+                return True
+    return False
 _DEADLINE = re.compile(
     r"\binscri(?:cao|coes)\b.{0,100}?\b(?:ate|ate o dia)\s*"
     r"(\d{1,2})/(\d{1,2})(?:/(\d{4}))?\b", re.IGNORECASE
@@ -207,15 +291,22 @@ def normalize_url(raw: str) -> str:
 def classify_html(source: str, html: str, *, today: date | None = None):
     today = today or date.today()
     soup = BeautifulSoup(html[:1_500_000], "html.parser")
+    expired = _jobposting_expiration(soup, today)
+    if expired:
+        return "closed", expired
     for node in soup(["script", "style", "noscript", "template"]):
         node.decompose()
+    # Browser templates can keep closed banners in hidden components even
+    # while applications are open. Hidden text is not a visible status.
+    for node in soup.select(
+        '[hidden], [inert], [aria-hidden="true"], '
+        '[style*="display:none"], [style*="display: none"], '
+        '[style*="visibility:hidden"], [style*="visibility: hidden"]'
+    ):
+        node.decompose()
     text = plain(soup.get_text(" ", strip=True))
-    for node in soup.select("h1,h2,h3,h4,p,div,span,[role='alert']"):
-        if len(node.get_text(" ", strip=True)) > 150:
-            continue
-        phrase = plain(node.get_text(" ", strip=True)).strip(" .!:")
-        if phrase in CLOSED:
-            return "closed", "explicit_closed_message"
+    if _visible_status(soup, CLOSED):
+        return "closed", "explicit_closed_message"
 
     # Never infer the year from a program title (e.g. "2027"). Only a
     # full, published application deadline can establish expiration.
@@ -239,10 +330,11 @@ def classify_html(source: str, html: str, *, today: date | None = None):
     ):
         return "unverified", "application_requires_login"
 
-    for node in soup.select("h1,h2,h3,h4,p,[role='alert']"):
-        phrase = plain(node.get_text(" ", strip=True)).strip(" .!:")
-        if phrase in OPEN:
-            return "open", "explicit_applications_open"
+    # A generic <div> mentioning 'inscricoes abertas' can be an inert
+    # template or advertisement. Only headings, paragraphs and explicit
+    # accessibility alerts are acceptable proof of opening.
+    if _visible_status(soup, OPEN, include_text_nodes=False):
+        return "open", "explicit_applications_open"
 
     if len(text) < 35:
         return "unverified", "no_readable_job_content"

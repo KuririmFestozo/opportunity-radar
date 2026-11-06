@@ -28,8 +28,9 @@ import sqlite3
 import tempfile
 
 from processing.source_availability import (
-    apply_result, ensure_schema, probe, source_coverage,
+    apply_result, ensure_schema, probe, source_coverage, safe_url,
 )
+from processing.rendered_availability import render_batch
 
 
 class SweepError(RuntimeError):
@@ -124,12 +125,49 @@ def _safe_probe(source: str, url: str) -> tuple[str, str]:
         return "unverified", "probe_exception"
 
 
+def _render_candidates(jobs, verdicts, limit):
+    """Fairly sample sources for JS-rendering, not only the first large ATS."""
+    if limit <= 0:
+        return []
+    eligible = defaultdict(list)
+    for source, job_id, url in jobs:
+        verdict, evidence = verdicts[(source, job_id)]
+        if verdict != "unverified" or evidence not in {
+            "no_confirmed_application_state", "no_readable_job_content",
+        }:
+            continue
+        if safe_url(source, url) is None:
+            continue
+        # A stable permutation spreads the sample across older/newer postings.
+        rank = hashlib.sha256(
+            (source + "\0" + job_id).encode("utf-8")
+        ).digest()
+        eligible[source].append((rank, (source, job_id, url)))
+    for source in eligible:
+        eligible[source].sort()
+    chosen = []
+    sources = sorted(eligible)
+    while len(chosen) < limit and sources:
+        active = []
+        for source in sources:
+            if eligible[source]:
+                chosen.append(eligible[source].pop()[1])
+                if len(chosen) >= limit:
+                    break
+            if eligible[source]:
+                active.append(source)
+        sources = active
+    return chosen
+
+
 def scan_shard(db: Path, *, shard: int, shards: int, out: Path,
-               workers: int = 4) -> dict:
+               workers: int = 4, render_limit: int = 0) -> dict:
     if shards < 1 or not 0 <= shard < shards:
         raise SweepError("Indice de shard fora do intervalo")
     if not 1 <= workers <= 6:
         raise SweepError("Limite de 1 a 6 workers por shard")
+    if not 0 <= render_limit <= 500:
+        raise SweepError("Limite de 0 a 500 paginas renderizadas por shard")
     out.mkdir(parents=True, exist_ok=True)
     db_hash = sha256(db)
     with _connect(db, read_only=True) as conn:
@@ -142,35 +180,57 @@ def scan_shard(db: Path, *, shard: int, shards: int, out: Path,
     total = len(jobs)
     print(f"[SHARD {shard}/{shards}] {total} anuncios ativos para verificar", flush=True)
     output = out / "verdicts.jsonl"
-    counts = Counter()
-    by_source = defaultdict(Counter)
-    stamp = datetime.now(timezone.utc).isoformat()
-    with output.open("w", encoding="utf-8") as stream, ThreadPoolExecutor(
-        max_workers=workers
-    ) as executor:
+    verdicts = {}
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         pending = {
             executor.submit(_safe_probe, source, url): (source, job_id)
             for source, job_id, url in jobs
         }
         for future in as_completed(pending):
             source, job_id = pending[future]
-            verdict, evidence = future.result()
+            verdicts[(source, job_id)] = future.result()
+            checked = len(verdicts)
+            if checked % 250 == 0 or checked == total:
+                print(f"[SHARD {shard}] HTTP {checked}/{total}", flush=True)
+
+    rendered_attempted = 0
+    rendered_confirmed = 0
+    if render_limit:
+        candidates = _render_candidates(jobs, verdicts, render_limit)
+        rendered_attempted = len(candidates)
+        print(f"[SHARD {shard}] Renderizando ate {rendered_attempted} "
+              "vagas inconclusivas, distribuidas entre fontes.", flush=True)
+        rendered = render_batch(candidates, workers=2, timeout_ms=14000)
+        eligible_keys = {(source, job_id) for source, job_id, _ in candidates}
+        for key, result in rendered.items():
+            if key in eligible_keys and verdicts[key][0] == "unverified":
+                if (result[0] in ("open", "closed")
+                        and str(result[1]).startswith("rendered_")):
+                    verdicts[key] = result
+                    rendered_confirmed += 1
+
+    counts = Counter()
+    by_source = defaultdict(Counter)
+    stamp = datetime.now(timezone.utc).isoformat()
+    with output.open("w", encoding="utf-8") as stream:
+        for source, job_id, url in jobs:
+            verdict, evidence = verdicts[(source, job_id)]
             stream.write(json.dumps({
                 "source": source, "source_job_id": job_id, "verdict": verdict,
                 "evidence": evidence, "checked_at": stamp,
             }, ensure_ascii=False) + "\n")
             counts[verdict] += 1
             by_source[source][verdict] += 1
-            checked = sum(counts.values())
-            if checked % 250 == 0 or checked == total:
-                stream.flush()
-                print(f"[SHARD {shard}] {checked}/{total}: "
-                      f"{counts['open']} abertas, {counts['closed']} encerradas, "
-                      f"{counts['unverified']} inconclusivas", flush=True)
+    print(f"[SHARD {shard}] {counts['open']} abertas, {counts['closed']} "
+          f"encerradas, {counts['unverified']} inconclusivas | "
+          f"renderizadas {rendered_attempted}, confirmadas {rendered_confirmed}",
+          flush=True)
     manifest = {
         "shard": shard, "shards": shards, "snapshot_sha256": db_hash,
         "expected": total, "checked": sum(counts.values()),
         "counts": dict(counts),
+        "rendered_attempted": rendered_attempted,
+        "rendered_confirmed": rendered_confirmed,
         "by_source": {src: dict(v) for src, v in sorted(by_source.items())},
     }
     (out / "manifest.json").write_text(
@@ -178,7 +238,6 @@ def scan_shard(db: Path, *, shard: int, shards: int, out: Path,
         encoding="utf-8",
     )
     return manifest
-
 
 def merge_shards(db: Path, *, results: Path, shards: int, summary_path: Path) -> dict:
     """Require complete coverage and unchanged database before any UPDATE."""
@@ -200,12 +259,16 @@ def merge_shards(db: Path, *, results: Path, shards: int, summary_path: Path) ->
         total_history = conn.execute("SELECT count(*) FROM source_postings").fetchone()[0]
         actual = set()
         updates = []
+        rendered_attempted = 0
+        rendered_confirmed = 0
         for shard in range(shards):
             folder = results / f"availability-shard-{shard}"
             manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
             if (manifest["shard"] != shard or manifest["shards"] != shards
                     or manifest["snapshot_sha256"] != db_hash):
                 raise SweepError(f"Shard {shard} tem metadata de outro snapshot")
+            rendered_attempted += manifest.get("rendered_attempted", 0)
+            rendered_confirmed += manifest.get("rendered_confirmed", 0)
             found = 0
             with (folder / "verdicts.jsonl").open(encoding="utf-8") as stream:
                 for line in stream:
@@ -271,6 +334,8 @@ def merge_shards(db: Path, *, results: Path, shards: int, summary_path: Path) ->
         "verified_closed": counts["closed"],
         "unverified": counts["unverified"],
         "deactivated": deactivated,
+        "rendered_attempted": rendered_attempted,
+        "rendered_confirmed": rendered_confirmed,
         "active_postings_after": remaining,
         "by_source": {src: dict(v) for src, v in sorted(by_source.items())},
         "reasons": dict(reasons),
@@ -333,6 +398,8 @@ def main() -> int:
     shard_p.add_argument("--shard", type=int, required=True)
     shard_p.add_argument("--shards", type=int, default=12)
     shard_p.add_argument("--workers", type=int, default=4)
+    shard_p.add_argument("--render-limit", type=int, default=0,
+                         help="Optional browser DOM checks per shard (0 disabled)")
     shard_p.add_argument("--output", type=Path, required=True)
     merge_p = sub.add_parser("merge")
     merge_p.add_argument("--db", type=Path, required=True)
@@ -350,7 +417,8 @@ def main() -> int:
             restore(args.archive, args.metadata, args.db)
         elif args.cmd == "shard":
             scan_shard(args.db, shard=args.shard, shards=args.shards,
-                       workers=args.workers, out=args.output)
+                       workers=args.workers, out=args.output,
+                       render_limit=args.render_limit)
         elif args.cmd == "merge":
             merge_shards(args.db, results=args.results, shards=args.shards,
                          summary_path=args.summary)

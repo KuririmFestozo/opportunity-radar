@@ -186,3 +186,34 @@ def test_shard_hash_is_stable_and_handles_unicode():
         "gupy_global", "123", 12
     )
     assert 0 <= sweep.shard_number("ciee", "estágio-ç", 12) < 12
+
+
+
+def test_render_fallback_only_overrides_inconclusive_eligible_jobs(tmp_path, monkeypatch):
+    db = tmp_path / "sample.db"
+    db_fixture(db)
+    monkeypatch.setattr(sweep, "probe", lambda source, url:
+                        ("unverified", "no_confirmed_application_state"))
+    selected = []
+    def fake_render(candidates, **kwargs):
+        selected.extend(candidates)
+        # Return a forged extra key: even if a buggy renderer returns
+        # more rows, no other posting can be inadvertently closed.
+        return {
+            ("workday", "c"): ("closed", "rendered_explicit_closed_message"),
+            ("unknown_future", "d"): ("closed", "rendered_explicit_closed_message"),
+        }
+    monkeypatch.setattr(sweep, "render_batch", fake_render)
+    manifest = sweep.scan_shard(
+        db, shard=0, shards=1, out=tmp_path / "results",
+        workers=1, render_limit=10
+    )
+    assert manifest["rendered_attempted"] == 3
+    assert manifest["rendered_confirmed"] == 1
+    assert manifest["counts"]["closed"] == 1
+    assert manifest["counts"]["unverified"] == 3
+    assert all(source != "unknown_future" for source, _, _ in selected)
+    with sqlite3.connect(db) as c:
+        assert c.execute(
+            "SELECT count(*) FROM source_postings WHERE is_active=1"
+        ).fetchone()[0] == 4  # The shard itself never modifies SQLite.

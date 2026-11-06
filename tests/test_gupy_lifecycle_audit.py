@@ -255,3 +255,17 @@ def test_manual_closed_url_without_apply_refuses_to_change_data(tmp_path, monkey
     assert error.value.code == 2
     with sqlite3.connect(path) as conn:
         assert conn.execute("SELECT is_active FROM jobs").fetchone()[0] == 1
+
+
+
+def test_gupy_probe_reuses_structured_deadline_classifier(monkeypatch):
+    class Response:
+        status_code = 200
+        headers = {"Content-Type": "text/html"}
+        text = """<h1>Estágio</h1><script type="application/ld+json">
+        {"@type":"JobPosting","validThrough":"2020-10-30T23:59:59-03:00"}
+        </script>"""
+    monkeypatch.setattr(gl.requests, "get", lambda *args, **kwargs: Response())
+    assert gl.probe_url("https://a.gupy.io/jobs/123") == (
+        "closed", "jobposting_valid_through_2020-10-30"
+    )
