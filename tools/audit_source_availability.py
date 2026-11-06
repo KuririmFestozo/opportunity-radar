@@ -116,7 +116,11 @@ def run(db: Path, *, urls=None, limit=100, apply=False,
             f"{stats['inactivated']} inativadas"
         )
         print("[OK] Dados pessoais preservados; nenhuma vaga apagada.")
-        return dict(stats)
+        return {
+            "open": stats["open"], "closed": stats["closed"],
+            "unverified": stats["unverified"],
+            "inactivated": stats["inactivated"],
+        }
 
 
 def main():
