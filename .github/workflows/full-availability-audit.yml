@@ -1,0 +1,156 @@
+name: Full Vacancy Availability Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/full-availability-audit.yml]
+  workflow_dispatch:
+
+concurrency:
+  group: opportunity-radar-state-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  scan:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install requests beautifulsoup4
+      - name: Restore main SQLite from release and verify hashes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .rolling
+          gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
+            --pattern "opportunity_radar-main.db.gz" \
+            --pattern "opportunity_radar-main.state.json" --dir .rolling
+          python -m tools.full_availability_sweep restore \
+            --archive .rolling/opportunity_radar-main.db.gz \
+            --metadata .rolling/opportunity_radar-main.state.json \
+            --db data/opportunity_radar.db
+      - name: Audit all assigned active postings
+        run: |
+          python -u -m tools.full_availability_sweep shard \
+            --db data/opportunity_radar.db \
+            --shards 12 --shard ${{ matrix.shard }} --workers 4 \
+            --output .audit/availability-shard-${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: availability-shard-${{ matrix.shard }}
+          path: .audit/availability-shard-${{ matrix.shard }}/
+          retention-days: 14
+          if-no-files-found: error
+
+  merge:
+    if: github.ref == 'refs/heads/main'
+    needs: scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install requests beautifulsoup4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: availability-shard-*
+          path: .audit/results
+          merge-multiple: false
+      - name: Restore same main snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .rolling
+          gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
+            --pattern "opportunity_radar-main.db.gz" \
+            --pattern "opportunity_radar-main.state.json" --dir .rolling
+          python -m tools.full_availability_sweep restore \
+            --archive .rolling/opportunity_radar-main.db.gz \
+            --metadata .rolling/opportunity_radar-main.state.json \
+            --db data/opportunity_radar.db
+      - name: Verify complete coverage and update without deleting history
+        run: |
+          python -u -m tools.full_availability_sweep merge \
+            --db data/opportunity_radar.db --results .audit/results \
+            --shards 12 --summary .audit/availability-summary.json
+      - name: Package validated SQLite snapshot
+        run: |
+          python -m tools.full_availability_sweep pack \
+            --db data/opportunity_radar.db \
+            --metadata .rolling/opportunity_radar-main.state.json \
+            --summary .audit/availability-summary.json --output .audit/publish
+      - name: Preserve recoverable original snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "availability-backup-${GITHUB_RUN_ID}" \
+            .rolling/opportunity_radar-main.db.gz \
+            .rolling/opportunity_radar-main.state.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "SQLite before full audit" \
+            --notes "Pre-cleanup main SQLite backup for recovery." --latest=false
+      - name: Publish cleaned main state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload radar-state-latest \
+            .audit/publish/opportunity_radar-main.db.gz \
+            --repo "$GITHUB_REPOSITORY" --clobber
+          if ! gh release upload radar-state-latest \
+            .audit/publish/opportunity_radar-main.state.json \
+            --repo "$GITHUB_REPOSITORY" --clobber; then
+            gh release upload radar-state-latest \
+              .rolling/opportunity_radar-main.db.gz \
+              --repo "$GITHUB_REPOSITORY" --clobber
+            exit 1
+          fi
+      - uses: actions/cache/save@v4
+        with:
+          path: data/opportunity_radar.db
+          key: opportunity-radar-db-${{ runner.os }}-main-${{ github.run_id }}-full-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-availability-cleaned-snapshot
+          path: |
+            .audit/availability-summary.json
+            .audit/publish/opportunity_radar-main.db.gz
+            .audit/publish/opportunity_radar-main.state.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Show per-source results
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          r = json.loads(Path(".audit/availability-summary.json").read_text())
+          lines = ["# Full availability audit", "",
+              f"Examined **{r['examined_active_postings']:,}** active postings",
+              f"Open: **{r['verified_open']:,}**; closed: **{r['verified_closed']:,}**; "
+              f"unverified: **{r['unverified']:,}**",
+              f"Deactivated: **{r['deactivated']:,}**; "
+              f"history: **{r['historical_postings']:,}**",
+              "", "| Source | Open | Closed | Unverified |", "|---|---:|---:|---:|"]
+          for src, c in r["by_source"].items():
+              lines.append(f"| {src} | {c.get('open',0)} | "
+                           f"{c.get('closed',0)} | {c.get('unverified',0)} |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as output:
+              output.write("\n".join(lines) + "\n")
+          PY
