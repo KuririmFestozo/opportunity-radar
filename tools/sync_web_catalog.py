@@ -205,13 +205,17 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
                  DEFAULT_SOURCE.resolve()}
     if destination in protected:
         raise SyncError("Nao sobrescreva o snapshot nem o banco do coletor.")
-    if any(Path(str(destination) + suffix).exists() for suffix in ("-wal", "-shm")):
-        # A WAL may linger after a crash; do not attempt a catalog replacement
-        # until the user confirms the server is stopped and SQLite is checkpointed.
-        raise SyncError("Existem arquivos -wal/-shm no destino; encerre o Spring "
-                        "e conclua o checkpoint antes de sincronizar.")
 
     with sqlite3.connect(destination) as conn:
+        conn.execute("PRAGMA busy_timeout=12000")
+        # An idle WAL/SHM file may survive after a crash. It does not by
+        # itself mean the app is running. Checkpoint safely; refuse only when
+        # another writer prevents a complete checkpoint.
+        checkpoint = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+        if checkpoint is not None and checkpoint[0] != 0:
+            raise SyncError(
+                "SQLite ainda esta em uso. Pare o Spring Boot antes do sync."
+            )
         conn.execute("PRAGMA foreign_keys=ON")
         conn.execute("PRAGMA busy_timeout=12000")
         conn.execute("ATTACH DATABASE ? AS incoming",
