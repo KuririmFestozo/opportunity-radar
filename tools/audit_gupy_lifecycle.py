@@ -1,7 +1,7 @@
 """Audit Gupy availability using explicit job-page closure notices.
 
 Usage from repository root, with Spring Boot stopped:
-    python tools/audit_gupy_lifecycle.py --db web-mvc/radar-web.db --apply --limit 500
+    python -m tools.audit_gupy_lifecycle --db web-mvc/radar-web.db --apply --limit 500
 
 Without --apply, runs a preview and leaves lifecycle unchanged.
 This tool never assumes 404, timeout, CAPTCHA or missing search results = closed.

@@ -657,3 +657,31 @@ mvn spring-boot:run
 
 Este é um snapshot **separado para a aula**, não uma sincronização incremental
 dos dados da interface. Consulte [detalhes e cuidados](web-mvc/README.md).
+
+
+### Gupy: auditoria de vagas encerradas
+
+A busca pública da Gupy não garante cobertura completa: ausência em uma
+busca, HTTP 404, falha de rede ou bloqueio não provam encerramento. O radar
+agora desativa anúncios apenas mediante status explicitamente
+closed/canceled/closedAt ou aviso inequívoco na página oficial da vaga.
+
+Durante DAILY_AUDIT, até 150 links são verificados por execução (ajustável
+por GUPY_AUDIT_LIMIT até 2000). A tabela gupy_url_checks mantém a rotação
+dos links; vagas encerradas não são reabertas por resultados antigos.
+Os registros são preservados, alterando somente o status ativo.
+
+Para revisar as vagas no banco utilizado na aula, pare o Spring e use
+estes comandos na raiz do projeto:
+
+~~~powershell
+python -m tools.audit_gupy_lifecycle --db data/classroom_latest.db --limit 500
+python -m tools.audit_gupy_lifecycle --db data/classroom_latest.db --limit 500 --apply
+~~~
+
+Para atualizar o banco habitual do site, substitua o caminho por
+web-mvc/radar-web.db. A opção --apply cria backup SQLite consistente,
+sincroniza source_postings e mantém contas/favoritos/candidaturas.
+**Sem --apply, apenas mostra uma prévia das detecções.**
+Os resultados dependem de páginas públicas acessíveis e de avisos
+explícitos; inconclusivas continuam ativas até nova confirmação.
