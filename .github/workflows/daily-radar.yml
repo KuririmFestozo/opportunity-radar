@@ -37,6 +37,32 @@ jobs:
             opportunity-radar-db-${{ runner.os }}-${{ github.ref_name }}-
             opportunity-radar-db-${{ runner.os }}-main-
 
+      # A verified full sweep publishes the authoritative collector SQLite.
+      # Always prefer it to a potentially older GitHub Actions cache.
+      - name: Restore latest published state (including closure audits)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view radar-state-latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            mkdir -p .rolling
+            gh release download radar-state-latest \
+              --repo "$GITHUB_REPOSITORY" \
+              --pattern "opportunity_radar-main.db.gz" \
+              --pattern "opportunity_radar-main.state.json" \
+              --dir .rolling
+            python -m tools.full_availability_sweep restore \
+              --archive .rolling/opportunity_radar-main.db.gz \
+              --metadata .rolling/opportunity_radar-main.state.json \
+              --db data/opportunity_radar.db
+          elif [[ -s data/opportunity_radar.db ]]; then
+            echo "[RESTORE] Rolling release missing; using previous cache."
+          else
+            echo "::error::No main database in release or cache."
+            exit 1
+          fi
+
       - name: Run daily full audit
         env:
           GUPY_TOKEN: ${{ secrets.GUPY_TOKEN }}
