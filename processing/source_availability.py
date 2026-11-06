@@ -222,6 +222,7 @@ def classify_html(source: str, html: str, *, today: date | None = None):
 
     if source == "iel" and (
         "faca login e se candidate" in text
+        or "fazer login e se candidate" in text
         or "fazer login e se candidatar" in text
         or "acesso candidato" in text
     ):
