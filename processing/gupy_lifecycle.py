@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+import base64
+import binascii
 import json
 import re
 import sqlite3
@@ -25,6 +27,10 @@ BANNERS = {
     "nao e mais possivel se candidatar a esta vaga",
     "essa vaga nao esta mais disponivel",
     "esta vaga nao esta mais disponivel",
+    "applications closed", "applications are closed",
+    "this position has been paused by the company",
+    "this job is no longer available",
+    "this position is no longer available",
 }
 HEADERS = {"User-Agent": "OpportunityRadar/1.0", "Accept": "text/html"}
 
@@ -105,16 +111,46 @@ def mark_closed(conn, keys, *, checked_at=None, evidence="source_terminal_status
     return changed
 
 
-def safe_url(raw):
+def gupy_job_id(raw):
+    """Get a Gupy numeric ID from old /jobs/123 and new /job/<Base64> links."""
     try:
         parts = urlsplit(str(raw or ""))
         host = (parts.hostname or "").lower()
         if (parts.scheme != "https" or not host.endswith(".gupy.io")
                 or parts.username is not None or parts.password is not None
-                or parts.port not in (None, 443)
-                or not re.fullmatch(r"/jobs/[0-9]+/?", parts.path)):
+                or parts.port not in (None, 443)):
             return None
-        return urlunsplit(("https", host, parts.path, "", ""))
+        old = re.fullmatch(r"/jobs/([0-9]{1,16})/?", parts.path)
+        if old:
+            return old.group(1)
+        new = re.fullmatch(r"/job/([A-Za-z0-9_-]{16,512}={0,2})/?", parts.path)
+        if not new:
+            return None
+        token = new.group(1)
+        payload = base64.b64decode(token + "=" * (-len(token) % 4),
+                                   altchars=b"-_", validate=True)
+        if len(payload) > 500:
+            return None
+        data = json.loads(payload)
+        if not isinstance(data, dict) or data.get("source") != "gupy_portal":
+            return None
+        job_id = data.get("jobId")
+        if type(job_id) is int and 0 < job_id < 10**16:
+            return str(job_id)
+    except (ValueError, UnicodeDecodeError, TypeError, OverflowError,
+            binascii.Error):
+        return None
+    return None
+
+
+def safe_url(raw):
+    """Only probe validated official Gupy job pages; discard arbitrary query."""
+    try:
+        parts = urlsplit(str(raw or ""))
+        if gupy_job_id(raw) is None:
+            return None
+        return urlunsplit(("https", (parts.hostname or "").lower(),
+                           parts.path, "", ""))
     except (ValueError, TypeError):
         return None
 
@@ -134,7 +170,54 @@ def explicit_page_closure(html):
         text = _plain(tag.get_text(" ", strip=True))
         if len(text) <= 180 and text in BANNERS:
             return True
+    # On newer Gupy pages "Applications closed" is a standalone text node
+    # within a generic div/span, not necessarily an alert or heading.
+    # Match exact short nodes only, never arbitrary description substrings.
+    for node in soup.stripped_strings:
+        text = _plain(str(node))
+        if len(text) <= 140 and text in BANNERS:
+            return True
     return False
+
+
+def select_url_candidates(conn, links):
+    """Find existing postings using supplied Gupy job URLs, not scan order.
+
+    A supplied URL that is not present in this SQLite is reported as unmatched.
+    We never create synthetic jobs or infer closure from URL absence.
+    """
+    wanted = {}
+    for raw in links:
+        numeric = gupy_job_id(raw)
+        url = safe_url(raw)
+        if numeric is None or url is None:
+            raise ValueError(f"URL da Gupy nao reconhecida: {raw}")
+        wanted.setdefault(numeric, url)
+    if not wanted:
+        return [], []
+
+    entries = []
+    matched = set()
+    rows = conn.execute("""
+        SELECT source, source_job_id, job_json
+        FROM jobs
+        WHERE is_active=1 AND source IN ('gupy_global','gupy_public','gupy_api')
+    """).fetchall()
+    for source, source_job_id, payload in rows:
+        try:
+            stored = json.loads(payload).get("url")
+        except (ValueError, TypeError, AttributeError):
+            stored = None
+        source_id = str(source_job_id)
+        stored_id = gupy_job_id(stored)
+        job_id = stored_id or (source_id if source_id.isdecimal() else None)
+        if job_id not in wanted:
+            continue
+        # For specific user-provided URLs, probe the exact confirmed
+        # public vacancy page even when the stored portal URL is stale.
+        entries.append((str(source), source_id, wanted[job_id]))
+        matched.add(job_id)
+    return entries, sorted(set(wanted) - matched)
 
 
 def probe_url(url):
@@ -177,11 +260,17 @@ def select_candidates(conn, limit):
     return chosen
 
 
-def audit_gupy(conn, *, limit=150, workers=6, apply=True):
+def audit_gupy(conn, *, limit=150, workers=6, apply=True, urls=None):
     if not 0 <= limit <= 2000 or not 1 <= workers <= 12:
         raise ValueError("limit 0-2000; workers 1-12")
-    candidates = select_candidates(conn, limit)
+    if urls:
+        candidates, unmatched = select_url_candidates(conn, urls)
+    else:
+        candidates, unmatched = select_candidates(conn, limit), []
     stats = {"checked": 0, "closed": 0, "unknown": 0, "inactivated": 0}
+    if unmatched:
+        print("[GUPY] IDs nao encontrados neste banco ativo: "
+              + ", ".join(unmatched))
     if not candidates:
         return stats
     now = datetime.now(timezone.utc).isoformat()

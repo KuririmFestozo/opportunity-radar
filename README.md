@@ -685,3 +685,44 @@ sincroniza source_postings e mantém contas/favoritos/candidaturas.
 **Sem --apply, apenas mostra uma prévia das detecções.**
 Os resultados dependem de páginas públicas acessíveis e de avisos
 explícitos; inconclusivas continuam ativas até nova confirmação.
+
+
+#### Gupy: links novos /job/Base64 e confirmações manuais
+
+Além de /jobs/123, a Gupy usa links /job/Base64, em que o Base64
+representa um JSON com jobId e source=gupy_portal.
+O verificador reconhece os dois formatos e os alertas em inglês
+"Applications closed" / "This position has been paused by the company".
+
+Para testar exatamente uma vaga, não os 500 primeiros anúncios da fila:
+
+~~~powershell
+python -m tools.audit_gupy_lifecycle --db web-mvc/radar-web.db --url "https://coplana.gupy.io/job/eyJqb2JJZCI6MTIzMTQwNzcsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0="
+~~~
+
+Se a página só revelar o status via JavaScript, o HTML do cliente Python
+pode ser inconclusivo. **Depois de confirmar no seu navegador que a vaga
+está encerrada**, use esta alternativa explícita:
+
+~~~powershell
+python -m tools.audit_gupy_lifecycle --db web-mvc/radar-web.db --confirm-closed-url "https://coplana.gupy.io/job/eyJqb2JJZCI6MTIzMTQwNzcsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=" --apply
+~~~
+
+O comando localiza a vaga pelo ID dentro do link e marca como inativas
+somente suas publicações Gupy existentes no SQLite indicado, preservando
+todos os registros, contas e favoritos. Se o ID não existir no banco,
+informa o fato e não modifica nenhuma vaga. Esta confirmação manual não
+é usada na coleta automática.
+
+Para diagnosticar divergência entre o SQLite antigo do site e a base da
+aula sem fazer consultas externas:
+
+~~~powershell
+python -m tools.audit_gupy_lifecycle --db web-mvc/radar-web.db --limit 0
+python -m tools.audit_gupy_lifecycle --db data/classroom_latest.db --limit 0
+~~~
+
+A saída [ANTES] informa quantos anúncios permanecem no histórico, quantos
+estão ativos e quantos são da Gupy. Não misture os dois bancos: o
+arquivo do site mantém usuários/favoritos, enquanto o banco baixado do
+Actions é uma cópia independente do catálogo.
