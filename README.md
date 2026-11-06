@@ -632,3 +632,28 @@ A aplicação MVC inclui localização, raio, ordenação por proximidade ou
 afinidade, filtros por curso, tipo e modalidade. Possui contas próprias
 com usuário e senha: favoritos e candidaturas sincronizados entre aparelhos
 que usam a mesma conta. Consulte [o guia](web-mvc/README.md).
+
+
+### Baixar as vagas atualizadas para demonstração (SQLite)
+
+O git pull atualiza apenas código. Para baixar o snapshot SQLite mais
+recente do GitHub Actions, autenticado no repositório privado:
+
+~~~powershell
+gh auth login
+python tools/pull_classroom_db.py
+~~~
+
+O comando salva em data/classroom_latest.db, confere hash/integridade
+e faz backup da versão anterior. **Nunca substitui web-mvc/radar-web.db**,
+que armazena usuários e favoritos. Para abrir o site temporariamente com as
+vagas baixadas, a partir da raiz do repositório:
+
+~~~powershell
+$env:RADAR_DB_PATH = (Resolve-Path .\data\classroom_latest.db).Path
+cd web-mvc
+mvn spring-boot:run
+~~~
+
+Este é um snapshot **separado para a aula**, não uma sincronização incremental
+dos dados da interface. Consulte [detalhes e cuidados](web-mvc/README.md).
