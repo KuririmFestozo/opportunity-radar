@@ -35,9 +35,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .rolling
-          gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
-            --pattern "opportunity_radar-main.db.gz" \
-            --pattern "opportunity_radar-main.state.json" --dir .rolling
+          # GitHub Releases occasionally responds 500/502/503 during large
+          # parallel asset downloads. Retry transient failures before giving up.
+          downloaded=false
+          for attempt in 1 2 3 4 5; do
+            rm -f .rolling/opportunity_radar-main.db.gz .rolling/opportunity_radar-main.state.json
+            if gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
+              --pattern "opportunity_radar-main.db.gz" \
+              --pattern "opportunity_radar-main.state.json" --dir .rolling; then
+              downloaded=true
+              break
+            fi
+            echo "::warning::Release download attempt $attempt failed, will retry"
+            sleep $((attempt * 8))
+          done
+          if [ "$downloaded" != true ]; then
+            echo "::error::Could not download release after five attempts"
+            exit 1
+          fi
           python -m tools.full_availability_sweep restore \
             --archive .rolling/opportunity_radar-main.db.gz \
             --metadata .rolling/opportunity_radar-main.state.json \
@@ -76,9 +91,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .rolling
-          gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
-            --pattern "opportunity_radar-main.db.gz" \
-            --pattern "opportunity_radar-main.state.json" --dir .rolling
+          # GitHub Releases occasionally responds 500/502/503 during large
+          # parallel asset downloads. Retry transient failures before giving up.
+          downloaded=false
+          for attempt in 1 2 3 4 5; do
+            rm -f .rolling/opportunity_radar-main.db.gz .rolling/opportunity_radar-main.state.json
+            if gh release download radar-state-latest --repo "$GITHUB_REPOSITORY" \
+              --pattern "opportunity_radar-main.db.gz" \
+              --pattern "opportunity_radar-main.state.json" --dir .rolling; then
+              downloaded=true
+              break
+            fi
+            echo "::warning::Release download attempt $attempt failed, will retry"
+            sleep $((attempt * 8))
+          done
+          if [ "$downloaded" != true ]; then
+            echo "::error::Could not download release after five attempts"
+            exit 1
+          fi
           python -m tools.full_availability_sweep restore \
             --archive .rolling/opportunity_radar-main.db.gz \
             --metadata .rolling/opportunity_radar-main.state.json \
