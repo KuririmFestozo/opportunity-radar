@@ -159,6 +159,41 @@ def import_accounts(conn):
     return counts
 
 
+
+def merge_source_verification(conn):
+    """Bring source audits from the snapshot without undoing local closures."""
+    from processing.source_availability import ensure_schema as ensure_source
+    from processing.gupy_lifecycle import ensure_schema as ensure_gupy
+    total = 0
+    for table, ensure in (
+        ("source_availability_checks", ensure_source),
+        ("gupy_url_checks", ensure_gupy),
+    ):
+        if not table_exists(conn, table, "incoming"):
+            continue
+        ensure(conn)
+        cols = columns(conn, table, "incoming")
+        if set(cols) != set(columns(conn, table)):
+            raise SyncError(f"Tabela de auditoria incompatível: {table}")
+        col_sql = ",".join(q(x) for x in cols)
+        update_columns = [x for x in cols if x not in ("source", "source_job_id")]
+        clauses = [
+            f'{q(x)}=CASE WHEN main.{q(table)}.verdict="closed" '
+            f'THEN main.{q(table)}.{q(x)} ELSE excluded.{q(x)} END'
+            for x in update_columns
+        ]
+        # A confirmed closure is stronger than a subsequent timeout / 404.
+        before = count(conn, table)
+        conn.execute(
+            f'INSERT INTO main.{q(table)}({col_sql}) '
+            f'SELECT {col_sql} FROM incoming.{q(table)} WHERE 1=1 '
+            f'ON CONFLICT(source,source_job_id) DO UPDATE SET '
+            + ",".join(clauses)
+        )
+        total += count(conn, table) - before
+    return total
+
+
 def retain_confirmed_closures(conn):
     clauses = []
     if table_exists(conn, "gupy_url_checks"):
@@ -261,6 +296,7 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
                     copy_upsert(conn, table, KEYS[table], update=False)
 
                 accounts = import_accounts(conn) if include_accounts else None
+                verification_imported = merge_source_verification(conn)
                 protected = retain_confirmed_closures(conn)
                 personal_after = {table: count(conn, table) for table in personal_before}
                 if not include_accounts and personal_after != personal_before:
@@ -281,13 +317,15 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
                 "users": count(conn, "web_users"),
                 "confirmed_closures_preserved": protected,
                 "accounts_imported": accounts,
+                "verification_imported": verification_imported,
                 "backup": str(backup_path),
             }
             print("[OK] Catalogo atualizado no banco principal do site.")
             print(f"[VAGAS] {old_catalog} -> {result['opportunities']} historicas; "
                   f"{result['active_postings']} anuncios ativos.")
             print(f"[USUARIOS] {result['users']} contas preservadas.")
-            print(f"[FECHAMENTOS] {protected} status locais comprovados mantidos.")
+            print(f"[FECHAMENTOS] {protected} status comprovados mantidos.")
+            print(f"[AUDITORIAS] {verification_imported} verificacoes novas importadas.")
             if accounts:
                 print(f"[CONTAS IMPORTADAS] {accounts}")
             print(f"[BACKUP] {backup_path}")
