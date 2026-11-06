@@ -199,3 +199,21 @@ def test_merges_all_source_availability_evidence_without_reopening_closures(tmp_
             SELECT is_active FROM source_postings WHERE source_job_id='123'
         """).fetchone() == (0,)
         assert conn.execute("SELECT COUNT(*) FROM web_users").fetchone() == (1,)
+
+
+
+def test_attaches_native_path_with_spaces_unicode_and_uri_reserved_chars(tmp_path):
+    """The SQL parameter must be a native path, not file:///C:/... on Windows."""
+    src = tmp_path / "vagas da aula #atualizadas %2026.db"
+    dst = tmp_path / "site com usuários.db"
+    make_db(src, latest=True)
+    make_db(dst, account=True)
+
+    original_source = src.read_bytes()
+    output = sync_catalog(src, dst)
+
+    assert output["opportunities"] == 2
+    assert src.read_bytes() == original_source
+    with sqlite3.connect(dst) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM web_users").fetchone()[0] == 1
+        assert conn.execute("SELECT COUNT(*) FROM opportunities").fetchone()[0] == 2
