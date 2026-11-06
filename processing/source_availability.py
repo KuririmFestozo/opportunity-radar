@@ -198,17 +198,19 @@ def _jobposting_expiration(soup: BeautifulSoup, today: date) -> str | None:
     return None
 
 
-def _visible_status(soup: BeautifulSoup, statuses: set[str]) -> bool:
+def _visible_status(soup: BeautifulSoup, statuses: set[str], *,
+                    include_text_nodes: bool = True) -> bool:
     """Look for precise standalone notices, including div/span text nodes."""
     for node in soup.select("h1,h2,h3,h4,p,[role='alert'],[role='status'],[aria-live='assertive']"):
         if len(node.get_text(" ", strip=True)) > 180:
             continue
         if plain(node.get_text(" ", strip=True)).strip(" .!:") in statuses:
             return True
-    for node in soup.stripped_strings:
-        phrase = plain(str(node)).strip(" .!:")
-        if len(phrase) <= 180 and phrase in statuses:
-            return True
+    if include_text_nodes:
+        for node in soup.stripped_strings:
+            phrase = plain(str(node)).strip(" .!:")
+            if len(phrase) <= 180 and phrase in statuses:
+                return True
     return False
 _DEADLINE = re.compile(
     r"\binscri(?:cao|coes)\b.{0,100}?\b(?:ate|ate o dia)\s*"
@@ -328,7 +330,10 @@ def classify_html(source: str, html: str, *, today: date | None = None):
     ):
         return "unverified", "application_requires_login"
 
-    if _visible_status(soup, OPEN):
+    # A generic <div> mentioning 'inscricoes abertas' can be an inert
+    # template or advertisement. Only headings, paragraphs and explicit
+    # accessibility alerts are acceptable proof of opening.
+    if _visible_status(soup, OPEN, include_text_nodes=False):
         return "open", "explicit_applications_open"
 
     if len(text) < 35:
