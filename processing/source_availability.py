@@ -197,9 +197,6 @@ def classify_html(source: str, html: str, *, today: date | None = None):
     for node in soup(["script", "style", "noscript", "template"]):
         node.decompose()
     text = plain(soup.get_text(" ", strip=True))
-    if len(text) < 35:
-        return "unverified", "no_readable_job_content"
-
     for node in soup.select("h1,h2,h3,h4,p,div,span,[role='alert']"):
         if len(node.get_text(" ", strip=True)) > 150:
             continue
@@ -207,29 +204,24 @@ def classify_html(source: str, html: str, *, today: date | None = None):
         if phrase in CLOSED:
             return "closed", "explicit_closed_message"
 
-    # Specific published application deadlines can prove closure. A 2027
-    # program with an unqualified 30/10 is treated as the 2026 cycle,
-    # never inferred from current year for arbitrary undated vacancies.
+    # Never infer the year from a program title (e.g. "2027"). Only a
+    # full, published application deadline can establish expiration.
     if source == "cia_estagios":
         match = _DEADLINE.search(text)
         if match:
             day, month, explicit_year = match.groups()
-            heading = " ".join(plain(tag.get_text(" ", strip=True))
-                               for tag in soup.select("h1,h2")[:3])
-            cycle = re.search(r"\b(20\d{2})\b", heading)
-            year = int(explicit_year) if explicit_year else (
-                int(cycle.group(1)) - 1 if cycle else None
-            )
-            if year is not None:
+            if explicit_year:
                 try:
-                    deadline = date(year, int(month), int(day))
+                    deadline = date(int(explicit_year), int(month), int(day))
                     if deadline < today:
                         return "closed", f"deadline_{deadline.isoformat()}"
                 except ValueError:
                     pass
 
     if source == "iel" and (
-        "faca login e se candidate" in text or "acesso candidato" in text
+        "faca login e se candidate" in text
+        or "fazer login e se candidatar" in text
+        or "acesso candidato" in text
     ):
         return "unverified", "application_requires_login"
 
