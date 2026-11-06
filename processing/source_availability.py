@@ -11,6 +11,7 @@ allowing the web UI to separate unverified from unchecked opportunities.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from functools import lru_cache
 import re
 import sqlite3
 import unicodedata
@@ -62,6 +63,7 @@ _SUFFIXES = {
 }
 
 
+@lru_cache(maxsize=1)
 def _configured_hosts() -> dict[str, set[str]]:
     """Configured corporate domains, not arbitrary addresses from a DB."""
     from config.successfactors import SUCCESSFACTORS_PORTALS
@@ -92,23 +94,29 @@ def source_families() -> tuple[str, ...]:
 
 
 def source_coverage(conn: sqlite3.Connection) -> list[dict]:
-    """Per-source historical/active + verification counts; no network."""
-    ensure_schema(conn)
-    records = conn.execute("""
+    """Per-source counts, without creating tables or touching the DB."""
+    has_checks = conn.execute(
+        "SELECT 1 FROM sqlite_master "
+        "WHERE type='table' AND name='source_availability_checks'"
+    ).fetchone() is not None
+    join = ("""LEFT JOIN source_availability_checks c
+        ON c.source=p.source AND c.source_job_id=p.source_job_id"""
+        if has_checks else "")
+    verdict = "c.verdict" if has_checks else "NULL"
+    rows = conn.execute(f"""
         SELECT p.source, COUNT(*) historical,
             SUM(CASE WHEN p.is_active=1 THEN 1 ELSE 0 END) active,
-            SUM(CASE WHEN c.verdict='open' THEN 1 ELSE 0 END) verified_open,
-            SUM(CASE WHEN c.verdict='closed' THEN 1 ELSE 0 END) verified_closed,
-            SUM(CASE WHEN c.verdict='unverified' THEN 1 ELSE 0 END) unverified,
-            SUM(CASE WHEN c.verdict IS NULL THEN 1 ELSE 0 END) unchecked
-        FROM source_postings p
-        LEFT JOIN source_availability_checks c
-        ON c.source=p.source AND c.source_job_id=p.source_job_id
+            SUM(CASE WHEN {verdict}='open' THEN 1 ELSE 0 END) verified_open,
+            SUM(CASE WHEN {verdict}='closed' THEN 1 ELSE 0 END) verified_closed,
+            SUM(CASE WHEN {verdict}='unverified' THEN 1 ELSE 0 END) unverified,
+            SUM(CASE WHEN {verdict} IS NULL THEN 1 ELSE 0 END) unchecked
+        FROM source_postings p {join}
         GROUP BY p.source ORDER BY p.source
     """).fetchall()
     return [dict(zip(("source", "historical", "active", "verified_open",
                       "verified_closed", "unverified", "unchecked"), row))
-            for row in records]
+            for row in rows]
+
 
 CLOSED = {"inscricoes encerradas", "candidaturas encerradas",
           "esta vaga foi encerrada", "vaga encerrada", "applications closed",
@@ -230,6 +238,9 @@ def classify_html(source: str, html: str, *, today: date | None = None):
         if phrase in OPEN:
             return "open", "explicit_applications_open"
 
+    if len(text) < 35:
+        return "unverified", "no_readable_job_content"
+
     # The visible description or a clickable 'Inscreva-se' alone is insufficient.
     return "unverified", "no_confirmed_application_state"
 
@@ -273,39 +284,67 @@ def ensure_schema(conn: sqlite3.Connection):
 
 
 def select_postings(conn: sqlite3.Connection, *, urls=None, limit=150):
-    """Select posted URLs from source_postings using the exact source identity."""
+    """Audit EVERY registered family, distributing checks fairly.
+
+    Unknown historical source keys remain visible in source_coverage;
+    unregistered/unsafe URLs are never fetched.
+    """
     if urls:
-        expected = {normalize_url(value) for value in urls}
-        if not all(expected) or not expected:
-            raise ValueError("Link de consulta invalido")
+        wanted = {normalize_url(url) for url in urls}
+        if not wanted or not all(wanted):
+            raise ValueError("URL de consulta invalida")
         matches = []
         for source, job_id, url in conn.execute("""
-            SELECT source,source_job_id,url FROM source_postings
-            WHERE source IN ('99jobs','bettha','cargill','cia_estagios','iel')
+            SELECT source, source_job_id, url FROM source_postings
         """):
-            if normalize_url(url) in expected:
+            if normalize_url(url) in wanted:
                 matches.append((source, job_id, url))
-        absent = expected - {normalize_url(row[2]) for row in matches}
-        return matches, sorted(absent)
+        unmatched = sorted(wanted - {
+            normalize_url(row[2]) for row in matches
+        })
+        return matches, unmatched
     if limit <= 0:
         return [], []
-    rows = conn.execute("""
-        SELECT p.source,p.source_job_id,p.url
-        FROM source_postings p
-        LEFT JOIN source_availability_checks c
-            ON c.source=p.source AND c.source_job_id=p.source_job_id
-        WHERE p.is_active=1
-          AND p.source IN ('99jobs','bettha','cargill','cia_estagios','iel')
-        ORDER BY COALESCE(c.checked_at,'') ASC, p.last_seen_at ASC
-        LIMIT ?
-    """, (limit * 5,))
-    selected = []
-    for source, job_id, url in rows:
-        if safe_url(source, url):
-            selected.append((source, job_id, url))
-            if len(selected) >= limit:
-                break
-    return selected, []
+
+    has_checks = conn.execute(
+        "SELECT 1 FROM sqlite_master "
+        "WHERE type='table' AND name='source_availability_checks'"
+    ).fetchone() is not None
+    join = ("""LEFT JOIN source_availability_checks c
+        ON c.source=p.source AND c.source_job_id=p.source_job_id"""
+        if has_checks else "")
+    checked = "COALESCE(c.checked_at,'')" if has_checks else "''"
+    sources = [
+        str(row[0]) for row in conn.execute(
+            "SELECT DISTINCT source FROM source_postings "
+            "WHERE is_active=1 ORDER BY source"
+        )
+    ]
+    queues = {}
+    for source in sources:
+        if source not in SUPPORTED:
+            continue
+        queues[source] = conn.execute(
+            f"""SELECT p.source,p.source_job_id,p.url
+            FROM source_postings p {join}
+            WHERE p.is_active=1 AND p.source=?
+            ORDER BY {checked} ASC, p.last_seen_at ASC
+            LIMIT ?""",
+            (source, limit),
+        ).fetchall()
+    # Round robin across providers: no single dominant ATS consumes the batch.
+    result = []
+    for index in range(limit):
+        progress = False
+        for source in sorted(queues):
+            if index < len(queues[source]):
+                result.append(tuple(queues[source][index]))
+                progress = True
+                if len(result) >= limit:
+                    return result, []
+        if not progress:
+            break
+    return result, []
 
 
 def apply_result(conn, source, job_id, verdict, evidence, *, checked_at=None):
@@ -317,7 +356,7 @@ def apply_result(conn, source, job_id, verdict, evidence, *, checked_at=None):
     ).fetchone()
     # Never turn a confirmed-closed posting back into an unchecked or
     # ambiguous state due to an HTTP failure, redirect or login wall.
-    if existing is not None and existing[0] == "closed" and verdict == "unverified":
+    if existing is not None and existing[0] == "closed" and verdict != "closed":
         return 0
     conn.execute("""
       INSERT INTO source_availability_checks
@@ -343,3 +382,26 @@ def apply_result(conn, source, job_id, verdict, evidence, *, checked_at=None):
           WHERE source=? AND source_job_id=?
         """, (now, now, source, job_id))
     return updated
+
+
+
+def closed_posting_keys(conn: sqlite3.Connection) -> set[tuple[str, str]]:
+    exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' "
+        "AND name='source_availability_checks'"
+    ).fetchone()
+    if not exists:
+        return set()
+    return {
+        (str(source), str(job_id))
+        for source, job_id in conn.execute(
+            "SELECT source,source_job_id FROM source_availability_checks "
+            "WHERE verdict='closed'"
+        )
+    }
+
+
+def suppress_confirmed_closed(jobs, closed):
+    kept = [job for job in jobs if
+            (job.source, str(job.source_job_id)) not in closed]
+    return kept, len(jobs) - len(kept)
