@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
 
-from processing.gupy_lifecycle import audit_gupy, gupy_job_id
+from processing.gupy_lifecycle import gupy_job_id, select_url_candidates
 from storage.sqlite_repository import SQLiteOpportunityRepository
 
 
@@ -25,6 +25,9 @@ def main() -> int:
     parser.add_argument("--url", action="append", default=[],
                         help="Verifica uma vaga especifica da Gupy (repetivel); "
                              "usa o ID dentro do link /job/Base64 ou /jobs/123")
+    parser.add_argument("--confirm-closed-url", action="append", default=[],
+                        help="Marcar como encerrada uma URL que VOCE verificou como fechada "
+                             "(repetivel; requer --apply).")
     parser.add_argument("--apply", action="store_true",
                         help="Inactivate only jobs with confirmed closed status")
     args = parser.parse_args()
@@ -35,7 +38,11 @@ def main() -> int:
     if not 0 <= args.limit <= 2000 or not 1 <= args.workers <= 12:
         parser.error("Use --limit entre 0 e 2000 e --workers entre 1 e 12")
 
-    for raw in args.url:
+    if args.confirm_closed_url and not args.apply:
+        parser.error("--confirm-closed-url requer --apply (confirmacao explicita).")
+    if args.confirm_closed_url and args.url:
+        parser.error("Use --url OU --confirm-closed-url; nao misture os modos.")
+    for raw in args.url + args.confirm_closed_url:
         if gupy_job_id(raw) is None:
             parser.error(f"Link Gupy nao reconhecido: {raw}")
     print(f"[GUPY] SQLite: {path}")
@@ -64,10 +71,22 @@ def main() -> int:
                 repository._store.conn.backup(backup)
             print(f"[BACKUP] {backup_path}")
 
-        stats = repository.audit_gupy(
-            limit=args.limit, workers=args.workers, apply=args.apply,
-            urls=args.url
-        )
+        if args.confirm_closed_url:
+            candidates, unmatched = select_url_candidates(conn, args.confirm_closed_url)
+            if unmatched:
+                print("[GUPY] IDs nao encontrados neste banco ativo: " + ", ".join(unmatched))
+            keys = {(source, job_id) for source, job_id, _ in candidates}
+            changed = repository.mark_gupy_closed(keys)
+            repository.commit()
+            print("[GUPY] Encerramento manual confirmado pelo usuario; "
+                  f"{len(keys)} anuncios localizados.")
+            stats = {"checked": len(keys), "closed": len(keys),
+                     "unknown": 0, "inactivated": changed}
+        else:
+            stats = repository.audit_gupy(
+                limit=args.limit, workers=args.workers, apply=args.apply,
+                urls=args.url
+            )
         if args.apply and stats["inactivated"] > 0:
             repository.sync_unified_schema()
         print(

@@ -213,3 +213,45 @@ def test_unmatched_specific_job_is_not_assumed_to_be_closed(tmp_path, monkeypatc
         assert repo._store.conn.execute(
             "SELECT COUNT(*) FROM jobs WHERE is_active=1"
         ).fetchone()[0] == 1
+
+
+def test_manual_closed_url_requires_apply_and_only_updates_matching_posting(tmp_path, monkeypatch):
+    import sys
+    from tools import audit_gupy_lifecycle as cli
+    path = tmp_path / "radar-web.db"
+    with SQLiteOpportunityRepository(path) as repo:
+        match = example_job(job_id="12314077")
+        match.url = COPLANA_URL
+        add_job(repo, match)
+        add_job(repo, example_job(job_id="999"))
+    monkeypatch.setattr(sys, "argv", [
+        "audit_gupy_lifecycle", "--db", str(path),
+        "--confirm-closed-url", COPLANA_URL, "--apply",
+    ])
+    assert cli.main() == 0
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0] == 2
+        assert conn.execute("SELECT is_active FROM jobs WHERE source_job_id='12314077'").fetchone()[0] == 0
+        assert conn.execute("SELECT is_active FROM jobs WHERE source_job_id='999'").fetchone()[0] == 1
+        assert conn.execute("SELECT is_active FROM source_postings WHERE source_job_id='12314077'").fetchone()[0] == 0
+    assert list((tmp_path / "backups").glob("*.db"))
+
+
+def test_manual_closed_url_without_apply_refuses_to_change_data(tmp_path, monkeypatch):
+    import sys
+    from tools import audit_gupy_lifecycle as cli
+    path = tmp_path / "radar-web.db"
+    with SQLiteOpportunityRepository(path) as repo:
+        match = example_job(job_id="12270887")
+        match.url = SIDI_URL
+        add_job(repo, match)
+    monkeypatch.setattr(sys, "argv", [
+        "audit_gupy_lifecycle", "--db", str(path),
+        "--confirm-closed-url", SIDI_URL,
+    ])
+    import pytest
+    with pytest.raises(SystemExit) as error:
+        cli.main()
+    assert error.value.code == 2
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("SELECT is_active FROM jobs").fetchone()[0] == 1
