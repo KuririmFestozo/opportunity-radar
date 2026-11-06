@@ -208,6 +208,14 @@ def select_postings(conn: sqlite3.Connection, *, urls=None, limit=150):
 def apply_result(conn, source, job_id, verdict, evidence, *, checked_at=None):
     ensure_schema(conn)
     now = checked_at or datetime.now(timezone.utc).isoformat()
+    existing = conn.execute(
+        "SELECT verdict FROM source_availability_checks "
+        "WHERE source=? AND source_job_id=?", (source, job_id)
+    ).fetchone()
+    # Never turn a confirmed-closed posting back into an unchecked or
+    # ambiguous state due to an HTTP failure, redirect or login wall.
+    if existing is not None and existing[0] == "closed" and verdict == "unverified":
+        return 0
     conn.execute("""
       INSERT INTO source_availability_checks
             (source,source_job_id,verdict,evidence,checked_at)

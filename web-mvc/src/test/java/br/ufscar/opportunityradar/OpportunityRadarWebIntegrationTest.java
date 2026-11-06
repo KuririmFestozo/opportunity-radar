@@ -111,6 +111,7 @@ class OpportunityRadarWebIntegrationTest {
     @Autowired AccountService accounts;
 
     @BeforeEach void resetUserData() {
+        jdbc.update("DELETE FROM source_availability_checks");
         applications.deleteAll();
         favorites.deleteAll();
         users.deleteAll();
@@ -136,6 +137,39 @@ class OpportunityRadarWebIntegrationTest {
             .andExpect(status().isOk());
         mvc.perform(get("/opportunities").param("source", "invalid"))
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Nenhuma oportunidade encontrada")));
+    }
+
+    @Test
+    void availabilityFilterSeparatesUnverifiedFromProvenOpen() throws Exception {
+        jdbc.update("""
+            INSERT INTO source_availability_checks
+                (source,source_job_id,verdict,evidence,checked_at)
+            VALUES ('workday','A1','unverified','login_required','2026-11-06')
+            """);
+        mvc.perform(get("/opportunities"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.not(
+                org.hamcrest.Matchers.containsString("Estágio em engenharia"))));
+        mvc.perform(get("/opportunities").param("availability", "unverified"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                "Disponibilidade não confirmada")));
+        mvc.perform(get("/opportunities").param("availability", "all"))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                "Estágio em engenharia")));
+        mvc.perform(get("/opportunities").param("availability", "verified"))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                "Nenhuma oportunidade encontrada")));
+
+        jdbc.update("""
+            UPDATE source_availability_checks SET verdict='open',
+                evidence='explicit_applications_open'
+            WHERE source='workday' AND source_job_id='A1'
+            """);
+        mvc.perform(get("/opportunities").param("availability", "verified"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                "Inscrições confirmadas")));
     }
 
     @Test

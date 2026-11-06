@@ -40,8 +40,6 @@ def run(db: Path, *, urls=None, limit=100, apply=False):
                       PRIMARY KEY(source,source_job_id)
                     )
                 """)
-        else:
-            ensure_schema(conn)
         candidates, unmatched = select_postings(conn, urls=urls, limit=limit)
         if unmatched:
             print("[NAO ENCONTRADOS] URLs ausentes do banco escolhido:")
@@ -60,6 +58,7 @@ def run(db: Path, *, urls=None, limit=100, apply=False):
             with sqlite3.connect(backup) as saved:
                 conn.backup(saved)
             print(f"[BACKUP] {backup}")
+            ensure_schema(conn)
         stats = Counter()
         for source, job_id, url in candidates:
             verdict, reason = probe(source, url)

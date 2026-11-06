@@ -726,3 +726,40 @@ A saída [ANTES] informa quantos anúncios permanecem no histórico, quantos
 estão ativos e quantos são da Gupy. Não misture os dois bancos: o
 arquivo do site mantém usuários/favoritos, enquanto o banco baixado do
 Actions é uma cópia independente do catálogo.
+
+
+### Verificar disponibilidade além da Gupy
+
+A coleta indica que um anúncio foi encontrado, não que a candidatura esteja
+aberta. Para 99jobs, Bettha, Cargill, Companhia de Estágios e IEL, a
+auditoria registra três estados em source_availability_checks:
+
+- open: a própria página contém uma mensagem explícita de inscrições abertas;
+- closed: aviso explícito de fechamento ou prazo vencido com data completa;
+- unverified: redirecionamento para home, login obrigatório, bloqueio,
+  403/404/429, HTML sem vaga ou falta de confirmação.
+
+Não se assume que login obrigatório, timeout ou 404 seja vaga encerrada.
+O prazo só prova fechamento se o ano constar explicitamente na página.
+
+Para auditar sem modificar a base, pare o Spring e execute da raiz:
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 100
+~~~
+
+Para fazer backup e guardar os resultados (somente fechamentos
+comprovados são inativados):
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 100 --apply
+~~~
+
+É possível usar --url repetidamente para IDs específicos ou apontar
+--db para data/classroom_latest.db. Nenhum anúncio histórico é apagado,
+nem contas/favoritos são modificados.
+
+Na interface MVC há filtros: ativas sem inconclusivas, abertura confirmada,
+não verificadas e mostrar todas. Ainda não verificada significa que o anúncio
+não foi auditado, portanto não comprova inscrições abertas. Verificação de
+disponibilidade é independente do lifecycle dos coletores.
