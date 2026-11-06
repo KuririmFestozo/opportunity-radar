@@ -726,3 +726,83 @@ A saída [ANTES] informa quantos anúncios permanecem no histórico, quantos
 estão ativos e quantos são da Gupy. Não misture os dois bancos: o
 arquivo do site mantém usuários/favoritos, enquanto o banco baixado do
 Actions é uma cópia independente do catálogo.
+
+
+#### Cobertura de TODAS as fontes (não só as reclamações)
+
+O verificador genérico lê a tabela source_postings e usa as famílias
+**gupy_global, gupy_api, gupy_public, 99jobs, vagas_com, ciee, cargill,
+ashby, lever, greenhouse, workday, smartrecruiters, inhire, izirh,
+eightfold, teamtailor, totvs, successfactors, walljobs, cia_estagios,
+nube, iel, superestagios, taqe, bettha, matchbox e cia_talentos**.
+Inclui fontes atualmente desabilitadas, pois seus registros históricos
+continuam na base. A validação de URLs aplica hosts fixos por plataforma e
+hosts corporativos extraídos do cadastro oficial de tenants; links externos
+desconhecidos não são acessados e ficam como não verificados.
+
+Inspecione a situação **de todas as fontes existentes no seu SQLite**,
+sem redes nem modificações:
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --report
+~~~
+
+Para auditar um lote distribuído pelas fontes (prévia primeiro):
+
+~~~powershell
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 500
+python -m tools.audit_source_availability --db web-mvc/radar-web.db --limit 500 --apply
+~~~
+
+O modo --apply faz backup e mantém conta/favoritos. Também salva
+inconclusivas separadamente sem fechá-las. Pode ser repetido; a fila
+prioriza verificações antigas e percorre todas as fontes (limite máximo
+de 1000 por execução). Para a base da aula, use --db data/classroom_latest.db.
+
+Nas coletas com DAILY_AUDIT, um lote de até 80 anúncios entre plataformas
+é automaticamente verificado por execução, ajustável pela variável de
+ambiente SOURCE_AVAILABILITY_AUDIT_LIMIT (0 a 2000). Nenhuma vaga
+não verificada é divulgada como "abertura confirmada".
+
+**Importante:** nem todos os ATS expõem publicamente o formulário e o
+estado das inscrições. Uma URL segura mas sem status claro recebe resultado
+inconclusivo; não é possível prometer verificação 100% sem credenciais ou
+APIs contratadas. A fila aponta também fontes ainda não reconhecidas.
+
+
+## Login consistente ao atualizar o banco de vagas (recomendado)
+
+A causa de muitos logins que funcionam em um aparelho mas não em outro é
+a troca de SQLite pelo RADAR_DB_PATH. **As contas são armazenadas no banco
+usado pelo Spring**; rodar sobre data/classroom_latest.db faz o site
+enxergar contas diferentes das do antigo web-mvc/radar-web.db.
+
+Para juntar as vagas recentes ao banco que contém suas contas, pare o
+Spring Boot e rode na raiz do projeto:
+
+~~~powershell
+python -m tools.sync_web_catalog --import-accounts
+~~~
+
+O script lê data/classroom_latest.db e atualiza as tabelas do catálogo
+dentro de web-mvc/radar-web.db, com backup automático em web-mvc/backups.
+Contas e favoritos existentes **não são apagados**. Se a conta foi criada
+no banco da aula, --import-accounts traz também seus registros pessoais;
+se existirem nomes de usuário iguais representando contas diferentes,
+a sincronização é bloqueada para evitar mistura de identidade.
+Avisos de encerramento confirmados no SQLite antigo são preservados; as
+verificações da base recente são importadas.
+
+Depois SEMPRE inicie o servidor apontando para o banco fixo:
+
+~~~powershell
+$env:RADAR_DB_PATH = (Resolve-Path .\web-mvc\radar-web.db).Path
+cd web-mvc
+mvn spring-boot:run
+~~~
+
+Um aviso aparece na página de login caso o servidor esteja apontando para
+classroom_latest.db. **Não altere o SQLite do site enquanto ele estiver
+aberto pelo Spring.** Para baixar novas vagas no futuro, primeiro use
+python tools/pull_classroom_db.py; depois execute o sync acima, parando
+o Spring entre as etapas. Não é necessário cadastrar uma conta nova.

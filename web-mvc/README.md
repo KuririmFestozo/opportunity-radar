@@ -163,3 +163,41 @@ RADAR_DB_PATH apontado para web-mvc/radar-web.db; baixar a base nova
 O arquivo remoto contém dezenas de milhares de vagas e pode ser grande:
 o .db.gz principal ocupa aproximadamente 100 MB em 6/11/2026. A API
 do GitHub exige permissão de acesso ao repositório privado.
+
+
+## Login consistente ao atualizar o banco de vagas (recomendado)
+
+A causa de muitos logins que funcionam em um aparelho mas não em outro é
+a troca de SQLite pelo RADAR_DB_PATH. **As contas são armazenadas no banco
+usado pelo Spring**; rodar sobre data/classroom_latest.db faz o site
+enxergar contas diferentes das do antigo web-mvc/radar-web.db.
+
+Para juntar as vagas recentes ao banco que contém suas contas, pare o
+Spring Boot e rode na raiz do projeto:
+
+~~~powershell
+python -m tools.sync_web_catalog --import-accounts
+~~~
+
+O script lê data/classroom_latest.db e atualiza as tabelas do catálogo
+dentro de web-mvc/radar-web.db, com backup automático em web-mvc/backups.
+Contas e favoritos existentes **não são apagados**. Se a conta foi criada
+no banco da aula, --import-accounts traz também seus registros pessoais;
+se existirem nomes de usuário iguais representando contas diferentes,
+a sincronização é bloqueada para evitar mistura de identidade.
+Avisos de encerramento confirmados no SQLite antigo são preservados; as
+verificações da base recente são importadas.
+
+Depois SEMPRE inicie o servidor apontando para o banco fixo:
+
+~~~powershell
+$env:RADAR_DB_PATH = (Resolve-Path .\web-mvc\radar-web.db).Path
+cd web-mvc
+mvn spring-boot:run
+~~~
+
+Um aviso aparece na página de login caso o servidor esteja apontando para
+classroom_latest.db. **Não altere o SQLite do site enquanto ele estiver
+aberto pelo Spring.** Para baixar novas vagas no futuro, primeiro use
+python tools/pull_classroom_db.py; depois execute o sync acima, parando
+o Spring entre as etapas. Não é necessário cadastrar uma conta nova.
