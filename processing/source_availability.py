@@ -187,8 +187,15 @@ def normalize_url(raw: str) -> str:
     """Match a supplied URL to the catalog, ignoring only tracking params."""
     try:
         p = urlsplit(str(raw or ""))
+        from urllib.parse import unquote
+
         host = (p.hostname or "").lower().removeprefix("www.")
-        return f"{host}{p.path.rstrip('/').casefold()}"
+        path = unquote(p.path).rstrip("/")
+        # Gupy Base64 tokens are case-sensitive; ordinary vacancy slugs
+        # can be normalized to compare percent-encoded Unicode URLs.
+        if not (host.endswith(".gupy.io") and path.startswith("/job/")):
+            path = path.casefold()
+        return f"{host}{path}"
     except (TypeError, ValueError):
         return ""
 
