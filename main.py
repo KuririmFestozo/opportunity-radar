@@ -47,6 +47,7 @@ from processing.collection_planner import build_collection_queries
 from processing.deduplicate import deduplicate_jobs
 from processing.export import export_all
 from processing.geolocation import enrich_job_location
+from processing.gupy_lifecycle import filter_discoveries
 from processing.matching import match_job
 from processing.deduplicate import deduplicate_source_jobs
 from storage.sqlite_repository import SQLiteOpportunityRepository
@@ -637,7 +638,18 @@ def main():
     # First dedup only exact source-native IDs. This preserves alternative
     # sources in SQLite even when the dashboard later collapses them.
     source_unique = deduplicate_source_jobs(all_jobs)
-    print(f"IDs únicos nesta coleta: {len(source_unique)}")
+    # Gupy global search is not an exhaustive status API. Only positive
+    # closure evidence suppresses a job; never inactivate by absence alone.
+    source_unique, explicit_closed, gupy_filter_stats = filter_discoveries(
+        source_unique, store.gupy_closed_keys()
+    )
+    if gupy_filter_stats["explicit"] or gupy_filter_stats["previously_closed"]:
+        print(
+            "  [GUPY LIFECYCLE] "
+            f'{gupy_filter_stats["explicit"]} encerradas na API | '
+            f'{gupy_filter_stats["previously_closed"]} fechadas já confirmadas.'
+        )
+    print(f"IDs únicos válidos nesta coleta: {len(source_unique)}")
 
     incremental = Counter()
     for incoming in source_unique:
@@ -651,6 +663,23 @@ def main():
             store.touch_posting(job.source, job.source_job_id, commit=False)
 
     seen_state = store.mark_seen_postings(source_unique)
+    if explicit_closed:
+        confirmed = store.mark_gupy_closed(explicit_closed)
+        print(f"  [GUPY LIFECYCLE] {confirmed} vagas explicitamente encerradas na origem.")
+    store.commit()
+
+    # Check old Gupy postings by visiting their exact official URL. 404,
+    # rate limits, login walls and API outages always mean UNKNOWN, not closed.
+    if daily_audit:
+        audit_limit = max(0, min(int(os.getenv("GUPY_AUDIT_LIMIT", "150")), 2000))
+        if audit_limit:
+            audit_stats = store.audit_gupy(limit=audit_limit, workers=6)
+            print(
+                f'  [GUPY AUDIT] {audit_stats["checked"]} URLs verificadas | '
+                f'{audit_stats["closed"]} com encerramento explícito | '
+                f'{audit_stats["unknown"]} inconclusivas | '
+                f'{audit_stats["inactivated"]} inativadas.'
+            )
     store.commit()
 
     # CP4-A shadow migration: legacy jobs remain authoritative for now.

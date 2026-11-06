@@ -18,6 +18,11 @@ from storage.incremental_state import (
     record_discoveries as _record_discoveries,
 )
 from storage.job_store import DEFAULT_DB_PATH, PROCESSING_VERSION, JobStore
+from processing.gupy_lifecycle import (
+    audit_gupy as _audit_gupy,
+    closed_keys as _gupy_closed_keys,
+    mark_closed as _mark_gupy_closed,
+)
 from storage.unified_schema import (
     sync_unified_persistence,
     unified_schema_stats,
@@ -435,6 +440,15 @@ class SQLiteOpportunityRepository:
             coverage=coverage,
             finished_at=finished_at,
         )
+
+    def gupy_closed_keys(self) -> set[tuple[str, str]]:
+        return _gupy_closed_keys(self._store.conn)
+
+    def mark_gupy_closed(self, keys: set[tuple[str, str]]) -> int:
+        return _mark_gupy_closed(self._store.conn, keys)
+
+    def audit_gupy(self, *, limit: int = 150, workers: int = 6, apply: bool = True) -> dict:
+        return _audit_gupy(self._store.conn, limit=limit, workers=workers, apply=apply)
 
     def lifecycle_stats(self) -> dict:
         return _lifecycle_stats(self._store)

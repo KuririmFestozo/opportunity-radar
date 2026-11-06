@@ -4,6 +4,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from collectors.common import get_text
+from processing.gupy_lifecycle import explicit_page_closure
 from models.job import Job
 
 
@@ -90,6 +91,8 @@ def collect_gupy_public(
 def _enrich_detail(job: Job) -> None:
     html = get_text(job.url)
     soup = BeautifulSoup(html, "html.parser")
+    if explicit_page_closure(html):
+        job.metadata["gupy_status"] = "closed"
 
     h1 = soup.find("h1")
     if h1:

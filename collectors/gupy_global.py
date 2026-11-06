@@ -316,6 +316,9 @@ def job_from_item(item: dict) -> Job | None:
         "gupy_state": state,
         "gupy_country": country,
         "career_page_name": _clean(item.get("careerPageName")),
+        # If the public feed explicitly reports closure, do not call this active.
+        "gupy_status": _clean(item.get("status")),
+        "gupy_closed_at": _clean(item.get("closedAt")),
     }
     resolved_country = _country_code(country)
     if resolved_country:

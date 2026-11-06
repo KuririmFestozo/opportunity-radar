@@ -33,3 +33,6 @@ data/server-sync/
 web-mvc/*.db
 web-mvc/*.db-*
 web-mvc/target/
+
+# Gupy audit copies (may contain local user accounts)
+web-mvc/backups/
