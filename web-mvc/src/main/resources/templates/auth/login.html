@@ -14,6 +14,11 @@
     <div class="eyebrow">BEM-VINDO DE VOLTA</div>
     <h2>Entrar na conta</h2>
     <p class="muted">Não precisa de código de recuperação.</p>
+    <p role="status" class="auth-error" th:if="${temporaryCatalogDatabase}">
+      Atenção: o site está usando o banco temporário da aula.
+      As contas cadastradas no radar-web.db não aparecem aqui.
+      Atualize o catálogo dentro do radar-web.db para manter o mesmo login.
+    </p>
     <p role="alert" class="auth-error" th:if="${param.error}">Usuário ou senha inválidos, ou limite de tentativas atingido. Confira seus dados e tente novamente mais tarde.</p>
     <p role="status" class="flash" th:if="${param.logout}">Você saiu da sua conta.</p>
     <p role="status" class="flash" th:if="${message}" th:text="${message}"></p>
