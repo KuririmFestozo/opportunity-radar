@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import closing
 from datetime import datetime, timezone
 import argparse
 import gzip
@@ -98,7 +99,7 @@ def restore(archive: Path, metadata_path: Path, db: Path) -> None:
             raise SweepError("Checksum do SQLite do release nao corresponde")
         if isinstance(meta.get("db_bytes"), int) and tmp.stat().st_size != meta["db_bytes"]:
             raise SweepError("O tamanho do SQLite nao corresponde ao release")
-        with _connect(tmp, read_only=True) as conn:
+        with closing(_connect(tmp, read_only=True)) as conn:
             _check_db(conn)
         os.replace(tmp, db)
     finally:
@@ -170,7 +171,7 @@ def scan_shard(db: Path, *, shard: int, shards: int, out: Path,
         raise SweepError("Limite de 0 a 500 paginas renderizadas por shard")
     out.mkdir(parents=True, exist_ok=True)
     db_hash = sha256(db)
-    with _connect(db, read_only=True) as conn:
+    with closing(_connect(db, read_only=True)) as conn:
         _check_db(conn)
         jobs = [
             (str(source), str(job_id), str(url or ""))
@@ -242,7 +243,7 @@ def scan_shard(db: Path, *, shard: int, shards: int, out: Path,
 def merge_shards(db: Path, *, results: Path, shards: int, summary_path: Path) -> dict:
     """Require complete coverage and unchanged database before any UPDATE."""
     db_hash = sha256(db)
-    with _connect(db) as conn:
+    with closing(_connect(db)) as conn:
         _check_db(conn)
         expected = {(str(source), str(job_id)) for source, job_id, _ in _all_active(conn)}
         personal = [
@@ -354,7 +355,7 @@ def merge_shards(db: Path, *, results: Path, shards: int, summary_path: Path) ->
 def pack(db: Path, original_meta: Path, summary: Path, output: Path) -> None:
     """Package an updated main release, preserving the existing dashboard checksum."""
     output.mkdir(parents=True, exist_ok=True)
-    with _connect(db, read_only=True) as conn:
+    with closing(_connect(db, read_only=True)) as conn:
         _check_db(conn)
     old = json.loads(original_meta.read_text(encoding="utf-8"))
     if old.get("channel") != "main":

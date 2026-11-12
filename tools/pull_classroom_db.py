@@ -18,6 +18,7 @@ import shutil
 import sqlite3
 import subprocess
 import tempfile
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -190,7 +191,7 @@ def pull_classroom_db(destination: Path = DEFAULT_DESTINATION) -> dict[str, Any]
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
             backup = backup_dir / f"{destination.stem}-{stamp}.db"
             # Snapshot of existing local classroom data even if the file uses WAL.
-            with sqlite3.connect(destination) as original, sqlite3.connect(backup) as saved:
+            with closing(sqlite3.connect(destination)) as original, closing(sqlite3.connect(backup)) as saved:
                 original.backup(saved)
         # Atomic on the same filesystem. If destination is open on Windows,
         # the replace fails and the original remains untouched.
