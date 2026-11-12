@@ -95,6 +95,15 @@ jobs:
           path: data/opportunity_radar.db
           retention-days: 7
 
+      - name: Keep SQLite backup before confirmed permanent removals
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retirement-safety-backup
+          path: data/backups/*-before-retirement-*.db
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Prepare rolling server state
         if: success()
         shell: bash

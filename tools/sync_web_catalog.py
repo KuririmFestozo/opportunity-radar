@@ -267,7 +267,16 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
             check_conflicts(conn)
             old_catalog = count(conn, "opportunities")
             incoming_catalog = count(conn, "opportunities", "incoming")
-            if incoming_catalog == 0 or incoming_catalog < old_catalog:
+            # A cleaned main snapshot may legitimately be smaller than the
+            # site's historical union. Allow that ONLY if the new snapshot
+            # carries actual permanent-deletion tombstones.
+            has_deletions = (
+                table_exists(conn, "purged_postings", "incoming")
+                and count(conn, "purged_postings", "incoming") > 0
+            )
+            if incoming_catalog == 0 or (
+                incoming_catalog < old_catalog and not has_deletions
+            ):
                 raise SyncError(
                     f"Snapshot tem {incoming_catalog} oportunidades e o site "
                     f"{old_catalog}. Recusei um snapshot vazio/mais antigo."
@@ -302,6 +311,8 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
                 accounts = import_accounts(conn) if include_accounts else None
                 verification_imported = merge_source_verification(conn)
                 protected = retain_confirmed_closures(conn)
+                from processing.retirement import import_tombstones
+                retirement_tombstones = import_tombstones(conn)
                 personal_after = {table: count(conn, table) for table in personal_before}
                 if not include_accounts and personal_after != personal_before:
                     raise SyncError("Contagem de dados pessoais alterou durante sincronizacao.")
@@ -322,6 +333,7 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
                 "confirmed_closures_preserved": protected,
                 "accounts_imported": accounts,
                 "verification_imported": verification_imported,
+                "retirement_tombstones": retirement_tombstones,
                 "backup": str(backup_path),
             }
             print("[OK] Catalogo atualizado no banco principal do site.")
@@ -330,6 +342,9 @@ def sync_catalog(source=DEFAULT_SOURCE, destination=DEFAULT_DESTINATION,
             print(f"[USUARIOS] {result['users']} contas preservadas.")
             print(f"[FECHAMENTOS] {protected} status comprovados mantidos.")
             print(f"[AUDITORIAS] {verification_imported} verificacoes novas importadas.")
+            print(f"[RETIREMENT] {retirement_tombstones['imported']} registros confirmados "
+                  f"importados | {retirement_tombstones['removed']} removidos | "
+                  f"{retirement_tombstones['protected']} com dados pessoais preservados.")
             if accounts:
                 print(f"[CONTAS IMPORTADAS] {accounts}")
             print(f"[BACKUP] {backup_path}")

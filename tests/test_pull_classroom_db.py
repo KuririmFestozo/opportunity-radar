@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,9 @@ spec.loader.exec_module(module)
 
 
 def write_fixture(db: Path, with_user: bool = False) -> None:
-    with sqlite3.connect(db) as connection:
+    # sqlite3.Connection.__exit__ commits but DOES NOT CLOSE the handle.
+    # On Windows that would keep classroom.db locked through os.replace().
+    with closing(sqlite3.connect(db)) as connection:
         connection.executescript("""
             CREATE TABLE opportunities (id TEXT PRIMARY KEY);
             CREATE TABLE source_postings (source TEXT, source_job_id TEXT);
@@ -28,6 +31,7 @@ def write_fixture(db: Path, with_user: bool = False) -> None:
         if with_user:
             connection.execute("CREATE TABLE web_users (id TEXT PRIMARY KEY)")
             connection.execute("INSERT INTO web_users VALUES ('account1')")
+        connection.commit()
 
 
 def fake_release(monkeypatch, db: Path, corrupt_gzip: bool = False):
@@ -100,7 +104,7 @@ def test_invalid_checksum_keeps_existing_db_intact(tmp_path, monkeypatch):
 
 def test_missing_catalog_table_prevents_install(tmp_path, monkeypatch):
     remote, local = tmp_path / "remote.db", tmp_path / "classroom.db"
-    with sqlite3.connect(remote) as conn:
+    with closing(sqlite3.connect(remote)) as conn, conn:
         conn.execute("CREATE TABLE opportunities (id TEXT)")
         conn.execute("INSERT INTO opportunities VALUES ('a')")
     fake_release(monkeypatch, remote)
@@ -114,3 +118,14 @@ def test_disallows_targeting_live_collector_or_web_database():
         module.pull_classroom_db(module.ROOT / "web-mvc" / "radar-web.db")
     with pytest.raises(module.ClassroomPullError, match="Nao substitua"):
         module.pull_classroom_db(module.ROOT / "data" / "opportunity_radar.db")
+
+
+def test_fixture_releases_windows_sqlite_file_handle(tmp_path):
+    """A finished fixture must not prevent Windows from replacing its file."""
+    db = tmp_path / "classroom.db"
+    replacement = tmp_path / "next.db"
+    write_fixture(db)
+    write_fixture(replacement)
+    replacement.replace(db)
+    with closing(sqlite3.connect(db)) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM opportunities").fetchone() == (1,)
