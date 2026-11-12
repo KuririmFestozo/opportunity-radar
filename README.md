@@ -1,5 +1,8 @@
 # 🎯 Opportunity Radar
 
+> **Apresentação / Entrega 2 (banco de dados, modelagem e interface):** comece pelo [guia de execução local](docs/entrega2-execucao-local.md), consulte a [modelagem e o esquema](docs/entrega2-modelagem.md) e siga o [roteiro de testes](docs/entrega2-roteiro-testes.md). Os comandos usam uma base **fictícia**, sem exigir o banco real nem contas pessoais. O repositório é privado: autorize o acesso do avaliador.
+
+
 O **Opportunity Radar** é um agregador inteligente de oportunidades de início de carreira.
 
 A proposta é reunir vagas publicadas em diferentes plataformas, normalizar os dados, classificar cada oportunidade por **curso/área** e **tipo de vaga**, acompanhar o ciclo de vida dos anúncios e permitir que diferentes perfis encontrem o que faz sentido para eles sem limitar a coleta na origem.
