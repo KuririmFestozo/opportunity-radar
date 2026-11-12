@@ -51,6 +51,7 @@ from processing.gupy_lifecycle import filter_discoveries
 from processing.source_availability import (
     audit_sources, closed_posting_keys, suppress_confirmed_closed,
 )
+from processing.retirement import filter_purged, purged_keys, run_daily_retirement
 from processing.matching import match_job
 from processing.deduplicate import deduplicate_source_jobs
 from storage.sqlite_repository import SQLiteOpportunityRepository
@@ -660,6 +661,13 @@ def main():
     if known_closed_filtered:
         print(f"  [DISPONIBILIDADE] {known_closed_filtered} anuncios fechados "
               "ja confirmados ignorados na coleta.")
+    # Tombstones prevent permanently purged IDs from being reinserted.
+    source_unique, removed_by_tombstone = filter_purged(
+        source_unique, purged_keys(store._store.conn)
+    )
+    if removed_by_tombstone:
+        print(f"  [RETIREMENT] {removed_by_tombstone} registros excluidos "
+              "nao serao recriados pela coleta.")
     print(f"IDs únicos válidos nesta coleta: {len(source_unique)}")
 
     incremental = Counter()
@@ -717,6 +725,26 @@ def main():
     # CP4-A shadow migration: legacy jobs remain authoritative for now.
     # The relational schema is synchronized only after a successful batch.
     unified_state = store.sync_unified_schema()
+
+    # Confirmed closure => inactive now; repeated official 404/410 =>
+    # inactive after three distinct days, physical removal after five checks
+    # spanning at least fourteen days (with backup and FK protection).
+    if daily_audit:
+        retirement_stats = run_daily_retirement(
+            store._store.conn,
+            db_path=store.path,
+            recheck_limit=max(0, min(int(os.getenv("RETIREMENT_RECHECK_LIMIT", "120")), 2000)),
+            delete_limit=max(0, min(int(os.getenv("RETIREMENT_DELETE_LIMIT", "30")), 1000)),
+            workers=6,
+        )
+        store.commit()
+        print(
+            "  [RETIREMENT] "
+            f'{retirement_stats["rechecked"]} rechecadas | '
+            f'{retirement_stats["inactivated"]} inativadas | '
+            f'{retirement_stats["purged"]} removidas | '
+            f'{retirement_stats["protected"]} protegidas.'
+        )
 
     # CP4-E: read the user-facing catalog from relational opportunities.
     unique = store.load_opportunities(active_only=True)
