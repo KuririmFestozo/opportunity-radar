@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Subquery;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,6 +26,13 @@ public class CatalogService {
     private final OpportunityRepository opportunities;
     private final PostingRepository postings;
     private final ScoreRepository scores;
+
+    // These values come from the public catalog, not from any user account.
+    // The full SQLite snapshot is swapped only while the server is stopped.
+    // A short TTL also supports developers changing the fixture locally.
+    private static final long OPTIONS_TTL_NANOS = TimeUnit.MINUTES.toNanos(2);
+    private record Options(List<String> sources, List<String> courses, long total, long expiresAt) {}
+    private volatile Options options;
 
     public CatalogService(OpportunityRepository opportunities, PostingRepository postings,
                           ScoreRepository scores) {
@@ -89,9 +97,25 @@ public class CatalogService {
     public List<CourseScore> scores(String opportunityId) {
         return scores.findByOpportunityIdOrderByScoreDesc(opportunityId);
     }
-    public List<String> sources() { return postings.allSources(); }
-    public List<String> courses() { return scores.allCourses(); }
-    public long total() { return opportunities.count(); }
+    public List<String> sources() { return options().sources(); }
+    public List<String> courses() { return options().courses(); }
+    public long total() { return options().total(); }
+
+    private Options options() {
+        Options current = options;
+        long now = System.nanoTime();
+        if (current != null && now < current.expiresAt()) return current;
+        synchronized (this) {
+            current = options;
+            now = System.nanoTime();
+            if (current != null && now < current.expiresAt()) return current;
+            current = new Options(List.copyOf(postings.allSources()),
+                List.copyOf(scores.allCourses()), opportunities.count(),
+                System.nanoTime() + OPTIONS_TTL_NANOS);
+            options = current;
+            return current;
+        }
+    }
 
     public static String safeUrl(String value) {
         if (value == null || value.isBlank()) return null;

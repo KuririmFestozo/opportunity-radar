@@ -26,6 +26,15 @@ CREATE INDEX IF NOT EXISTS idx_web_postings_opp_active_source
 CREATE INDEX IF NOT EXISTS idx_web_opportunities_updated
   ON opportunities(updated_at DESC);
 
+-- Indexes for large catalog search: recent lists, course maximum scores and
+-- bounded geolocation. Added only to the MVC snapshot (not the collector).
+CREATE INDEX IF NOT EXISTS idx_web_opportunities_published
+  ON opportunities(published_at DESC, updated_at DESC, id);
+CREATE INDEX IF NOT EXISTS idx_web_course_scores_opportunity_score
+  ON opportunity_course_scores(opportunity_id, score DESC);
+CREATE INDEX IF NOT EXISTS idx_web_opportunities_geocoordinates
+  ON opportunities(latitude, longitude);
+
 -- The course drop-down otherwise scans/sorts all course-score rows.
 CREATE INDEX IF NOT EXISTS idx_web_course_scores_course_score
   ON opportunity_course_scores(course_id, score, opportunity_id);
