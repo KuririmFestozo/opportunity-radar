@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +49,9 @@ public class AdvancedSearchService {
     private final OpportunityRepository opportunities;
     private static final int SIZE = 12;
     private static final double EARTH_RADIUS_KM = 6371.0088;
+    private static final long INTENTS_TTL_NANOS = TimeUnit.MINUTES.toNanos(2);
+    private volatile List<String> intentsCache;
+    private volatile long intentsExpiry;
 
     public AdvancedSearchService(NamedParameterJdbcTemplate jdbc, OpportunityRepository opportunities) {
         this.jdbc = jdbc;
@@ -142,6 +146,13 @@ public class AdvancedSearchService {
         }
         if (score > 0) {
             conditions.append(" AND ").append(affinityExpr).append(" >= :minScore ");
+        }
+        if (hasLocation && f.radiusKm() != null && f.radiusKm() > 0) {
+            // SQLite can discard candidates outside a conservative geographic
+            // envelope BEFORE calculating exact Haversine distances in Java.
+            // Keep remote listings without coordinates when explicitly allowed.
+            addGeographicBounds(conditions, p, f.latitude(), f.longitude(),
+                Math.min(f.radiusKm(), 1000), f.includeRemote());
         }
 
         String from = " FROM opportunities o " + conditions;
@@ -252,9 +263,64 @@ public class AdvancedSearchService {
     }
 
     public List<String> intents() {
-        if (!tableExists("opportunity_intents")) return List.of();
-        return jdbc.getJdbcTemplate().queryForList(
-            "SELECT DISTINCT intent_id FROM opportunity_intents ORDER BY intent_id", String.class);
+        List<String> cached = intentsCache;
+        long now = System.nanoTime();
+        if (cached != null && now < intentsExpiry) return cached;
+        synchronized (this) {
+            cached = intentsCache;
+            now = System.nanoTime();
+            if (cached != null && now < intentsExpiry) return cached;
+            List<String> values = !tableExists("opportunity_intents") ? List.of()
+                : jdbc.getJdbcTemplate().queryForList(
+                    "SELECT DISTINCT intent_id FROM opportunity_intents ORDER BY intent_id", String.class);
+            cached = List.copyOf(values);
+            intentsCache = cached;
+            intentsExpiry = System.nanoTime() + INTENTS_TTL_NANOS;
+            return cached;
+        }
+    }
+
+    /**
+     * A spherical bounding box is a safe prefilter, never the final distance:
+     * antimeridian crossings use an OR, and circles reaching either pole do
+     * not restrict longitude. The Java Haversine check remains authoritative.
+     */
+    private static void addGeographicBounds(StringBuilder sql, MapSqlParameterSource params,
+                                            double lat, double lon, int radiusKm,
+                                            boolean includeRemote) {
+        double angularRadius = radiusKm / EARTH_RADIUS_KM;
+        double deltaLatitude = Math.toDegrees(angularRadius);
+        double minLat = Math.max(-90, lat - deltaLatitude);
+        double maxLat = Math.min(90, lat + deltaLatitude);
+        params.addValue("boundMinLat", minLat);
+        params.addValue("boundMaxLat", maxLat);
+        sql.append(" AND ((o.latitude BETWEEN :boundMinLat AND :boundMaxLat");
+        if (minLat > -90 && maxLat < 90) {
+            double ratio = Math.sin(angularRadius) / Math.cos(Math.toRadians(lat));
+            if (Double.isFinite(ratio) && ratio < 1) {
+                double lonDelta = Math.toDegrees(Math.asin(Math.max(0, ratio)));
+                double lower = lon - lonDelta;
+                double upper = lon + lonDelta;
+                if (lower < -180) {
+                    params.addValue("boundLo", lower + 360);
+                    params.addValue("boundHi", upper);
+                    sql.append(" AND (o.longitude >= :boundLo OR o.longitude <= :boundHi)");
+                } else if (upper > 180) {
+                    params.addValue("boundLo", lower);
+                    params.addValue("boundHi", upper - 360);
+                    sql.append(" AND (o.longitude >= :boundLo OR o.longitude <= :boundHi)");
+                } else {
+                    params.addValue("boundLo", lower);
+                    params.addValue("boundHi", upper);
+                    sql.append(" AND o.longitude BETWEEN :boundLo AND :boundHi");
+                }
+            }
+        }
+        sql.append(")");
+        if (includeRemote) {
+            sql.append(" OR lower(coalesce(o.workplace_type,'')) LIKE '%remot%'");
+        }
+        sql.append(") ");
     }
 
     private boolean tableExists(String table) {

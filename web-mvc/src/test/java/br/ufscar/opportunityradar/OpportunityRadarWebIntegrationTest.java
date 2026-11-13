@@ -189,6 +189,45 @@ class OpportunityRadarWebIntegrationTest {
     }
 
     @Test
+    void geographicPrefilterKeepsRemoteMatchesAndDatelineCrossings() throws Exception {
+        String datelineId = "33333333-3333-4333-8333-333333333333";
+        try {
+            jdbc.update("""
+                INSERT INTO opportunities (id, company, title, description, location_text,
+                    workplace_type, employment_type, published_at, canonical_url,
+                    updated_at, latitude, longitude)
+                VALUES (?, 'Dateline', 'Remote Pacific', 'A remote opening',
+                    'Dateline', 'remote', 'internship', '2026-11-01',
+                    'https://example.com/pacific', '2026-11-05', 0.0, -179.9)
+                """, datelineId);
+            jdbc.update("""
+                INSERT INTO source_postings
+                    (source, source_job_id, opportunity_id, is_active, url, last_seen_at)
+                VALUES ('workday', 'pacific', ?, 1, 'https://example.com/pacific',
+                    '2026-11-05')
+                """, datelineId);
+            mvc.perform(get("/opportunities").param("latitude", "0")
+                .param("longitude", "179.9").param("radiusKm", "100")
+                .param("sort", "distance"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Remote Pacific")));
+            mvc.perform(get("/opportunities").param("latitude", "-22.01")
+                .param("longitude", "-47.89").param("radiusKm", "20")
+                .param("includeRemote", "true"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Remote Pacific")));
+            mvc.perform(get("/opportunities").param("latitude", "-22.01")
+                .param("longitude", "-47.89").param("radiusKm", "20"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                    org.hamcrest.Matchers.containsString("Remote Pacific"))));
+        } finally {
+            jdbc.update("DELETE FROM source_postings WHERE source='workday' AND source_job_id='pacific'");
+            jdbc.update("DELETE FROM opportunities WHERE id=?", datelineId);
+        }
+    }
+
+    @Test
     void allowsPublicDetailsButShowsLoginInsteadOfPrivateForms() throws Exception {
         mvc.perform(get("/opportunities/" + ID))
             .andExpect(status().isOk())
@@ -363,7 +402,10 @@ class OpportunityRadarWebIntegrationTest {
         var indexes = jdbc.queryForList(
             "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'idx_web_%'", String.class);
         assertThat(indexes).contains("idx_web_postings_opp_active_source",
-            "idx_web_opportunities_updated", "idx_web_course_scores_course_score");
+            "idx_web_opportunities_updated", "idx_web_course_scores_course_score",
+            "idx_web_opportunities_published",
+            "idx_web_course_scores_opportunity_score",
+            "idx_web_opportunities_geocoordinates");
         var plan = jdbc.queryForList("""
             EXPLAIN QUERY PLAN SELECT o.id FROM opportunities o WHERE EXISTS
             (SELECT 1 FROM source_postings p WHERE p.opportunity_id=o.id AND p.is_active=1)
