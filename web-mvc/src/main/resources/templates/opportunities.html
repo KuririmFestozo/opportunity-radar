@@ -5,14 +5,14 @@
 <title>Explorar oportunidades | Opportunity Radar</title>
 <link rel="stylesheet" th:href="@{/css/app.css}">
 <script th:src="@{/js/geolocation.js}" defer></script>
-</head>
+<link rel="stylesheet" th:href="@{/css/signal.css}"></head>
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main class="container">
   <section class="hero">
-    <div class="eyebrow">SEU PRÓXIMO PASSO COMEÇA AQUI</div>
-    <h1>Oportunidades para <em>ir além.</em></h1>
-    <p>Encontre oportunidades por afinidade com seu curso, região e tipo de vaga. Estar no catálogo não garante inscrições abertas.</p>
+    <div class="eyebrow">SINAL ABERTO // OPORTUNIDADES</div>
+    <h1>Sua carreira, <em>sem ruído.</em></h1>
+    <p>Explore vagas por afinidade, área e localização — tudo em um só radar. A presença no catálogo não garante inscrições abertas.</p>
     <div class="hero-stats"><span><strong th:text="${total}">0</strong> no histórico</span><span><strong th:text="${results.totalElements}">0</strong> com estes filtros</span></div>
   </section>
 
