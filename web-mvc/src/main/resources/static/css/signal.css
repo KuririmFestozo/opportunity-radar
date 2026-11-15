@@ -1,0 +1,227 @@
+/* Opportunity Radar / SIGNAL — an original editorial design system.
+ * Visual-only alternative to the current UI. No controller or database changes.
+ * Type: Space Grotesk + DM Sans + IBM Plex Mono; fallback system fonts work offline.
+ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root {
+  --ink:#202128; --muted:#696970; --paper:#f7f3ec; --card:#fffefa;
+  --accent:#ef6238; --accent-2:#a8bcef; --line:#d7d0c4;
+  --shadow:5px 5px 0 #e8e0d4;
+}
+html {scroll-behavior:smooth}
+body {background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-serif;font-size:15px}
+::selection{background:#ef6238;color:white}
+.container{width:min(1240px,calc(100% - 56px))}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.site-header{background:#202128;color:#fff;border:0;border-bottom:5px solid #ef6238;box-shadow:none;backdrop-filter:none}
+.header-inner{min-height:88px;gap:24px}
+.brand{font-family:'Space Grotesk',Arial,sans-serif;font-size:23px;letter-spacing:-.07em;font-weight:700;color:white}
+.brand strong{color:#fb8a67}
+.brand-mark{height:48px;width:48px;flex:none;background:#ef6238;color:#202128;border-radius:50%;font-family:'Space Grotesk',sans-serif;font-size:38px;line-height:1;border:2px solid #fff;transform:rotate(-18deg)}
+nav{gap:8px;align-items:center}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.035em;text-transform:uppercase;font-weight:600;color:#e3dfd9;padding:12px 14px;border:1px solid transparent;transition:background .2s,color .2s}
+nav a:hover,nav a:focus-visible{color:#202128;background:#f0e9dd;border-color:#f0e9dd}
+nav a:last-child{border:1px solid #fd8b69;color:#ffd0bd}
+nav a:last-child:hover{background:#ef6238;color:#202128}
+h1,h2,h3{font-family:'Space Grotesk',Arial,sans-serif;letter-spacing:-.052em}
+h1{font-size:clamp(42px,6.3vw,82px);line-height:1.01}
+h1 em{color:var(--accent)}
+h2{font-size:clamp(26px,3vw,36px);letter-spacing:-.055em}
+h3{letter-spacing:-.04em}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;color:#bb4425;letter-spacing:.16em;text-transform:uppercase}
+.hero{position:relative;overflow:hidden;isolation:isolate;min-height:365px;margin:38px 0 0;padding:48px 60px 42px;border-radius:2px;background:#efe6d6;border:2px solid #202128;box-shadow:9px 9px 0 #202128}
+.hero::before{content:"";position:absolute;z-index:-1;pointer-events:none;width:510px;height:510px;border:3px solid #c5b4a3;border-radius:50%;right:-95px;top:-70px;box-shadow:0 0 0 42px #efe6d6,0 0 0 45px #c5b4a3,0 0 0 84px #efe6d6,0 0 0 87px #c5b4a3}
+.hero::after{content:"SIGNAL / 2026";position:absolute;top:27px;right:30px;font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:#836e60}
+.hero>*{position:relative;z-index:1;max-width:760px}
+.hero .eyebrow{color:#9a3a20;margin:0 0 19px}
+.hero h1{max-width:700px;margin:0 0 19px;letter-spacing:-.082em;font-weight:700}
+.hero h1 em{font-style:normal;color:#eb5a30}
+.hero p{color:#393942;max-width:620px;font-size:16px;line-height:1.7;margin:0 0 23px}
+.hero-stats{gap:30px;color:#57525b}
+.hero-stats span{display:flex;flex-direction:column;gap:0;border-left:3px solid var(--accent);padding-left:12px;text-transform:uppercase;font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.08em}
+.hero-stats strong{display:block;font:700 27px 'Space Grotesk',sans-serif;letter-spacing:-.045em;color:#22232b}
+.search-panel{margin-top:46px;padding:32px 34px 28px;background:#fffefa;border:2px solid #202128;border-radius:2px;box-shadow:6px 6px 0 #e2d9cc}
+.search-panel::before{content:"01 / AJUSTAR SUA BUSCA";display:block;padding-bottom:17px;margin-bottom:24px;border-bottom:1px solid var(--line);font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.095em;color:#2b2c36}
+.filters-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:19px 15px}
+.field{gap:8px;font:700 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;color:#555562}
+.field input,.field select,.field textarea{min-height:47px;border:1px solid #c9c2b7;border-radius:2px;background:#f7f4ef;padding:12px 13px;color:#202128;font:500 13px 'DM Sans',sans-serif;box-shadow:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#eb5a30;box-shadow:0 0 0 3px rgba(239,98,56,.13);outline:0}
+.field input::placeholder,.field textarea::placeholder{color:#8c8781}
+.button{font-family:'IBM Plex Mono',monospace;min-height:47px;border:2px solid transparent;border-radius:2px;padding:11px 16px;font-size:11px;letter-spacing:.01em;text-transform:uppercase;font-weight:700}
+.button-primary{color:#fff;background:#202128;border-color:#202128}
+.button-primary:hover{color:#202128;background:#ef6238;border-color:#ef6238}
+.button-outline{color:#202128;background:transparent;border-color:#202128}
+.button-outline:hover{color:#fff;background:#202128}
+.button-quiet{color:#4f4f56;background:transparent;border:1px solid transparent}
+.button-quiet:hover{color:#d14d2c;text-decoration:underline}
+.geo-panel{display:flex;align-items:center;margin-top:25px;padding:20px;border:1px solid #b9c8e5;border-left:5px solid #687fae;background:#f1f5ff;border-radius:1px;gap:19px}
+.geo-heading{color:#273d77;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase}
+.geo-details p{color:#56657e}
+.geo-panel .button{white-space:nowrap}
+.geo-privacy{font-size:11px!important}
+.geo-check{color:#3d4c68}
+.geo-check input{accent-color:#ef6238}
+.filter-actions{margin-top:26px}
+.filter-actions .button-primary{min-width:177px}
+.results-section{padding:53px 0 35px}
+.section-heading{align-items:center;border-bottom:3px solid #22242b;padding-bottom:17px;margin-bottom:18px}
+.section-heading h2{font-size:44px;margin:5px 0 0}
+.section-heading h2 span{font-family:'IBM Plex Mono',monospace;font-size:16px;color:#a34b31;letter-spacing:0}
+.section-heading>.muted{font:500 11px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.025em}
+.results-section>p.muted{max-width:900px;margin-bottom:24px;line-height:1.6;font-size:12px}
+.job-grid{display:flex;flex-direction:column;gap:0;background:#fffefa;border:2px solid #202128;counter-reset:job}
+.job-card{counter-increment:job;position:relative;display:grid;grid-template-columns:55px minmax(200px,1.55fr) minmax(120px,.8fr) minmax(165px,.75fr);grid-template-areas:"counter company status top" "counter title location bottom";column-gap:18px;row-gap:8px;align-items:center;margin:0;min-height:137px;padding:23px 24px;border:0;border-bottom:1px solid #d8d2c8;border-radius:0;box-shadow:none;background:#fffefa;transition:background .18s ease}
+.job-card::before{content:counter(job,decimal-leading-zero);grid-area:counter;align-self:center;font:700 30px 'Space Grotesk',sans-serif;letter-spacing:-.065em;color:#a9a39a}
+.job-card:last-child{border-bottom:none}
+.job-card:hover{transform:none;background:#fff1df;box-shadow:inset 5px 0 0 #ef6238}
+.card-top{grid-area:top;display:flex;justify-content:flex-end;align-self:center;margin:0}
+.card-top .icon-square{display:none}
+.score-chip{padding:7px 9px;border-radius:0;border:1px solid #e3a18c;background:#fae3d7;color:#9f3d25;font:700 10px 'IBM Plex Mono',monospace;white-space:nowrap}
+.availability-tag{grid-area:status;margin:0;color:#6f686a;font:600 10px 'IBM Plex Mono',monospace}
+.company{grid-area:company;align-self:end;font:700 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:#c14b2d}
+.job-card h3{grid-area:title;align-self:start;margin:0;font:700 clamp(19px,2vw,25px)/1.16 'Space Grotesk',sans-serif;max-width:510px;letter-spacing:-.045em;overflow-wrap:anywhere}
+.location{grid-area:location;align-self:start;margin:0;font-size:12px;color:#67676d}
+.card-bottom{grid-area:bottom;align-self:end;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;gap:9px;padding:0;border:0;font-size:11px}
+.card-meta{text-align:right;font-size:10px;gap:2px}
+.distance-label{color:#a3402a}
+.detail-link{display:inline-flex;align-items:center;padding:9px 10px;background:#21232c;color:#fff;font:600 10px 'IBM Plex Mono',monospace;white-space:nowrap;text-decoration:none;transition:background .2s}
+.detail-link:hover{color:#fff;text-decoration:none;background:#c64b2d}
+.tag{background:#ece8df;color:#4b4a4d;border:1px solid #d5cebf;border-radius:1px;padding:6px 9px;font:600 10px 'IBM Plex Mono',monospace;white-space:normal}
+.pagination{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.pagination a{color:#a33b25;border-bottom:2px solid #ef6238}
+.empty-state{border:2px dashed #aaa093;border-radius:2px;background:#fffefa}
+.empty-icon{color:#ef6238}
+.geo-note{background:#fff5e0;border:1px solid #e9c99a;border-radius:2px;color:#684c2b}
+.footer{margin-top:42px;padding-top:22px;border-top:2px solid #202128;font:11px 'IBM Plex Mono',monospace;color:#75716c}
+.back-link{margin:34px 0 21px;font:700 11px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:#bf492b}
+.detail-heading{position:relative;overflow:hidden;isolation:isolate;background:#24262d;color:#fff;padding:48px 50px 50px;border-radius:2px;border-top:7px solid #ef6238;box-shadow:7px 7px 0 #d8d0c4}
+.detail-heading::after{content:"◎";position:absolute;z-index:-1;pointer-events:none;right:-14px;top:-90px;font:400 350px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.055)}
+.detail-heading h1{font-size:clamp(36px,5vw,62px);max-width:870px}
+.detail-heading .eyebrow{color:#ffa286}
+.detail-heading .tag{background:transparent;color:#f6e9de;border:1px solid #6d6c71}
+.detail-heading .button-primary{background:#ef6238;border-color:#ef6238;color:#202128}
+.detail-heading .button-primary:hover{background:#fff;color:#202128;border-color:#fff}
+.detail-heading .button-outline{color:#fff;border-color:#fff}
+.detail-heading .button-outline:hover{color:#202128;background:#fff}
+.detail-columns{grid-template-columns:minmax(0,1.9fr) minmax(280px,.9fr);gap:23px}
+.panel{background:#fffefa;border:1px solid #d4cabc;border-radius:2px;box-shadow:3px 3px 0 #e9e0d4;padding:27px}
+.panel h2{font-size:29px}
+.panel .eyebrow{margin-bottom:12px}
+.description{line-height:1.8}
+.score-row{margin:18px 0}
+.score-label{font-size:13px}
+.score-label strong{color:#c34d2c;font:700 12px 'IBM Plex Mono',monospace}
+.score-track{background:#eee9e2;border-radius:0;height:11px}
+.score-fill{background:#ef6238;border-radius:0}
+.detail-side .sticky{border-top:5px solid #ef6238;background:#fff8ed}
+.source-list li{border-color:#ded7cb}
+.state-active{color:#26794c}.state-inactive{color:#a3523b}
+.flash{border:1px solid #8db79e;background:#ebf5ed;border-radius:2px}
+.subsection{padding-top:62px;min-height:63vh}
+.subsection h1{font-size:clamp(46px,6vw,72px)}
+.subsection>.muted{max-width:800px;margin-bottom:34px}
+.subsection .job-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;background:transparent;border:0}
+.subsection .job-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:235px;padding:28px;background:#fffefa;border:2px solid #202128;box-shadow:5px 5px 0 #e4dacc}
+.subsection .job-card::before{display:none}
+.subsection .job-card .company{align-self:auto}
+.subsection .job-card h3{font-size:25px;margin:0;max-width:100%}
+.subsection .job-card .location{align-self:auto;margin:5px 0 0}
+.subsection .job-card .detail-link{margin-top:auto}
+.subsection .job-card:hover{box-shadow:5px 5px 0 #ef6238}
+.subsection .panel{border:2px solid #252630}
+.track-row{padding:25px 5px}
+.track-row h3{font-size:25px}
+.track-right .tag{color:#a33f25;border-color:#ecbcac;background:#ffe8dc}
+.track-right a{font:700 10px 'IBM Plex Mono',monospace;text-transform:uppercase;color:#bc4425;text-decoration:underline;text-underline-offset:4px}
+.account-card{background:#fffefa;border-left:7px solid #ef6238}
+.account-avatar{background:#ef6238;border-radius:50%;color:#202128}
+.account-actions .button-primary{background:#ef6238;border-color:#ef6238;color:#202128}
+.account-actions .button-primary:hover{background:#202128;color:#fff}
+.auth-layout{grid-template-columns:1.1fr .9fr;gap:40px;padding:44px 0;align-items:stretch;min-height:calc(100vh - 190px)}
+.auth-aside{display:flex;flex-direction:column;justify-content:center;padding:43px;background:#24262d;color:#fff;border-top:7px solid #ef6238;position:relative;overflow:hidden}
+.auth-aside::before{content:"◎";font:400 320px 'Space Grotesk',sans-serif;position:absolute;right:-40px;bottom:-95px;color:rgba(255,255,255,.045);pointer-events:none}
+.auth-aside h1{font-size:clamp(43px,5vw,68px);color:#fff;max-width:600px}
+.auth-aside h1 em{color:#ff8967}
+.auth-aside>p{color:#d7d1c8}
+.auth-figure{background:#383944;color:#fff;border-left:4px solid #ef6238;border-radius:0}
+.auth-figure span{border-radius:0;background:#ef6238;color:#202128}
+.auth-figure strong{font-family:'Space Grotesk',sans-serif}
+.auth-card{align-self:center;justify-self:stretch;max-width:none;border:2px solid #202128;box-shadow:6px 6px 0 #ddd4c7;background:#fffefa;padding:42px}
+.auth-card h2{font-size:36px}
+.auth-error{border-radius:2px}
+.auth-bottom{border-color:#d4cbbc}
+.auth-bottom a{color:#b94424}
+.account-notice{max-width:900px}
+@media(max-width:1100px){
+  .job-card{grid-template-columns:40px minmax(170px,1.5fr) minmax(120px,.8fr) 135px;gap:12px;padding:20px}
+  .card-bottom{align-items:flex-end}
+  .card-meta{font-size:10px}
+  .hero::before{opacity:.45}
+}
+@media(max-width:850px){
+  .header-inner{min-height:76px}
+  .job-card{grid-template-columns:38px minmax(0,1fr) minmax(130px,.55fr);grid-template-areas:"counter company top" "counter title title" "counter location bottom" "counter status bottom";row-gap:9px}
+  .card-bottom{grid-area:bottom}
+  .company{align-self:center}
+  .location{align-self:center}
+  .filters-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .filter-button{grid-column:span 2}
+  .detail-columns{grid-template-columns:1fr}
+  .detail-side .sticky{position:static}
+  .auth-layout{grid-template-columns:1fr;gap:0}
+  .auth-aside{min-height:270px}
+  .auth-card{max-width:none}
+}
+@media(max-width:640px){
+  .container{width:calc(100% - 28px)}
+  .site-header{position:relative}
+  .header-inner{min-height:0;flex-direction:column;align-items:flex-start;gap:12px;padding:18px 0}
+  .brand{font-size:23px}
+  .brand-mark{height:40px;width:40px;font-size:32px}
+  nav{width:100%;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px}
+  nav a{font-size:9px;padding:8px 7px}
+  .hero{padding:32px 23px 30px;margin-top:18px;min-height:0;box-shadow:4px 4px 0 #202128}
+  .hero h1{font-size:clamp(43px,10vw,65px)}
+  .hero p{font-size:14px}
+  .hero::before{width:260px;height:260px;right:-110px;top:120px;opacity:.25}
+  .hero::after{display:none}
+  .hero-stats{gap:16px}
+  .search-panel{margin-top:31px;padding:20px 17px;box-shadow:3px 3px 0 #e2d9cc}
+  .filters-grid{grid-template-columns:1fr;gap:14px}
+  .field.wide,.filter-button{grid-column:span 1}
+  .geo-panel{flex-direction:column;align-items:stretch;padding:15px}
+  .geo-radius{min-width:0;width:100%;flex:1}
+  .geo-check{width:100%}
+  .geo-panel .button{width:100%}
+  .filter-actions{gap:8px}
+  .filter-actions .button{min-width:0;font-size:10px;padding:10px 12px}
+  .results-section{padding-top:40px}
+  .section-heading{align-items:flex-start;flex-direction:column;gap:10px}
+  .section-heading h2{font-size:37px}
+  .job-card{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"company top" "title title" "status status" "location location" "bottom bottom";gap:10px;padding:20px;min-height:190px}
+  .job-card::before{display:none}
+  .card-top{justify-content:flex-end}
+  .job-card h3{font-size:24px;max-width:100%}
+  .availability-tag{font-size:9px}
+  .card-bottom{flex-direction:row;align-items:end;justify-content:space-between;gap:10px;border-top:1px solid #e4ddd1;padding-top:13px;width:100%}
+  .card-meta{text-align:left}
+  .subsection{padding-top:35px}
+  .subsection .job-grid{grid-template-columns:1fr}
+  .subsection .job-card{min-height:210px;padding:21px}
+  .detail-heading{padding:28px 23px;box-shadow:4px 4px 0 #d8d0c4}
+  .detail-heading h1{font-size:clamp(32px,9vw,48px)}
+  .detail-heading .actions{align-items:stretch}
+  .detail-heading .actions .button{width:100%}
+  .detail-heading .actions form{width:100%}
+  .panel{padding:21px}
+  .auth-aside{padding:28px 25px;min-height:240px}
+  .auth-aside h1{font-size:43px}
+  .auth-card{padding:27px 22px;box-shadow:3px 3px 0 #ddd4c7}
+  .account-card{align-items:flex-start;flex-direction:column}
+  .account-actions{flex-direction:column}
+  .account-actions .button,.account-actions form{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .job-card,.button,nav a,.detail-link{transition:none}
+}
