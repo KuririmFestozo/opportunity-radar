@@ -36,3 +36,6 @@ web-mvc/target/
 
 # Gupy audit copies (may contain local user accounts)
 web-mvc/backups/
+
+/data/snapshots/
+/opportunity-radar/

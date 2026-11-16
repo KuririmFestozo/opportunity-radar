@@ -1,114 +1,116 @@
-# Entrega 2 — execução local do Opportunity Radar
+# Execução local — Entrega final (PostgreSQL, Spring MVC e Thymeleaf)
 
-Este guia é **independente da Entrega 1** e foi escrito para alguém que está baixando o projeto pela primeira vez. Os requisitos da demonstração são **banco de dados, modelagem e interface básica**.
+> **Caminho mais simples para avaliar:** execute `docker compose up --build` na raiz do projeto e abra <http://localhost:8080/opportunities>. A demonstração é independente dos snapshots privados do GitHub.
 
-**Repositório:** https://github.com/KuririmFestozo/opportunity-radar  
-**Aplicação web:** `web-mvc/` (Java 17+, Spring Boot 3.4.3, Spring MVC, Thymeleaf, Spring Data JPA/Hibernate, Spring Security, SQLite).  
-**Coleta:** módulos Python em `collectors/`, `processing/` e `storage/`.
+## 1. Requisitos
 
-> **Acesso:** este repositório é privado no momento da elaboração. O professor precisa ser convidado ou receber uma cópia pública revisada. Não suba bancos de dados reais, contas, hashes de senha, favoritos, tokens nem segredos para o Git.
+- Git (para clonar o repositório)
+- Docker Desktop com Docker Compose v2 (Windows, Linux ou macOS)
+- Portas locais **8080** e **5433** disponíveis
 
-## 1. Pré-requisitos
-
-- Git;
-- Java **JDK 17 ou superior** (versão-alvo no `pom.xml`: 17);
-- Maven **3.9 ou superior**;
-- Python **3** (recomendado 3.12; para gerar o banco de demonstração basta a biblioteca padrão);
-- navegador e porta 8080 livre.
-
-Verificar: `git --version`, `java -version`, `mvn -version`, `python --version`.
-
-## 2. Iniciar o site com dados fictícios
-
-O banco de produção não é necessário para avaliar o MVC. O script do repositório cria **seis oportunidades fictícias**, explicitamente marcadas como demonstração, em um arquivo SQLite novo.
-
-No **Windows PowerShell**:
+## 2. Clonar e executar do zero
 
 ```powershell
 git clone https://github.com/KuririmFestozo/opportunity-radar.git
 cd opportunity-radar
-python web-mvc/tools/create_demo_db.py web-mvc/demo-entrega2.db
-$env:RADAR_DB_PATH = (Resolve-Path .\web-mvc\demo-entrega2.db).Path
+docker compose up --build
+```
+
+O Compose inicia dois serviços:
+
+1. **db**: PostgreSQL 16, banco `opportunity_radar`; cria tabelas e importa seis oportunidades fictícias.
+2. **web**: aplicação Java 17/Spring Boot MVC/Thymeleaf; valida o esquema, expõe o site em 127.0.0.1:8080 e conecta via JDBC ao PostgreSQL.
+
+O Docker inicializa os dados automaticamente **na primeira criação do volume** `radar_pgdata`. Nas inicializações seguintes, os dados do PostgreSQL persistem.
+
+Abra:
+
+- <http://localhost:8080/opportunities> — catálogo e filtros
+- <http://localhost:8080/register> — criar conta
+- <http://localhost:8080/login> — entrar
+- <http://localhost:8080/favorites> — favoritos (requer login)
+- <http://localhost:8080/applications> — candidaturas (requer login)
+
+Para verificar o banco sem instalar um cliente SQL:
+
+```powershell
+docker compose exec db psql -U radar -d opportunity_radar -c "SELECT COUNT(*) FROM opportunities;"
+```
+
+O resultado inicial deve ser **6**. Os exemplos estão identificados no nome da empresa como `(exemplo)`.
+
+## 3. Parar, reiniciar e preservar dados
+
+```powershell
+docker compose down   # Para os containers, preserva o volume do banco
+docker compose up --build
+```
+
+**Não execute `docker compose down -v`** se quiser preservar contas, favoritos e candidaturas: `-v` exclui o volume persistente PostgreSQL.
+
+## 4. Rodar Java fora do Docker (opcional)
+
+Requer JDK 17+ e Maven. Inicie somente o PostgreSQL:
+
+```powershell
+docker compose up -d db
+$env:SPRING_DATASOURCE_URL='jdbc:postgresql://localhost:5433/opportunity_radar'
+$env:SPRING_DATASOURCE_USERNAME='radar'
+$env:SPRING_DATASOURCE_PASSWORD='radar_demo_local_only'
 mvn -f web-mvc/pom.xml spring-boot:run
 ```
 
-Abra **http://localhost:8080**. O Hibernate mantém `ddl-auto=none` e a aplicação cria as tabelas próprias da interface a partir de `web-mvc/src/main/resources/db/web-schema.sql`. A inicialização valida as tabelas essenciais do catálogo.
+O `application.properties` define defaults locais equivalentes, mas o Compose injeta explicitamente a conexão dentro da rede Docker. O web-app utiliza **PostgreSQL**, não o SQLite dos coletores Python.
 
-O gerador **recusa sobrescrever** um arquivo de banco existente. Se você já criou `demo-entrega2.db`, use outro nome; não apague o banco que contém suas contas.
-
-Em **Linux/macOS**:
-
-```bash
-git clone https://github.com/KuririmFestozo/opportunity-radar.git
-cd opportunity-radar
-python3 web-mvc/tools/create_demo_db.py web-mvc/demo-entrega2.db
-RADAR_DB_PATH="$(pwd)/web-mvc/demo-entrega2.db" mvn -f web-mvc/pom.xml spring-boot:run
-```
-
-## 3. Funcionalidades para demonstrar
-
-- Catálogo público em `/opportunities`: texto, curso, fonte, modalidade, localização, afinidade e verificação da inscrição;
-- Detalhes em `/opportunities/{id}`: empresa, descrição, origem e pontuação;
-- Cadastro `/register`, autenticação `/login` e encerramento de sessão;
-- Favoritos `/favorites`, persistidos por usuário;
-- Acompanhamento `/applications`, com situação e notas editáveis;
-- Perfil `/profile`.
-
-**Atenção:** `is_active` no catálogo não é prova de que inscrições estão abertas. A tabela `source_availability_checks` distingue `open`, `closed` e `unverified`; ausência de uma verificação explícita também não comprova abertura.
-
-## 4. Executar testes
-
-Os testes Java criam SQLite isolado e não dependem da base real:
+## 5. Testes automatizados
 
 ```powershell
 mvn -f web-mvc/pom.xml test
 ```
 
-Para testar o pipeline Python completo (precisa baixar suas dependências):
+Os testes Java usam **Testcontainers PostgreSQL**: Docker Desktop deve estar em execução. O banco é descartável e isolado; os testes não apagam registros do `db` do Compose nem da sua base pessoal.
+
+A CI de `.github/workflows/ci.yml` roda os testes Java em ambiente com Docker e testes Python separadamente.
+
+## 6. Segurança
+
+- Senhas armazenadas exclusivamente como hashes **BCrypt** (Spring Security).
+- Proteção CSRF em formulários autenticados, sessões no servidor e controle de acesso por conta.
+- Credenciais no `docker-compose.yml` são **apenas para demonstração local**, não para deploy público.
+- O PostgreSQL está exposto somente em `127.0.0.1:5433` e o site somente em `127.0.0.1:8080`.
+- Não existe recuperação de senha por e-mail neste protótipo.
+
+## 7. Importação opcional do antigo SQLite para o PostgreSQL
+
+A demonstração funciona **sem executar esta etapa**. Se for necessário continuar usando os registros reais ou as contas antigas, pare o site e mantenha um backup do banco original. O importador não escreve no SQLite.
 
 ```powershell
-python -m pip install -r requirements.txt
-python -m pytest -q
-python check_project.py
+python -m pip install psycopg2-binary
+$env:PG_DSN='postgresql://radar:radar_demo_local_only@localhost:5433/opportunity_radar'
+python tools/import_sqlite_to_postgres.py --from-db web-mvc/radar-web.db --include-users
 ```
 
-Os workflows em `.github/workflows/ci.yml` validam os módulos Python e Java a cada PR/push. Consulte [roteiro de testes](entrega2-roteiro-testes.md) para uma sequência manual, resultados esperados e casos negativos.
+Antes do importador, inicie o PostgreSQL com `docker compose up -d db`. Se não desejar importar usuários, omita `--include-users`.
 
-## 5. Opcional: carregar o catálogo real
+A importação copia apenas tabelas necessárias para o web-app, sem reconfigurar a coleta em Python. Ela não elimina o SQLite antigo. Se surgirem conflitos ou erros, a transação PostgreSQL é revertida.
 
-**Somente com acesso aos Releases privados do GitHub.** Instale o GitHub CLI e autentique:
+## 8. Arquitetura e arquivos
 
-```powershell
-gh auth login
-python tools/pull_classroom_db.py --output data/classroom_latest.db
-```
+| Componente | Tecnologia | Localização |
+|---|---|---|
+| Interface | Thymeleaf / SIGNAL | `web-mvc/src/main/resources/templates` |
+| Controle e autenticação | Java/Spring MVC/Spring Security/BCrypt | `web-mvc/src/main/java` |
+| Persistência do site | PostgreSQL 16 + JPA/Hibernate e JDBC | `docker-compose.yml` |
+| DDL catálogo | SQL PostgreSQL | `web-mvc/src/main/resources/db/catalog-schema.sql` |
+| DDL dados pessoais | SQL PostgreSQL | `web-mvc/src/main/resources/db/web-schema.sql` |
+| Dados fictícios | SQL | `web-mvc/src/main/resources/db/seed-demo.sql` |
+| Coleta separada | Python / SQLite | `collectors/`, `processing/`, `storage/` |
 
-O script valida checksums e estrutura do SQLite. O arquivo completo é **separado** do banco pessoal do site e não inclui necessariamente suas contas.
+### Solução de problemas
 
-Para manter contas e favoritos no banco principal, **pare o servidor** e execute `python -m tools.sync_web_catalog --from-db data/classroom_latest.db`, usando sempre `web-mvc/radar-web.db` como destino padrão. A sincronização faz backup e preserva dados pessoais; não substitua manualmente o banco principal.
-
-## 6. Principais diretórios
-
-| Caminho | Conteúdo |
-|---|---|
-| `web-mvc/pom.xml` | dependências do módulo Java |
-| `web-mvc/src/main/java/.../controller/` | controladores HTTP |
-| `web-mvc/src/main/java/.../domain/` | entidades JPA |
-| `web-mvc/src/main/java/.../repository/` | interfaces de persistência |
-| `web-mvc/src/main/java/.../service/` | regras de negócio |
-| `web-mvc/src/main/resources/templates/` | HTML/Thymeleaf |
-| `web-mvc/src/main/resources/db/web-schema.sql` | tabelas e índices da camada web |
-| `web-mvc/src/test/` | testes Spring/SQLite |
-| `collectors/`, `processing/`, `storage/` | pipeline Python |
-| `tests/` | testes Python |
-| `.github/workflows/` | integração contínua e auditorias |
-
-A modelagem está resumida em [entrega2-modelagem.md](entrega2-modelagem.md). Instruções complementares: [web-mvc/README.md](../web-mvc/README.md).
-
-## 7. Erros mais comuns
-
-- **“SQLite não encontrado”:** gere o banco de exemplo e confira o caminho absoluto de `RADAR_DB_PATH`.
-- **Login recusado após trocar de banco:** contas ficam no arquivo SQLite apontado na inicialização. Use o banco original ou sincronize somente o catálogo.
-- **Porta 8080 ocupada:** encerre outro processo Spring Boot antes de iniciar.
-- **Git clone/download recusado:** conceder acesso ao repositório privado; os Releases também exigem autenticação.
-- **Página não permite candidatura:** links externos podem estar encerrados ou exigir login. O radar não contorna bloqueios e não presume fechamento com base apenas em HTTP 404.
+- **Porta 8080 ocupada:** feche o servidor Spring Boot anterior.
+- **Porta 5433 ocupada:** pare outra instância PostgreSQL local, ou altere somente o mapeamento de host no Compose e nas configurações locais.
+- **Docker daemon indisponível:** inicie o Docker Desktop.
+- **Banco não criado:** use `docker compose logs db` e verifique se não há um volume criado anteriormente com outro esquema. Faça backup antes de qualquer reset.
+- **Build Maven falhou por rede:** Docker precisa baixar imagens e dependências da primeira vez.
+- **Erro de conexão:** `docker compose ps` e `docker compose logs web` para checar os serviços.

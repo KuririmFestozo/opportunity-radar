@@ -9,9 +9,9 @@ import br.ufscar.opportunityradar.domain.Favorite;
 import br.ufscar.opportunityradar.domain.ApplicationEntry;
 import br.ufscar.opportunityradar.domain.ApplicationStatus;
 import br.ufscar.opportunityradar.service.CatalogService;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.DriverManager;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
 class OpportunityRadarWebIntegrationTest {
@@ -40,67 +41,19 @@ class OpportunityRadarWebIntegrationTest {
     private static final String DEVICE_A = "a".repeat(64);
     private static final String DEVICE_B = "b".repeat(64);
     private static Cookie browser(String token) { return new Cookie(VisitorIdentityFilter.COOKIE, token); }
-    private static final Path SQLITE = createFixture();
+    // Every test runs against its OWN ephemeral PostgreSQL container, never
+    // against the instructor's or student's real user database.
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+        .withDatabaseName("opportunity_radar_test")
+        .withUsername("test")
+        .withPassword("test");
 
     @DynamicPropertySource
     static void datasource(DynamicPropertyRegistry registry) {
-        registry.add("radar.db.path", SQLITE::toString);
-    }
-
-    private static Path createFixture() {
-        try {
-            Path db = Files.createTempFile("radar-mvc-test-", ".db");
-            try (var conn = DriverManager.getConnection("jdbc:sqlite:" + db);
-                 var stmt = conn.createStatement()) {
-                stmt.executeUpdate("""
-                    CREATE TABLE opportunities (
-                      id TEXT PRIMARY KEY, company TEXT NOT NULL, title TEXT NOT NULL,
-                      description TEXT NOT NULL, location_text TEXT NOT NULL,
-                      workplace_type TEXT, employment_type TEXT, published_at TEXT,
-                      canonical_url TEXT, updated_at TEXT NOT NULL,
-                      latitude REAL, longitude REAL
-                    )""");
-                stmt.executeUpdate("""
-                    CREATE TABLE source_postings (
-                      source TEXT NOT NULL, source_job_id TEXT NOT NULL,
-                      opportunity_id TEXT NOT NULL, is_active INTEGER NOT NULL,
-                      url TEXT, last_seen_at TEXT,
-                      PRIMARY KEY (source, source_job_id)
-                    )""");
-                stmt.executeUpdate("""
-                    CREATE TABLE opportunity_course_scores (
-                      opportunity_id TEXT NOT NULL, course_id TEXT NOT NULL, score INTEGER NOT NULL,
-                      PRIMARY KEY(opportunity_id, course_id)
-                    )""");
-                stmt.executeUpdate("CREATE TABLE opportunity_intents (opportunity_id TEXT NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(opportunity_id,intent_id))");
-                stmt.executeUpdate("""
-                    INSERT INTO opportunities VALUES
-                    ('11111111-1111-4111-8111-111111111111','Acme','Estágio em engenharia',
-                     'Aprenda Java e SQL','São Carlos, SP','hybrid','internship',
-                     '2026-11-01','https://example.com/job/1','2026-11-05',-22.01,-47.89),
-                    ('22222222-2222-4222-8222-222222222222','Beta','Vaga encerrada',
-                     'Vaga antiga','Campinas, SP','remote','trainee',
-                     '2026-10-01','javascript:alert(1)','2026-10-05',-22.91,-47.06)
-                    """);
-                stmt.executeUpdate("""
-                    INSERT INTO source_postings VALUES
-                    ('workday','A1','11111111-1111-4111-8111-111111111111',1,
-                     'https://example.com/job/1','2026-11-05'),
-                    ('gupy_global','B1','22222222-2222-4222-8222-222222222222',0,
-                     'https://example.com/job/2','2026-10-05')
-                    """);
-                stmt.executeUpdate("""
-                    INSERT INTO opportunity_course_scores VALUES
-                    ('11111111-1111-4111-8111-111111111111','electrical_engineering',90),
-                    ('22222222-2222-4222-8222-222222222222','computer_science',10)
-                    """);
-                stmt.executeUpdate("INSERT INTO opportunity_intents VALUES ('11111111-1111-4111-8111-111111111111','internship')");
-            }
-            db.toFile().deleteOnExit();
-            return db;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Nao foi possivel preparar SQLite de teste", ex);
-        }
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
     }
 
     @Autowired MockMvc mvc;
@@ -111,6 +64,41 @@ class OpportunityRadarWebIntegrationTest {
     @Autowired AccountService accounts;
 
     @BeforeEach void resetUserData() {
+        // Catalog fixture; PostgreSQL DDL is created by application initialization.
+        jdbc.update("""
+            INSERT INTO opportunities (id,company,title,description,location_text,
+                 workplace_type,employment_type,published_at,canonical_url,updated_at,
+                 latitude,longitude) VALUES
+            ('11111111-1111-4111-8111-111111111111','Acme','Estágio em engenharia',
+             'Aprenda Java e SQL','São Carlos, SP','hybrid','internship',
+             '2026-11-01','https://example.com/job/1','2026-11-05',-22.01,-47.89),
+            ('22222222-2222-4222-8222-222222222222','Beta','Vaga encerrada',
+             'Vaga antiga','Campinas, SP','remote','trainee',
+             '2026-10-01','javascript:alert(1)','2026-10-05',-22.91,-47.06)
+            ON CONFLICT (id) DO NOTHING
+            """);
+        jdbc.update("""
+            INSERT INTO source_postings
+              (source,source_job_id,opportunity_id,is_active,url,last_seen_at)
+            VALUES
+              ('workday','A1','11111111-1111-4111-8111-111111111111',TRUE,
+               'https://example.com/job/1','2026-11-05'),
+              ('gupy_global','B1','22222222-2222-4222-8222-222222222222',FALSE,
+               'https://example.com/job/2','2026-10-05')
+            ON CONFLICT (source,source_job_id) DO NOTHING
+            """);
+        jdbc.update("""
+            INSERT INTO opportunity_course_scores(opportunity_id,course_id,score)
+            VALUES
+              ('11111111-1111-4111-8111-111111111111','electrical_engineering',90),
+              ('22222222-2222-4222-8222-222222222222','computer_science',10)
+            ON CONFLICT (opportunity_id,course_id) DO NOTHING
+            """);
+        jdbc.update("""
+            INSERT INTO opportunity_intents(opportunity_id,intent_id)
+            VALUES ('11111111-1111-4111-8111-111111111111','internship')
+            ON CONFLICT (opportunity_id,intent_id) DO NOTHING
+            """);
         jdbc.update("DELETE FROM source_availability_checks");
         applications.deleteAll();
         favorites.deleteAll();
@@ -359,16 +347,16 @@ class OpportunityRadarWebIntegrationTest {
     }
 
     @Test
-    void sqliteIndexesExistAndActivePostingLookupUsesCoveringIndex() {
-        var indexes = jdbc.queryForList(
-            "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'idx_web_%'", String.class);
+    void postgresSchemaHasWebAndCatalogIndexes() {
+        var indexes = jdbc.queryForList("""
+            SELECT indexname FROM pg_indexes
+            WHERE schemaname=current_schema() AND indexname LIKE 'idx_%'
+            """, String.class);
         assertThat(indexes).contains("idx_web_postings_opp_active_source",
-            "idx_web_opportunities_updated", "idx_web_course_scores_course_score");
-        var plan = jdbc.queryForList("""
-            EXPLAIN QUERY PLAN SELECT o.id FROM opportunities o WHERE EXISTS
-            (SELECT 1 FROM source_postings p WHERE p.opportunity_id=o.id AND p.is_active=1)
-            ORDER BY o.updated_at DESC LIMIT 12
-            """).stream().map(row -> String.valueOf(row.get("detail"))).toList();
-        assertThat(plan).anyMatch(item -> item.contains("idx_web_postings_opp_active_source"));
+            "idx_web_opportunities_updated", "idx_web_course_scores_course_score",
+            "idx_pg_opportunities_published", "idx_pg_scores_opportunity_score");
+        var count = jdbc.queryForObject("SELECT COUNT(*) FROM opportunities", Long.class);
+        assertThat(count).isGreaterThanOrEqualTo(2L);
     }
+
 }
