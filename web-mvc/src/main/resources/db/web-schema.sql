@@ -1,4 +1,4 @@
--- Tables owned by the MVC module. Never alter Python collector tables.
+-- PostgreSQL web tables. Python collectors remain independent of this database.
 CREATE TABLE IF NOT EXISTS web_favorites (
   id TEXT PRIMARY KEY NOT NULL,
   opportunity_id TEXT NOT NULL UNIQUE,

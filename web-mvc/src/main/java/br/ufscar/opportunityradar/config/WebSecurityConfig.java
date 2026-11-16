@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import br.ufscar.opportunityradar.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.servlet.DispatcherType;
 
 @Configuration
 public class WebSecurityConfig {
@@ -64,6 +65,7 @@ public class WebSecurityConfig {
             }
             SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler();
             handler.setDefaultTargetUrl("/favorites");
+            handler.setAlwaysUseDefaultTargetUrl(true);
             handler.onAuthenticationSuccess(request, response, auth);
         };
         AuthenticationFailureHandler failure = (request, response, exception) -> {
@@ -73,8 +75,11 @@ public class WebSecurityConfig {
 
         http.authenticationProvider(provider)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/opportunities", "/opportunities/**",
-                    "/login", "/register", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/", "/error",
+                    "/opportunities", "/opportunities/**",
+                    "/login", "/register",
+                    "/css/**", "/js/**", "/favicon.ico").permitAll()
                 .anyRequest().authenticated())
             .formLogin(login -> login.loginPage("/login").loginProcessingUrl("/login")
                 .successHandler(success).failureHandler(failure).permitAll())
@@ -82,6 +87,7 @@ public class WebSecurityConfig {
                 .logoutSuccessUrl("/login?logout")
                 .invalidateHttpSession(true).deleteCookies("JSESSIONID"))
             .sessionManagement(session -> session.sessionFixation(fix -> fix.migrateSession()));
+
         return http.build();
     }
 }

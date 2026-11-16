@@ -1,3 +1,9 @@
+> **Atualização de 15/11/2026:** a aplicação web da entrega final foi
+> migrada para PostgreSQL 16. Esquema atualizado em
+> `web-mvc/src/main/resources/db/{catalog-schema.sql,web-schema.sql}`;
+> consulte [execução local](entrega2-execucao-local.md). Os exemplos abaixo
+> que mencionam SQLite descrevem a etapa anterior do projeto.
+
 # Entrega 2 — modelagem e banco de dados
 
 ## Arquitetura implementada

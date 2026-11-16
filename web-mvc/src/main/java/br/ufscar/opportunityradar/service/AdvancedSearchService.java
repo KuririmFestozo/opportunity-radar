@@ -98,7 +98,7 @@ public class AdvancedSearchService {
                 + "LEFT JOIN source_availability_checks av "
                 + "ON av.source=sp.source AND av.source_job_id=sp.source_job_id "
                 + "WHERE sp.opportunity_id=o.id");
-            if (f.activeOnly()) posting.append(" AND sp.is_active=1");
+            if (f.activeOnly()) posting.append(" AND sp.is_active=TRUE");
             switch (availability) {
                 case "current" -> posting.append(
                     " AND COALESCE(av.verdict,'unchecked') NOT IN ('unverified','closed')");
@@ -151,13 +151,13 @@ public class AdvancedSearchService {
               SELECT 1 FROM source_postings pv
               JOIN source_availability_checks v
               ON v.source=pv.source AND v.source_job_id=pv.source_job_id
-              WHERE pv.opportunity_id=o.id AND pv.is_active=1 AND v.verdict='open'
+              WHERE pv.opportunity_id=o.id AND pv.is_active=TRUE AND v.verdict='open'
             ) THEN 'open'
             WHEN EXISTS (
               SELECT 1 FROM source_postings pv
               JOIN source_availability_checks v
               ON v.source=pv.source AND v.source_job_id=pv.source_job_id
-              WHERE pv.opportunity_id=o.id AND pv.is_active=1 AND v.verdict='unverified'
+              WHERE pv.opportunity_id=o.id AND pv.is_active=TRUE AND v.verdict='unverified'
             ) THEN 'unverified'
             WHEN EXISTS (
               SELECT 1 FROM source_postings pv
@@ -174,7 +174,7 @@ public class AdvancedSearchService {
             + verificationExpr + " AS verification " + from;
         String order = switch (sort) {
             case "relevance" -> " ORDER BY affinity DESC, o.updated_at DESC, o.id";
-            case "title" -> " ORDER BY o.title COLLATE NOCASE ASC, o.id";
+            case "title" -> " ORDER BY lower(o.title) ASC, o.id";
             default -> " ORDER BY o.published_at DESC, o.updated_at DESC, o.id";
         };
 
@@ -259,7 +259,7 @@ public class AdvancedSearchService {
 
     private boolean tableExists(String table) {
         Integer count = jdbc.getJdbcTemplate().queryForObject(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=current_schema() AND table_name=?",
             Integer.class, table);
         return count != null && count > 0;
     }

@@ -1,5 +1,21 @@
 # 🎯 Opportunity Radar
 
+## ✅ Entrega final: site PostgreSQL (Java/Spring MVC/Thymeleaf)
+
+**Para executar pela primeira vez:** instale Docker Desktop, clone o repositório e execute
+`docker compose up --build` na raiz. Abra <http://localhost:8080/opportunities>.
+O PostgreSQL é criado automaticamente com **seis vagas fictícias**; cadastro e login são
+feitos no site com **Spring Security + BCrypt**.
+
+Consulte **[o roteiro de execução local](docs/entrega2-execucao-local.md)**
+para os requisitos, testes, importação opcional e solução de problemas.
+
+> **Importante:** as referências abaixo ao SQLite se referem ao histórico do
+> coletor Python e à antiga interface MVC; **a interface Java atual usa PostgreSQL**.
+
+---
+
+
 > **Apresentação / Entrega 2 (banco de dados, modelagem e interface):** comece pelo [guia de execução local](docs/entrega2-execucao-local.md), consulte a [modelagem e o esquema](docs/entrega2-modelagem.md) e siga o [roteiro de testes](docs/entrega2-roteiro-testes.md). Os comandos usam uma base **fictícia**, sem exigir o banco real nem contas pessoais. O repositório é privado: autorize o acesso do avaliador.
 
 
